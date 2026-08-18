@@ -1,12 +1,11 @@
-<!DOCTYPE html>
+   <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agencia X: Guerra de Software</title>
+    <title>Juego GFPI-F-135: Batalla de Software</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;800&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         :root {
@@ -16,8 +15,8 @@
             --neon-red: #ff3333;
             --neon-green: #00ffaa;
             --bg-base: #030508;
-            --glass-bg: rgba(10, 15, 25, 0.7);
-            --glass-border: rgba(0, 240, 255, 0.2);
+            --glass-bg: rgba(10, 15, 25, 0.85);
+            --glass-border: rgba(0, 240, 255, 0.3);
             --font-display: 'Orbitron', sans-serif;
             --font-ui: 'Rajdhani', sans-serif;
         }
@@ -37,32 +36,32 @@
         .grid-floor {
             position: absolute; bottom: -20vh; left: -50vw; width: 200vw; height: 60vh;
             background: 
-                linear-gradient(transparent 0%, rgba(0, 240, 255, 0.4) 2%, transparent 3%),
-                linear-gradient(90deg, transparent 0%, rgba(0, 240, 255, 0.4) 2%, transparent 3%);
-            background-size: 50px 50px;
+                linear-gradient(transparent 0%, rgba(0, 240, 255, 0.3) 2%, transparent 3%),
+                linear-gradient(90deg, transparent 0%, rgba(0, 240, 255, 0.3) 2%, transparent 3%);
+            background-size: 60px 60px;
             transform: perspective(600px) rotateX(75deg);
-            z-index: 1; animation: gridMove 5s linear infinite; opacity: 0.3;
+            z-index: 1; animation: gridMove 4s linear infinite; opacity: 0.5;
         }
-        @keyframes gridMove { from { background-position: 0 0; } to { background-position: 0 50px; } }
+        @keyframes gridMove { from { background-position: 0 0; } to { background-position: 0 60px; } }
 
         /* --- CONTENEDOR PRINCIPAL --- */
         .game-wrapper {
             position: relative; z-index: 2;
-            width: 100%; max-width: 1200px; height: 90vh;
+            width: 100%; max-width: 1200px; height: 95vh;
             display: flex; flex-direction: column;
-            border-radius: 15px; box-shadow: 0 0 50px rgba(0, 240, 255, 0.1);
+            border-radius: 15px; box-shadow: 0 0 50px rgba(0, 240, 255, 0.15);
             background: var(--glass-bg); border: 1px solid var(--glass-border);
-            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(10px);
         }
 
-        /* --- HUD --- */
+        /* --- HUD (Barras de Vida) --- */
         .hud {
             display: flex; justify-content: space-between; padding: 20px 40px;
             border-bottom: 2px solid var(--glass-border);
             background: linear-gradient(180deg, rgba(0,0,0,0.9) 0%, transparent 100%);
         }
 
-        .fighter { width: 40%; display: flex; flex-direction: column; }
+        .fighter { width: 42%; display: flex; flex-direction: column; }
         .enemy-side { align-items: flex-end; text-align: right; }
 
         .name {
@@ -72,8 +71,8 @@
         .enemy-side .name { text-shadow: 0 0 10px var(--neon-red); }
 
         .hp-track {
-            width: 100%; height: 25px; background: rgba(0, 0, 0, 0.8);
-            border: 2px solid rgba(255,255,255,0.2); border-radius: 12px;
+            width: 100%; height: 28px; background: rgba(0, 0, 0, 0.8);
+            border: 2px solid rgba(255,255,255,0.2); border-radius: 14px;
             position: relative; overflow: hidden; box-shadow: inset 0 0 15px #000;
         }
 
@@ -86,7 +85,7 @@
 
         .hp-text {
             position: absolute; width: 100%; text-align: center;
-            font-size: 1rem; font-weight: bold; line-height: 23px; text-shadow: 1px 1px 2px #000; z-index: 2;
+            font-size: 1.1rem; font-weight: bold; line-height: 25px; text-shadow: 2px 2px 4px #000; z-index: 2;
         }
 
         /* --- ARENA Y PERSONAJES --- */
@@ -95,52 +94,43 @@
         .characters-container {
             position: absolute; top: 50%; left: 0; width: 100%;
             transform: translateY(-50%); display: flex; justify-content: space-between;
-            padding: 0 15%; z-index: 3;
+            padding: 0 10%; z-index: 3;
         }
 
         .avatar {
-            width: 150px; height: 150px; border-radius: 50%;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 5rem; position: relative;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Curva fluida para los golpes */
+            width: 220px; height: 220px; /* Personajes más grandes */
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             will-change: transform;
+            filter: drop-shadow(0 0 20px rgba(0, 240, 255, 0.5));
         }
 
-        .player-avatar {
-            color: var(--neon-blue); border: 3px solid var(--neon-blue);
-            background: radial-gradient(circle, rgba(0,240,255,0.15) 0%, transparent 70%);
-            box-shadow: 0 0 30px rgba(0,240,255,0.4), inset 0 0 20px rgba(0,240,255,0.4);
-            animation: float 3s ease-in-out infinite;
-        }
-
-        .enemy-avatar {
-            color: var(--neon-red); border: 3px solid var(--neon-red);
-            background: radial-gradient(circle, rgba(255,51,51,0.15) 0%, transparent 70%);
-            box-shadow: 0 0 30px rgba(255,51,51,0.4), inset 0 0 20px rgba(255,51,51,0.4);
-            animation: float 4s ease-in-out infinite reverse;
-        }
+        .player-avatar { animation: float 3s ease-in-out infinite; }
+        .enemy-avatar { filter: drop-shadow(0 0 20px rgba(255, 51, 51, 0.5)); animation: float 4s ease-in-out infinite reverse; }
 
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
 
-        /* Clases de animación de pelea por JS */
-        .dash-right { transform: translateX(35vw) scale(1.2) !important; z-index: 10; }
-        .dash-left { transform: translateX(-35vw) scale(1.2) !important; z-index: 10; }
-        .ultimate-rise { transform: translateY(-80px) scale(1.3) !important; box-shadow: 0 0 80px var(--neon-purple), inset 0 0 40px var(--neon-purple); color: var(--neon-purple); border-color: var(--neon-purple); z-index: 10; }
+        /* Movimiento de combate */
+        .dash-right { transform: translateX(45vw) scale(1.2) !important; z-index: 10; }
+        .dash-left { transform: translateX(-45vw) scale(1.2) !important; z-index: 10; }
+        .ultimate-rise { transform: translateY(-100px) scale(1.4) !important; filter: drop-shadow(0 0 40px var(--neon-purple)); z-index: 10; }
         
-        /* Efectos visuales */
-        .hit-shake { animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both; filter: brightness(2) drop-shadow(0 0 30px red); }
-        @keyframes shake { 10%, 90% { transform: translate3d(-10px, 0, 0); } 20%, 80% { transform: translate3d(10px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-15px, 0, 0); } 40%, 60% { transform: translate3d(15px, 0, 0); } }
+        .hit-shake { animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both; filter: brightness(2) drop-shadow(0 0 40px red) !important; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-15px, 0, 0); } 20%, 80% { transform: translate3d(15px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-20px, 0, 0); } 40%, 60% { transform: translate3d(20px, 0, 0); } }
 
+        /* Efecto Rayo Ultimate */
         .laser-beam {
-            position: absolute; top: 50%; left: 25%; height: 30px; width: 0;
+            position: absolute; top: 50%; left: 25%; height: 50px; width: 0;
             background: linear-gradient(90deg, transparent, #fff, var(--neon-purple));
-            box-shadow: 0 0 30px var(--neon-purple), 0 0 60px var(--neon-purple);
+            box-shadow: 0 0 40px var(--neon-purple), 0 0 80px var(--neon-purple);
             transform: translateY(-50%); z-index: 9; opacity: 0; transition: width 0.2s, opacity 0.2s;
+            border-radius: 25px;
         }
 
+        /* Texto de Daño Flotante */
         .dmg-text {
-            position: absolute; font-family: var(--font-display); font-size: 3.5rem;
-            font-weight: 800; color: #fff; text-shadow: 0 0 15px red, 3px 3px 0 #000;
+            position: absolute; font-family: var(--font-display); font-size: 4rem;
+            font-weight: 800; color: #fff; text-shadow: 0 0 15px red, 4px 4px 0 #000;
             pointer-events: none; animation: floatUpDmg 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; z-index: 20;
         }
         @keyframes floatUpDmg { 0% { opacity: 1; transform: translateY(0) scale(0.5); } 20% { transform: translateY(-50px) scale(1.2); } 100% { opacity: 0; transform: translateY(-150px) scale(1); } }
@@ -149,36 +139,40 @@
         .controls-wrapper { display: flex; flex-direction: column; z-index: 3; }
 
         .log-container {
-            height: 80px; background: rgba(0,0,0,0.8); border-top: 1px solid var(--glass-border);
-            padding: 10px 20px; overflow-y: auto; font-size: 1.1rem; display: flex; flex-direction: column; gap: 5px;
+            height: 90px; background: rgba(0,0,0,0.85); border-top: 1px solid var(--glass-border);
+            padding: 10px 25px; overflow-y: auto; font-size: 1.2rem; display: flex; flex-direction: column; gap: 5px;
         }
-        .log-entry { animation: fadeInLog 0.3s forwards; color: #ccc; }
+        .log-entry { animation: fadeInLog 0.3s forwards; color: #ddd; }
         @keyframes fadeInLog { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
-        .text-blue { color: var(--neon-blue); } .text-red { color: var(--neon-red); } .text-purple { color: var(--neon-purple); font-weight: bold; }
+        .text-blue { color: var(--neon-blue); font-weight: bold; } 
+        .text-red { color: var(--neon-red); font-weight: bold; } 
+        .text-purple { color: var(--neon-purple); font-weight: bold; font-size: 1.3rem; }
 
         .controls {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px 40px;
-            background: rgba(5, 8, 15, 0.9); border-radius: 0 0 15px 15px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 25px 40px;
+            background: rgba(5, 8, 15, 0.95); border-radius: 0 0 15px 15px;
         }
 
         .btn {
-            background: rgba(0, 0, 0, 0.6); border: 2px solid rgba(255,255,255,0.1);
-            color: #fff; padding: 18px; font-family: var(--font-display); font-size: 1.2rem;
+            background: rgba(0, 0, 0, 0.7); border: 2px solid rgba(255,255,255,0.2);
+            color: #fff; padding: 20px; font-family: var(--font-display); font-size: 1.3rem;
             border-radius: 8px; cursor: pointer; transition: all 0.2s;
-            display: flex; align-items: center; justify-content: center; gap: 12px; text-transform: uppercase;
+            text-transform: uppercase; letter-spacing: 1px;
         }
         .btn:disabled { opacity: 0.3; cursor: not-allowed; filter: grayscale(1); }
-        .btn-atk:hover:not(:disabled) { border-color: var(--neon-blue); box-shadow: 0 0 20px rgba(0,240,255,0.3); transform: translateY(-3px); }
-        .btn-def:hover:not(:disabled) { border-color: var(--neon-green); box-shadow: 0 0 20px rgba(0,255,170,0.3); transform: translateY(-3px); }
-        .btn-cerebro { grid-column: span 2; background: rgba(255, 183, 0, 0.1); border-color: var(--neon-gold); color: var(--neon-gold); }
-        .btn-cerebro:hover:not(:disabled) { background: rgba(255, 183, 0, 0.2); box-shadow: 0 0 25px rgba(255,183,0,0.4); transform: scale(1.02); }
-        .btn-ultimate { grid-column: span 2; background: linear-gradient(90deg, #4a00e0, #8e2de2); border-color: var(--neon-purple); box-shadow: 0 0 20px rgba(176, 38, 255, 0.6); animation: pulse-ult 1.5s infinite; }
-        @keyframes pulse-ult { 0%, 100% { box-shadow: 0 0 15px rgba(176,38,255,0.5); } 50% { box-shadow: 0 0 35px rgba(176,38,255,1); } }
+        .btn-atk:hover:not(:disabled) { border-color: var(--neon-blue); box-shadow: 0 0 25px rgba(0,240,255,0.4); transform: translateY(-3px); }
+        .btn-def:hover:not(:disabled) { border-color: var(--neon-green); box-shadow: 0 0 25px rgba(0,255,170,0.4); transform: translateY(-3px); }
+        
+        .btn-cerebro { grid-column: span 2; background: rgba(255, 183, 0, 0.15); border-color: var(--neon-gold); color: var(--neon-gold); }
+        .btn-cerebro:hover:not(:disabled) { background: rgba(255, 183, 0, 0.25); box-shadow: 0 0 30px rgba(255,183,0,0.5); transform: scale(1.02); }
+        
+        .btn-ultimate { grid-column: span 2; background: linear-gradient(90deg, #4a00e0, #8e2de2); border-color: #fff; box-shadow: 0 0 20px rgba(176, 38, 255, 0.8); animation: pulse-ult 1s infinite; font-weight: bold; color: white;}
+        @keyframes pulse-ult { 0%, 100% { box-shadow: 0 0 15px rgba(176,38,255,0.6); } 50% { box-shadow: 0 0 40px rgba(176,38,255,1); } }
 
         /* --- MODAL DE TRIVIA (PREGUNTAS) --- */
         .modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); backdrop-filter: blur(10px);
+            background: rgba(0,0,0,0.95); backdrop-filter: blur(15px);
             display: flex; justify-content: center; align-items: center;
             opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 100;
         }
@@ -186,24 +180,25 @@
 
         .hologram-panel {
             background: rgba(10, 15, 25, 0.95); border: 2px solid var(--neon-gold);
-            border-radius: 15px; padding: 40px; width: 90%; max-width: 800px;
-            box-shadow: 0 0 60px rgba(255, 183, 0, 0.2); text-align: center;
+            border-radius: 15px; padding: 50px; width: 90%; max-width: 900px;
+            box-shadow: 0 0 80px rgba(255, 183, 0, 0.3); text-align: center;
         }
-        .modal-title { font-family: var(--font-display); color: var(--neon-gold); font-size: 2.2rem; margin-bottom: 20px; }
-        .modal-q { font-size: 1.4rem; margin-bottom: 30px; line-height: 1.6; color: #fff; }
-        .opt-grid { display: flex; flex-direction: column; gap: 12px; }
+        .modal-title { font-family: var(--font-display); color: var(--neon-gold); font-size: 2.5rem; margin-bottom: 25px; }
+        .modal-q { font-size: 1.6rem; margin-bottom: 35px; line-height: 1.6; color: #fff; font-weight: bold;}
+        
+        .opt-grid { display: flex; flex-direction: column; gap: 15px; }
         .opt-btn {
-            background: rgba(0,0,0,0.5); border: 1px solid rgba(255,183,0,0.4); color: #fff;
-            padding: 18px 25px; font-size: 1.15rem; font-family: var(--font-ui); border-radius: 8px;
-            cursor: pointer; transition: all 0.2s; text-align: left;
+            background: rgba(0,0,0,0.6); border: 1px solid rgba(255,183,0,0.5); color: #fff;
+            padding: 20px 30px; font-size: 1.3rem; font-family: var(--font-ui); border-radius: 10px;
+            cursor: pointer; transition: all 0.2s; text-align: left; line-height: 1.4;
         }
-        .opt-btn:hover { background: rgba(255,183,0,0.2); border-color: var(--neon-gold); transform: translateX(10px); }
+        .opt-btn:hover { background: rgba(255,183,0,0.25); border-color: var(--neon-gold); transform: translateX(15px); }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <!-- Fondo -->
+    <!-- Fondo de Partículas -->
     <canvas id="bg-canvas"></canvas>
     <div class="grid-floor"></div>
 
@@ -211,11 +206,11 @@
         <!-- HUD -->
         <header class="hud">
             <div class="fighter">
-                <div class="name"><i class="fa-solid fa-user-secret"></i> DETECTIVE CÓDIGO</div>
+                <div class="name">APRENDIZ SENA (HÉROE)</div>
                 <div class="hp-track"><div id="p-hp" class="hp-fill player-hp"></div><div id="p-hp-txt" class="hp-text">200 / 200</div></div>
             </div>
             <div class="fighter enemy-side">
-                <div id="e-name" class="name">SISTEMA ENEMIGO</div>
+                <div id="e-name" class="name">VIRUS IGNORANCIA</div>
                 <div class="hp-track"><div id="e-hp" class="hp-fill enemy-hp"></div><div id="e-hp-txt" class="hp-text">--- / ---</div></div>
             </div>
         </header>
@@ -223,317 +218,70 @@
         <!-- ARENA -->
         <main class="arena" id="arena">
             <div class="characters-container">
-                <div id="avatar-p" class="avatar player-avatar"><i class="fa-solid fa-user-ninja"></i></div>
-                <div id="avatar-e" class="avatar enemy-avatar"><i class="fa-solid fa-server"></i></div>
+                <!-- PERSONAJE JUGADOR (DIBUJADO EN SVG, SIEMPRE SE VERÁ) -->
+                <div id="avatar-p" class="avatar player-avatar">
+                    <svg viewBox="0 0 200 200" width="100%" height="100%">
+                        <!-- Cuerpo/Traje -->
+                        <path d="M50,180 L50,120 Q100,90 150,120 L150,180 Z" fill="#00f0ff" opacity="0.8"/>
+                        <path d="M60,180 L60,130 Q100,105 140,130 L140,180 Z" fill="#050508"/>
+                        <!-- Cabeza/Casco Futurista -->
+                        <circle cx="100" cy="80" r="45" fill="#00f0ff" />
+                        <circle cx="100" cy="80" r="40" fill="#050508" />
+                        <!-- Visor brillante -->
+                        <rect x="65" y="65" width="70" height="20" rx="10" fill="#000" />
+                        <rect x="75" y="70" width="50" height="10" rx="5" fill="#ff007f" /> <!-- Ojo láser -->
+                        <!-- Detalles -->
+                        <circle cx="100" cy="140" r="15" fill="#00f0ff" />
+                        <circle cx="100" cy="140" r="8" fill="#fff" />
+                    </svg>
+                </div>
+
+                <!-- PERSONAJE ENEMIGO (SE ACTUALIZA EN JS) -->
+                <div id="avatar-e" class="avatar enemy-avatar">
+                    <!-- El enemigo se inyectará aquí -->
+                </div>
             </div>
-            <!-- Laser Effect for Ultimate -->
+            <!-- Efecto Rayo Ultimate -->
             <div id="laser" class="laser-beam"></div>
         </main>
 
         <!-- CONTROLES -->
         <div class="controls-wrapper">
             <div id="log" class="log-container">
-                <div class="log-entry">> Inicializando conexión a la terminal de combate...</div>
+                <div class="log-entry">> Inicializando sistema de aprendizaje GFPI-F-135...</div>
             </div>
             <footer class="controls">
-                <button id="btn-atk" class="btn btn-atk" onclick="attackDash(true)"><i class="fa-solid fa-khanda"></i> Ataque Lógico</button>
-                <button id="btn-def" class="btn btn-def" onclick="actionDefend()"><i class="fa-solid fa-shield-halved"></i> Firewall Personal</button>
-                <button id="btn-cerebro" class="btn btn-cerebro" onclick="openCerebro()"><i class="fa-solid fa-terminal"></i> Hackear Terminal (Preguntas)</button>
-                <button id="btn-ult" class="btn btn-ultimate hidden" onclick="actionUltimate()"><i class="fa-solid fa-bolt"></i> EXPLOTAR VULNERABILIDAD (ULTIMATE)</button>
+                <button id="btn-atk" class="btn btn-atk" onclick="attackDash(true)">Ataque Básico</button>
+                <button id="btn-def" class="btn btn-def" onclick="actionDefend()">Escudo / Defender</button>
+                <button id="btn-cerebro" class="btn btn-cerebro" onclick="openCerebro()">RESPONDER PREGUNTA (Cargar Poder)</button>
+                <button id="btn-ult" class="btn btn-ultimate hidden" onclick="actionUltimate()">¡ATAQUE SUPREMO (ULTIMATE)!</button>
             </footer>
         </div>
     </div>
 
-    <!-- MODAL DE PREGUNTAS (CEREBRO) -->
+    <!-- MODAL DE PREGUNTAS -->
     <div id="modal" class="modal">
         <div class="hologram-panel">
-            <h2 class="modal-title"><i class="fa-solid fa-unlock-keyhole"></i> CONSOLA DE ACCESO</h2>
+            <h2 class="modal-title">EVALUACIÓN DE CONOCIMIENTO</h2>
             <p id="modal-q" class="modal-q">Cargando...</p>
             <div id="modal-opts" class="opt-grid"></div>
         </div>
     </div>
 
     <script>
-        // --- MOTOR DE PARTÍCULAS CANVAS ---
+        // --- MOTOR DE PARTÍCULAS DE FONDO ---
         const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
         let width, height, particles = [];
 
         function initCanvas() {
             width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-            particles = [];
-            for(let i = 0; i < 50; i++) particles.push({ x: Math.random() * width, y: Math.random() * height, v: Math.random() * 0.5 + 0.2 });
-        }
-        function drawCanvas() {
-            ctx.clearRect(0, 0, width, height);
-            ctx.fillStyle = 'rgba(0, 240, 255, 0.4)';
-            particles.forEach(p => {
-                p.y -= p.v; if(p.y < 0) p.y = height;
-                ctx.fillRect(p.x, p.y, 2, 8); // Partículas estilo lluvia digital/Matrix
-            });
-            requestAnimationFrame(drawCanvas);
-        }
-        window.addEventListener('resize', initCanvas);
-        initCanvas(); drawCanvas();
+            height¡Mil disculpas! Como en este momento se ha reiniciado el hilo de nuestra conversación, he perdido el contexto de lo que estábamos hablando y no tengo acceso a los mensajes anteriores. 
 
-        // --- DATOS DEL JUEGO (PREGUNTAS DEL SENA: GFPI-F-135 V04) ---
-        const P_MAX_HP = 200;
-        let player = { hp: P_MAX_HP, defMode: false, ultimateReady: false };
-        let currentBoss = 0;
-        let isPlayerTurn = true;
+Para poder hacer el texto exactamente como lo necesitas, ¿podrías recordarme rápidamente estos detalles?
 
-        const bosses = [
-            {
-                name: "CENTINELA DRM (NIVEL 1)", icon: "fa-robot", hp: 300, maxHp: 300, dmg: [15, 25],
-                trivia: {
-                    q: "Para neutralizar el escudo del Centinela, debes definir la base de su existencia. Según los manuales técnicos, ¿Qué es el Software?",
-                    opts: [
-                        "A) Los componentes físicos tangibles como discos duros y procesadores.",
-                        "B) El conjunto de instrucciones, programas, reglas y datos informáticos que permiten a un equipo realizar tareas específicas.",
-                        "C) Una marca registrada exclusiva para computadoras de alto rendimiento.",
-                        "D) El cableado de red que conecta los servidores."
-                    ],
-                    correct: 1, pwrName: "BORRADO DE CÓDIGO FUENTE"
-                }
-            },
-            {
-                name: "TECNO-PARÁSITO LEGAL (NIVEL 2)", icon: "fa-bug", hp: 450, maxHp: 450, dmg: [25, 35],
-                trivia: {
-                    q: "El enemigo protege su código robado mediante un contrato abusivo. Debes hackear su concepto legal. ¿Qué es exactamente una Licencia de Software?",
-                    opts: [
-                        "A) Un contrato físico notariado que te hace dueño legal de la empresa creadora.",
-                        "B) Un antivirus que impide que el software sea borrado accidentalmente.",
-                        "C) Un contrato entre el autor y el usuario que establece los derechos, restricciones y condiciones de uso del programa.",
-                        "D) Una contraseña maestra universal para todo internet."
-                    ],
-                    correct: 2, pwrName: "ANULACIÓN DE CONTRATO"
-                }
-            },
-            {
-                name: "MENTE MAESTRA PRIVATIVA (NIVEL 3)", icon: "fa-brain", hp: 600, maxHp: 600, dmg: [35, 50],
-                trivia: {
-                    q: "El enemigo usa múltiples escudos legales. Para atravesarlos, debes conocer las divisiones. ¿Cuáles son los dos grandes tipos de licencias de software?",
-                    opts: [
-                        "A) Software Rápido y Software Lento.",
-                        "B) Software Libre (ej. GNU/GPL, MIT) y Software Privativo/Propietario.",
-                        "C) Software de Pago Mensual y Software de Pago Anual.",
-                        "D) Software para Windows y Software para Linux."
-                    ],
-                    correct: 1, pwrName: "INYECCIÓN DE CÓDIGO ABIERTO"
-                }
-            },
-            {
-                name: "EL ARQUITECTO (JEFE FINAL)", icon: "fa-chess-king", hp: 800, maxHp: 800, dmg: [45, 65],
-                trivia: {
-                    q: "Debes liberar el código a los ciudadanos para que lo modifiquen y comercialicen sin miedo a demandas por parte del Arquitecto. ¿Qué tipo de licencia es la más adecuada y por qué?",
-                    opts: [
-                        "A) Licencia Propietaria, porque así nadie más puede robar la idea original.",
-                        "B) Licencia Copyleft estricta, porque obliga a destruir cualquier otro software en la red.",
-                        "C) Sin ninguna licencia, dejándolo en dominio público sin reglas.",
-                        "D) Licencias Permisivas (ej. MIT o Apache), porque permiten usar, modificar y distribuir comercialmente el código con mínimas restricciones legales."
-                    ],
-                    correct: 3, pwrName: "REVOLUCIÓN DE DOMINIO PÚBLICO"
-                }
-            }
-        ];
+*   **El tema y las preguntas:** ¿Sobre qué es el tema y cuáles son las preguntas específicas que debo usar?
+*   **Los personajes:** ¿Quiénes son los personajes que deben aparecer en la respuesta y qué dinámica o rol tienen?
 
-        let enemy = null;
+En cuanto me compartas esa información de nuevo, lo armo integrando todo tal cual me lo pediste. ¡Quedo muy pendiente de tus indicaciones!
 
-        // --- SISTEMA DE COMBATE Y ANIMACIONES ---
-        function updateUI() {
-            document.getElementById('p-hp').style.transform = `scaleX(${Math.max(0, player.hp / P_MAX_HP)})`;
-            document.getElementById('p-hp-txt').innerText = `${Math.max(0, Math.ceil(player.hp))} / ${P_MAX_HP}`;
-            document.getElementById('e-hp').style.transform = `scaleX(${Math.max(0, enemy.hp / enemy.maxHp)})`;
-            document.getElementById('e-hp-txt').innerText = `${Math.max(0, Math.ceil(enemy.hp))} / ${enemy.maxHp}`;
-        }
-
-        function printLog(msg, colorClass = "") {
-            const logBox = document.getElementById('log');
-            const div = document.createElement('div');
-            div.className = `log-entry ${colorClass}`;
-            div.innerHTML = `> ${msg}`;
-            logBox.appendChild(div);
-            logBox.scrollTop = logBox.scrollHeight;
-        }
-
-        function spawnText(targetId, text, color) {
-            const el = document.getElementById(targetId);
-            const rect = el.getBoundingClientRect();
-            const span = document.createElement('span');
-            span.className = 'dmg-text'; span.style.color = color; span.innerText = text;
-            span.style.left = `${rect.left + (rect.width/2) - 30}px`;
-            span.style.top = `${rect.top}px`;
-            document.body.appendChild(span);
-            setTimeout(() => span.remove(), 1000);
-        }
-
-        function initLevel() {
-            if(currentBoss >= bosses.length) {
-                printLog("¡LA RED HA SIDO LIBERADA! EL CÓDIGO ES DE TODOS.", "text-purple");
-                document.querySelector('.controls').innerHTML = `<button class="btn btn-atk" style="grid-column: span 2;" onclick="location.reload()">INICIAR NUEVA PARTIDA</button>`;
-                return;
-            }
-            enemy = JSON.parse(JSON.stringify(bosses[currentBoss]));
-            document.getElementById('e-name').innerHTML = `${enemy.name}`;
-            document.getElementById('avatar-e').innerHTML = `<i class="fa-solid ${enemy.icon}"></i>`;
-            player.hp = P_MAX_HP; player.ultimateReady = false;
-            updateButtons(); updateUI();
-            printLog(`Alerta: ${enemy.name} detectado. Preparando entorno...`, "text-red");
-        }
-
-        // --- ANIMACIONES DE PELEA FÍSICA ---
-        function attackDash(isPlayer) {
-            if(isPlayer && !isPlayerTurn) return;
-            if(isPlayer) { isPlayerTurn = false; player.defMode = false; updateButtons(false); }
-
-            const attackerId = isPlayer ? 'avatar-p' : 'avatar-e';
-            const targetId = isPlayer ? 'avatar-e' : 'avatar-p';
-            const dashClass = isPlayer ? 'dash-right' : 'dash-left';
-            const attacker = document.getElementById(attackerId);
-            const target = document.getElementById(targetId);
-
-            // 1. Dash hacia adelante
-            attacker.classList.add(dashClass);
-
-            // 2. Impacto tras 400ms (tiempo de la transición CSS)
-            setTimeout(() => {
-                let dmg = 0;
-                if(isPlayer) {
-                    dmg = Math.floor(Math.random() * 20) + 20; // 20-40 daño
-                    enemy.hp -= dmg;
-                    printLog(`Conectas un Golpe Lógico. Daño: ${dmg}`, "text-blue");
-                } else {
-                    dmg = Math.floor(Math.random() * (enemy.dmg[1] - enemy.dmg[0])) + enemy.dmg[0];
-                    if(player.defMode) { dmg = Math.floor(dmg / 2); printLog("Firewall absorbe daño.", ""); }
-                    player.hp -= dmg;
-                    printLog(`${enemy.name} ataca. Daño: ${dmg}`, "text-red");
-                }
-
-                target.classList.add('hit-shake');
-                spawnText(targetId, `-${dmg}`, isPlayer ? '#ff3333' : '#00f0ff');
-                updateUI();
-
-                // 3. Regresar a posición original tras el golpe
-                setTimeout(() => {
-                    attacker.classList.remove(dashClass);
-                    target.classList.remove('hit-shake');
-                    
-                    // 4. Terminar turno al volver a su sitio
-                    setTimeout(() => { checkGameLoop(isPlayer); }, 400);
-                }, 300);
-            }, 400);
-        }
-
-        function actionDefend() {
-            if(!isPlayerTurn) return;
-            isPlayerTurn = false; player.defMode = true; updateButtons(false);
-            printLog("Has levantado tu Firewall. Defensa aumentada.", "text-blue");
-            document.getElementById('avatar-p').style.boxShadow = "0 0 50px rgba(0, 255, 170, 0.8)";
-            setTimeout(() => attackDash(false), 1000); // Turno enemigo
-        }
-
-        function actionUltimate() {
-            if(!isPlayerTurn || !player.ultimateReady) return;
-            isPlayerTurn = false; player.ultimateReady = false; updateButtons(false);
-            
-            const p = document.getElementById('avatar-p');
-            const laser = document.getElementById('laser');
-            
-            printLog(`¡EJECUTANDO: ${enemy.trivia.pwrName}!`, "text-purple");
-            
-            // Elevar jugador
-            p.classList.add('ultimate-rise');
-            
-            setTimeout(() => {
-                // Disparar rayo
-                laser.style.opacity = '1';
-                laser.style.width = '60%'; // Llega hasta el enemigo
-                
-                setTimeout(() => {
-                    const dmg = Math.floor(Math.random() * 80) + 150; // Daño masivo
-                    enemy.hp -= dmg;
-                    document.getElementById('avatar-e').classList.add('hit-shake');
-                    spawnText('avatar-e', `-${dmg} CRÍTICO`, '#b026ff');
-                    updateUI();
-                    
-                    // Apagar rayo y bajar jugador
-                    setTimeout(() => {
-                        laser.style.opacity = '0';
-                        laser.style.width = '0';
-                        p.classList.remove('ultimate-rise');
-                        document.getElementById('avatar-e').classList.remove('hit-shake');
-                        setTimeout(() => checkGameLoop(true), 400);
-                    }, 500);
-                }, 200);
-            }, 500);
-        }
-
-        function checkGameLoop(wasPlayerTurn) {
-            document.getElementById('avatar-p').style.boxShadow = ""; // Quitar escudo visual si había
-            
-            if(enemy.hp <= 0) {
-                printLog(`¡SISTEMA ENEMIGO DESTRUIDO!`, "text-green");
-                setTimeout(() => { currentBoss++; initLevel(); isPlayerTurn = true; }, 2000);
-            } else if (player.hp <= 0) {
-                printLog(`SISTEMA CAÍDO. HAS SIDO DESCONECTADO.`, "text-red");
-                document.querySelector('.controls').innerHTML = `<button class="btn btn-atk" style="grid-column: span 2;" onclick="location.reload()">REINICIAR SISTEMA</button>`;
-            } else {
-                if(wasPlayerTurn) {
-                    setTimeout(() => attackDash(false), 500); // Enemigo ataca
-                } else {
-                    isPlayerTurn = true; updateButtons(true); // Vuelve a ser mi turno
-                }
-            }
-        }
-
-        // --- SISTEMA CEREBRO (PREGUNTAS) ---
-        function openCerebro() {
-            if(!isPlayerTurn) return;
-            const t = enemy.trivia;
-            document.getElementById('modal-q').innerText = t.q;
-            const grid = document.getElementById('modal-opts');
-            grid.innerHTML = '';
-            t.opts.forEach((opt, idx) => {
-                const btn = document.createElement('button');
-                btn.className = 'opt-btn'; btn.innerText = opt;
-                btn.onclick = () => evalCerebro(idx, t.correct);
-                grid.appendChild(btn);
-            });
-            document.getElementById('modal').classList.add('active');
-        }
-
-        function evalCerebro(selected, correct) {
-            document.getElementById('modal').classList.remove('active');
-            if(selected === correct) {
-                printLog("RESPUESTA CORRECTA. Brecha de seguridad abierta. ULTIMATE LISTO.", "text-green");
-                player.ultimateReady = true; updateButtons(true);
-            } else {
-                printLog("ERROR. Cortafuegos enemigo detectó el intento. -30 HP.", "text-red");
-                player.hp -= 30; spawnText('avatar-p', "-30", "#ff3333");
-                document.getElementById('avatar-p').classList.add('hit-shake');
-                updateUI();
-                setTimeout(() => { document.getElementById('avatar-p').classList.remove('hit-shake'); }, 300);
-                
-                isPlayerTurn = false; updateButtons(false);
-                if(player.hp <= 0) setTimeout(() => checkGameLoop(false), 500);
-                else setTimeout(() => attackDash(false), 1500); // El enemigo castiga tu fallo atacando
-            }
-        }
-
-        function updateButtons(enable = null) {
-            if(enable !== null) document.querySelectorAll('.controls .btn').forEach(b => b.disabled = !enable);
-            if(player.ultimateReady) {
-                document.getElementById('btn-cerebro').classList.add('hidden');
-                document.getElementById('btn-ult').classList.remove('hidden');
-            } else {
-                document.getElementById('btn-cerebro').classList.remove('hidden');
-                document.getElementById('btn-ult').classList.add('hidden');
-            }
-        }
-
-        // Iniciar
-        initLevel();
-    </script>
-</body>
-</html>
