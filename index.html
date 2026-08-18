@@ -3,48 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Codex Guardian: El Ascenso del Hacker-Héroe</title>
+    <title>Código Noir: Detective de Datos</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <!-- Fuentes nivel GOD -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <!-- Íconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="hero-theme">
-    <div class="game-container">
-        <!-- HUD Superior: Estado de la Ciudad -->
-        <header class="hud">
-            <div class="stat-box">
-                <span>ENERGÍA DE NEÓN-CITY</span>
-                <div class="health-bar-bg"><div id="health-bar" class="health-bar-fill"></div></div>
+<body>
+    <!-- Fondo dinámico de partículas -->
+    <div id="particles-js"></div>
+
+    <div class="game-wrapper">
+        <!-- HUD Glassmorphism -->
+        <header class="hud-glass">
+            <div class="stat-group">
+                <i class="fa-solid fa-city icon-city"></i>
+                <div class="stat-info">
+                    <span>ESTADO DE LA CIUDAD</span>
+                    <div class="bar-bg"><div id="health-bar" class="bar-fill"></div></div>
+                </div>
             </div>
-            <div class="stat-box score-box">
-                <span>PUNTOS DE HÉROE: <strong id="score">0</strong></span>
+            <div class="stat-group score-group">
+                <i class="fa-solid fa-star icon-gold"></i>
+                <div class="stat-info">
+                    <span>REPUTACIÓN</span>
+                    <strong id="score">0</strong>
+                </div>
             </div>
-            <div class="stat-box combo-box">
-                <span>COMBO DE CÓDIGO: <strong id="combo">x1</strong></span>
+            <div class="stat-group combo-group">
+                <i class="fa-solid fa-fire icon-fire"></i>
+                <div class="stat-info">
+                    <span>COMBO</span>
+                    <strong id="combo">x1</strong>
+                </div>
             </div>
         </header>
 
-        <!-- Zona de Combate: Preguntas -->
-        <main id="game-screen" class="hero-card">
-            <div id="level-badge" class="badge">NIVEL 1</div>
-            <h2 id="question-text">Cargando desafío del Dr. Silicio...</h2>
+        <!-- Expediente del Caso -->
+        <main id="game-screen" class="mission-card">
+            <div class="card-header">
+                <span id="level-badge" class="badge">EXPEDIENTE 01</span>
+                <i class="fa-solid fa-fingerprint fingerprint-icon"></i>
+            </div>
             
-            <div id="options-container" class="options-grid">
-                <!-- Las opciones se generan dinámicamente -->
+            <h2 id="question-text">Analizando la escena del crimen digital...</h2>
+            
+            <div id="options-container" class="options-layout">
+                <!-- Generado por JS -->
             </div>
 
-            <div id="feedback" class="feedback-msg hidden"></div>
+            <div id="feedback" class="feedback-banner hidden"></div>
         </main>
 
-        <!-- Arsenal de Habilidades (Comodines) -->
-        <footer class="powerups">
-            <button class="power-btn" onclick="usePowerup('oracle')">🔮 Ciber-Oráculo (50/50)</button>
-            <button class="power-btn" onclick="usePowerup('shield')">🛡️ Escudo de Código</button>
+        <!-- Gadgets de Detective -->
+        <footer class="gadgets-panel">
+            <button class="gadget-btn" onclick="usePowerup('oracle')">
+                <i class="fa-solid fa-eye"></i> Visión de Detective (50/50)
+            </button>
+            <button class="gadget-btn" onclick="usePowerup('shield')">
+                <i class="fa-solid fa-shield-halved"></i> Cortafuegos Táctico
+            </button>
         </footer>
     </div>
 
-    <!-- Partículas de fondo (Opcional, para más "god") -->
-    <div class="particles" id="particles-js"></div>
-
+    <!-- Scripts externos -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script src="game.js"></script>
 </body>
 </html>
