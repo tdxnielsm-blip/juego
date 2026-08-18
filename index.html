@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberArchitect: License Wars</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="game-container">
+        <!-- HUD Superior -->
+        <header class="hud">
+            <div class="stat-box">
+                <span>ESTADO DEL SERVIDOR</span>
+                <div class="health-bar-bg"><div id="health-bar" class="health-bar-fill"></div></div>
+            </div>
+            <div class="stat-box">
+                <span>PUNTOS: <strong id="score">0</strong></span>
+            </div>
+            <div class="stat-box">
+                <span>COMBO: <strong id="combo">x1</strong></span>
+            </div>
+        </header>
+
+        <!-- Zona Central del Juego -->
+        <main id="game-screen" class="cyber-card">
+            <div id="level-badge" class="badge">NIVEL 1</div>
+            <h2 id="question-text">Cargando desafío...</h2>
+            
+            <div id="options-container" class="options-grid">
+                <!-- Las opciones se generan dinámicamente -->
+            </div>
+
+            <div id="feedback" class="feedback-msg hidden"></div>
+        </main>
+
+        <!-- Barra de Comodines / Poderes -->
+        <footer class="powerups">
+            <button class="power-btn" onclick="usePowerup('stack')">🔍 StackOverflow (50/50)</button>
+            <button class="power-btn" onclick="usePowerup('shield')">🛡️ Escudo Legal</button>
+        </footer>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
