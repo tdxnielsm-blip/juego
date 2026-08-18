@@ -2,146 +2,269 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Arcade Combat - Ultimate Edition</title>
+    <title>X-Men '97 - Arcade Combat Ultimate</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Teko:wght@600&display=swap" rel="stylesheet">
+
     <style>
-        :root { --blue: #0033cc; --yellow: #ffcc00; --red: #e62e00; --sword1: #00ffff; --bg: #050510; }
+        :root {
+            --blue: #0033cc; --yellow: #ffcc00; --red: #e62e00;
+            --sword1: #00ffff; --sword2: #ff00ff;
+            --font-ui: 'Teko', sans-serif; --font-comic: 'Bangers', cursive;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
 
         body {
-            background-color: #000; color: #fff; font-family: 'Courier New', monospace;
-            overflow: hidden; width: 100vw; height: 100vh; display: flex; flex-direction: column;
+            background-color: #000; color: #fff; font-family: var(--font-ui);
+            overflow: hidden; width: 100vw; height: 100vh;
+            display: flex; flex-direction: column;
+            box-shadow: inset 0 0 150px rgba(0,0,0,0.9);
         }
 
         /* EFECTO CRT Y CÁMARA */
         .crt {
             position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 100;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
-            background-size: 100% 4px; opacity: 0.3;
+            background-size: 100% 4px; opacity: 0.2;
         }
-        .camera { width: 100%; height: 100%; position: absolute; transition: transform 0.1s; }
-        .shake { animation: camShake 0.3s ease-in-out; }
+        .camera { width: 100%; height: 100%; position: absolute; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .shake { animation: camShake 0.4s ease-in-out; }
+        .zoom-in { transform: scale(1.1) translateY(5%); }
         @keyframes camShake {
             0%, 100% { transform: translate(0,0); }
-            25% { transform: translate(-15px, 10px); }
-            75% { transform: translate(15px, -15px); }
+            20% { transform: translate(-15px, 10px); }
+            40% { transform: translate(15px, -15px); }
+            60% { transform: translate(-10px, 15px); }
+            80% { transform: translate(10px, -10px); }
         }
 
-        /* INTERFAZ HUD */
+        /* ESCENARIO: DANGER ROOM */
+        .danger-room {
+            position: absolute; width: 100%; height: 100%; z-index: 1;
+            background: linear-gradient(to bottom, #001133, #000); perspective: 800px;
+        }
+        .grid {
+            position: absolute; bottom: 0; left: -50%; width: 200%; height: 60%;
+            background-image: 
+                linear-gradient(var(--sword1) 1px, transparent 1px),
+                linear-gradient(90deg, var(--sword1) 1px, transparent 1px);
+            background-size: 60px 60px;
+            transform: rotateX(75deg); opacity: 0.3;
+            animation: gridScroll 2s linear infinite;
+        }
+        @keyframes gridScroll { from { background-position: 0 0; } to { background-position: 0 60px; } }
+        
+        .hazard {
+            position: absolute; bottom: 20%; width: 100%; height: 25px;
+            background: repeating-linear-gradient(45deg, var(--yellow), var(--yellow) 20px, #000 20px, #000 40px);
+            border-top: 3px solid #000; z-index: 2;
+        }
+
+        /* HUD - INTERFAZ */
         .hud {
-            position: relative; z-index: 20; padding: 20px; display: flex; justify-content: space-between;
-            background: linear-gradient(180deg, rgba(0,0,0,0.9), transparent); font-weight: bold; font-size: 1.2rem;
+            position: relative; z-index: 20; padding: 10px 40px; display: flex; justify-content: space-between;
+            background: linear-gradient(180deg, rgba(0,0,0,0.9), transparent);
         }
-        .hp-box { width: 300px; height: 25px; background: #222; border: 3px solid #fff; position: relative; margin-top: 5px; }
-        .hp-fill { height: 100%; transition: width 0.3s; }
-        .hero-hp { background: #00ff00; }
-        .boss-hp { background: #ff0000; float: right; }
-        .combo-text { position: absolute; left: 50%; transform: translateX(-50%); font-size: 2rem; color: var(--sword1); text-shadow: 0 0 10px var(--sword1); }
+        .plate { width: 40%; }
+        .plate.enemy { text-align: right; }
+        .name { font-family: var(--font-comic); font-size: 2.5rem; letter-spacing: 2px; text-shadow: 2px 2px 0 #000; }
+        .name.hero { color: var(--yellow); }
+        .name.boss { color: #ff3366; }
+        .level-badge { position: absolute; left: 50%; top: 20px; transform: translateX(-50%); font-family: var(--font-comic); font-size: 3rem; color: var(--sword1); text-shadow: 0 0 10px var(--blue); }
 
-        /* ESCENARIO Y PERSONAJES */
-        .arena { flex: 1; position: relative; z-index: 10; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 15% 10% 15%; }
-        .fighter { width: 250px; height: 300px; transition: 0.2s; position: relative; }
+        .hp-box { width: 100%; height: 30px; background: #222; border: 4px solid #000; position: relative; }
+        .hp-bg { position: absolute; height: 100%; width: 100%; background: #fff; transition: width 0.6s ease-out; }
+        .hp-fill { position: absolute; height: 100%; width: 100%; transition: width 0.2s; }
+        .hp-fill.hero { background: #00ff00; }
+        .hp-fill.boss { background: #ff0000; right: 0; }
+        .plate.enemy .hp-bg { right: 0; }
+
+        /* ARENA Y SPRITES (LA ANIMACIÓN ORIGINAL RESTAURADA) */
+        .arena { flex: 1; position: relative; z-index: 10; display: flex; align-items: flex-end; padding-bottom: 22%; }
         
-        /* Animaciones CSS del Héroe */
-        .hero { filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5)); }
-        .hero.idle { animation: breathe 1s infinite alternate; }
-        .hero.attack { transform: translateX(30vw) scale(1.1); z-index: 30; }
-        .hero.hit { filter: brightness(2) sepia(1) hue-rotate(-50deg) saturate(5); transform: translateX(-20px); }
+        .fighter { position: absolute; filter: drop-shadow(0 15px 10px rgba(0,0,0,0.8)); transition: all 0.3s; }
+        .fighter.p1 { left: 15%; width: 280px; height: 350px; }
+        .fighter.p2 { right: 15%; width: 400px; height: 450px; }
+
+        /* Animaciones de Postura (Idle) */
+        .idle .body { animation: breathe 1.2s steps(4) infinite alternate; transform-origin: bottom; }
+        .idle .tail { animation: tailSwish 2s ease-in-out infinite alternate; transform-origin: top left; }
+        .idle .arm-f { animation: armBob 1.2s infinite alternate; }
+
+        @keyframes breathe { 0% { transform: scaleY(1); } 100% { transform: scaleY(0.96) translateY(10px); } }
+        @keyframes tailSwish { 0% { transform: rotate(0deg); } 100% { transform: rotate(-25deg); } }
+        @keyframes armBob { 0% { transform: translateY(0); } 100% { transform: translateY(4px); } }
+
+        /* Animaciones de Combate */
+        .atk-dash { transform: translateX(35vw) scale(1.1); z-index: 30; }
+        .atk-dash .arm-f { transform: rotate(45deg) translate(20px, -20px); transition: 0.1s; }
+        .atk-dash .sword-f { filter: drop-shadow(0 0 20px var(--sword1)) brightness(1.5); }
         
-        .boss { width: 350px; height: 350px; }
-        .boss.attack { transform: translateX(-30vw) scale(1.05); z-index: 30; }
-        .boss.hit { filter: brightness(2) hue-rotate(90deg); transform: translateX(20px); }
+        .atk-boss { transform: translateX(-30vw) scale(1.05); z-index: 30; }
+        
+        .hit { animation: takeDamage 0.3s steps(3); filter: brightness(2) sepia(1) hue-rotate(-50deg) saturate(5) !important; }
+        @keyframes takeDamage { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-20px); } }
 
-        @keyframes breathe { from { transform: scaleY(1); } to { transform: scaleY(0.95) translateY(10px); } }
+        /* EFECTOS VISUALES (JUICE) */
+        .slash-fx {
+            position: absolute; width: 200px; height: 10px; background: #fff;
+            box-shadow: 0 0 20px var(--sword1), 0 0 40px var(--sword2);
+            border-radius: 50%; z-index: 50; pointer-events: none;
+            animation: slashAnim 0.2s ease-out forwards; transform-origin: center;
+        }
+        @keyframes slashAnim { 
+            0% { transform: scaleX(0) rotate(var(--rot)); opacity: 1; } 
+            50% { transform: scaleX(1.5) scaleY(3) rotate(var(--rot)); opacity: 1; } 
+            100% { transform: scaleX(2) rotate(var(--rot)); opacity: 0; } 
+        }
 
-        /* EFECTOS DE JUICE (Partículas y Cortes) */
-        .particle { position: absolute; width: 8px; height: 8px; background: #fff; pointer-events: none; animation: explode 0.5s forwards; z-index: 50; }
+        .particle { position: absolute; width: 10px; height: 10px; background: #fff; pointer-events: none; animation: explode 0.5s forwards; z-index: 50; }
         @keyframes explode { to { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } }
-        
-        .slash { position: absolute; width: 200px; height: 10px; background: #fff; box-shadow: 0 0 20px var(--sword1); border-radius: 50%; z-index: 60; pointer-events: none; animation: slashAnim 0.2s ease-out forwards; transform-origin: center; }
-        @keyframes slashAnim { 0% { transform: scaleX(0) rotate(var(--rot)); opacity: 1; } 100% { transform: scaleX(2) rotate(var(--rot)); opacity: 0; } }
 
-        /* CONTROLES */
-        .panel { position: relative; z-index: 20; height: 25vh; background: #111; border-top: 5px solid var(--yellow); display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
-        .btn { background: #333; border: 3px solid #555; color: #fff; font-size: 1.5rem; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.1s; }
-        .btn:active:not(:disabled) { transform: scale(0.95); background: #555; }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .btn-ult { grid-column: span 2; background: var(--blue); border-color: var(--sword1); color: var(--sword1); text-shadow: 0 0 10px var(--sword1); }
+        /* PANEL DE CONTROL */
+        .panel {
+            position: relative; z-index: 20; height: 150px; background: var(--blue);
+            border-top: 6px solid var(--yellow); display: flex; box-shadow: 0 -10px 20px rgba(0,0,0,0.8);
+        }
+        .controls { width: 100%; display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 10px; padding: 25px; }
+        
+        .btn {
+            background: #ddd; border: 3px solid #000; font-family: var(--font-comic); font-size: 2rem;
+            color: #000; cursor: pointer; transition: 0.1s; text-transform: uppercase; border-radius: 5px;
+            box-shadow: 4px 4px 0 #000;
+        }
+        .btn:active:not(:disabled) { transform: translate(4px, 4px); box-shadow: 0px 0px 0 #000; }
+        .btn:disabled { filter: grayscale(1); opacity: 0.5; cursor: not-allowed; }
+        
+        .btn-atk { background: var(--red); color: #fff; }
+        .btn-def { background: var(--yellow); }
+        .btn-ult { background: var(--sword2); color: #fff; border-color: #fff; text-shadow: 2px 2px 0 #000; animation: pulseBtn 1s infinite alternate; }
+        @keyframes pulseBtn { from { filter: brightness(1); } to { filter: brightness(1.3); } }
 
         /* MODAL PREGUNTAS */
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,20,0.9); display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: 0.2s; z-index: 1000; }
+        .modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,20,0.9); display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: 0.2s; z-index: 1000;
+        }
         .modal.active { opacity: 1; pointer-events: auto; }
-        .m-box { background: var(--blue); border: 5px solid var(--yellow); padding: 30px; width: 90%; max-width: 700px; }
-        .m-q { font-size: 1.5rem; margin-bottom: 20px; color: #fff; line-height: 1.3; }
-        .opt { background: #fff; border: 3px solid #000; padding: 15px; font-size: 1.2rem; font-weight: bold; cursor: pointer; width: 100%; text-align: left; margin-bottom: 10px; transition: 0.1s; color: #000; }
-        .opt:hover { background: var(--yellow); transform: translate(-5px, -5px); box-shadow: 5px 5px 0 #000; }
+        .m-box { background: var(--blue); border: 5px solid var(--yellow); padding: 40px; width: 90%; max-width: 800px; border-radius: 10px; }
+        .m-title { font-family: var(--font-comic); color: var(--yellow); font-size: 3rem; margin-bottom: 15px; text-shadow: 2px 2px 0 #000; }
+        .m-q { font-size: 1.8rem; margin-bottom: 20px; line-height: 1.2; font-family: sans-serif; }
+        .opt { background: #fff; border: 3px solid #000; padding: 15px; font-family: var(--font-ui); font-size: 1.5rem; font-weight: bold; cursor: pointer; width: 100%; text-align: left; margin-bottom: 10px; transition: 0.1s; box-shadow: 3px 3px 0 #000; }
+        .opt:hover { background: var(--yellow); transform: translate(-2px, -2px); }
 
-        svg { overflow: visible; }
+        svg { overflow: visible; stroke: #000; stroke-width: 3; stroke-linejoin: round; }
     </style>
 </head>
 <body>
     <div class="crt"></div>
     <div class="camera" id="cam">
-        
+        <div class="danger-room"><div class="grid"></div><div class="hazard"></div></div>
+
         <div class="hud">
-            <div>
-                <div>MUTANTE CARMESÍ</div>
-                <div class="hp-box"><div id="hp-p" class="hp-fill hero-hp" style="width: 100%;"></div></div>
+            <div class="plate">
+                <div class="name hero">MUTANTE CARMESÍ</div>
+                <div class="hp-box"><div id="p-hp-bg" class="hp-bg"></div><div id="p-hp" class="hp-fill hero"></div></div>
             </div>
-            <div id="combo" class="combo-text">NIVEL 1</div>
-            <div style="text-align: right;">
-                <div id="boss-name">CENTINELA MK-I</div>
-                <div class="hp-box"><div id="hp-e" class="hp-fill boss-hp" style="width: 100%;"></div></div>
+            <div id="combo-txt" class="level-badge">NIVEL 1</div>
+            <div class="plate enemy">
+                <div id="e-name" class="name boss">CENTINELA MK-I</div>
+                <div class="hp-box"><div id="e-hp-bg" class="hp-bg"></div><div id="e-hp" class="hp-fill boss"></div></div>
             </div>
         </div>
 
-        <div class="arena">
-            <!-- HÉROE (Animación SVG) -->
-            <div id="hero" class="fighter hero idle">
+        <main class="arena">
+            <!-- HÉROE ORIGINAL RESTAURADO CON TODOS LOS DETALLES -->
+            <div id="p1" class="fighter p1 idle">
                 <svg viewBox="0 0 300 300" width="100%" height="100%">
-                    <path d="M 120 180 Q 40 250 20 150 Q 10 100 40 80 L 50 100 Q 30 150 110 200 Z" fill="var(--red)"/> <!-- Cola -->
-                    <path d="M 140 180 L 110 260 L 140 260 L 150 200 Z M 160 180 L 180 260 L 210 260 L 180 200 Z" fill="var(--blue)"/> <!-- Piernas -->
-                    <path d="M 130 110 Q 120 150 140 190 L 170 190 Q 180 150 170 110 Z" fill="var(--blue)"/> <!-- Torso -->
-                    <path d="M 135 70 Q 150 50 175 70 L 170 100 L 140 100 Z" fill="var(--red)"/> <!-- Cabeza -->
-                    <!-- Espada -->
-                    <g id="arm" style="transform-origin: 160px 120px;">
+                    <defs>
+                        <filter id="glowC"><feGaussianBlur stdDeviation="4" result="blur" /><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                        <filter id="glowP"><feGaussianBlur stdDeviation="4" result="blur" /><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                    </defs>
+
+                    <g class="body">
+                        <!-- Cola Animada -->
+                        <path class="tail" d="M 120 180 Q 40 250 20 150 Q 10 100 40 80 L 50 100 Q 30 150 110 200 Z" fill="var(--red)"/>
+                        
+                        <!-- Piernas y Botas -->
+                        <path d="M 140 180 L 110 260 L 140 260 L 150 200 Z" fill="var(--blue)"/>
+                        <path d="M 110 230 L 140 260 L 110 260 Z" fill="var(--yellow)"/>
+                        <path d="M 160 180 L 180 260 L 210 260 L 180 200 Z" fill="var(--blue)"/>
+                        <path d="M 180 230 L 210 260 L 180 260 Z" fill="var(--yellow)"/>
+
+                        <!-- Brazo y Espada Trasera -->
+                        <path d="M 140 130 L 100 150 L 90 180" fill="none" stroke="var(--red)" stroke-width="12"/>
+                        <polygon points="90,170 10,60 25,50 105,160" fill="#fff" stroke="var(--sword2)" filter="url(#glowP)"/>
+                        
+                        <!-- Torso y Detalles de Traje -->
+                        <path d="M 130 110 Q 120 150 140 190 L 170 190 Q 180 150 170 110 Z" fill="var(--blue)"/>
+                        <path d="M 130 110 L 170 190 M 170 110 L 140 190" fill="none" stroke="var(--yellow)" stroke-width="8"/>
+                        <circle cx="155" cy="150" r="12" fill="var(--red)"/>
+                        <path d="M 149 144 L 161 156 M 161 144 L 149 156" fill="none" stroke="#fff" stroke-width="3"/>
+
+                        <!-- Cruz de Oro Restuarada -->
+                        <path d="M 140 100 Q 155 120 165 100" fill="none" stroke="#ffcc00" stroke-width="2"/>
+                        <rect x="152" y="115" width="4" height="12" fill="#ffcc00" stroke="none"/>
+                        <rect x="148" y="119" width="12" height="4" fill="#ffcc00" stroke="none"/>
+
+                        <!-- Cabeza, Cuernos y Ojos -->
+                        <path d="M 135 70 Q 150 50 175 70 L 170 100 L 140 100 Z" fill="var(--red)"/>
+                        <path d="M 140 65 L 120 30 L 150 55 Z" fill="#ddd"/>
+                        <path d="M 170 65 L 190 30 L 160 55 Z" fill="#ddd"/>
+                        <polygon points="142,78 152,82 145,85" fill="#fff" stroke="none"/>
+                        <polygon points="168,78 158,82 165,85" fill="#fff" stroke="none"/>
+                    </g>
+
+                    <!-- Brazo Frontal Animado -->
+                    <g class="arm-f" style="transform-origin: 160px 120px;">
                         <path d="M 160 120 L 200 150 L 190 180" fill="none" stroke="var(--red)" stroke-width="14"/>
-                        <polygon points="190,170 280,100 290,115 200,185" fill="#fff" stroke="var(--sword1)"/>
+                        <polygon class="sword-f" points="190,170 280,100 290,115 200,185" fill="#fff" stroke="var(--sword1)" filter="url(#glowC)"/>
+                        <circle cx="195" cy="180" r="10" fill="var(--red)"/>
                     </g>
                 </svg>
             </div>
 
-            <!-- JEFE -->
-            <div id="boss" class="fighter boss idle">
+            <!-- VILLANO ORIGINAL RESTAURADO -->
+            <div id="p2" class="fighter p2 idle">
                 <svg viewBox="0 0 400 400" width="100%" height="100%">
-                    <path d="M 150 150 L 80 200 L 100 300 L 130 280 Z M 180 100 L 300 100 L 320 280 L 180 280 Z" fill="#660099"/>
-                    <path d="M 210 30 L 270 30 L 280 100 L 200 100 Z" fill="#660099"/>
-                    <polygon points="220,50 240,55 225,65" fill="var(--yellow)"/>
-                    <polygon points="260,50 240,55 255,65" fill="var(--yellow)"/>
-                    <circle cx="245" cy="155" r="25" fill="var(--yellow)"/>
-                    <path d="M 270 140 L 360 200 L 320 300 L 270 260 Z" fill="#660099"/>
+                    <g class="body">
+                        <path d="M 150 150 L 80 200 L 100 300 L 130 280 Z" fill="#660099"/>
+                        <path d="M 180 100 L 300 100 L 320 280 L 180 280 Z" fill="#660099"/>
+                        <path d="M 190 120 L 290 120 L 300 180 L 190 190 Z" fill="#cc0066"/>
+                        <circle cx="245" cy="155" r="25" fill="var(--yellow)"/>
+                        <path d="M 210 30 L 270 30 L 280 100 L 200 100 Z" fill="#660099"/>
+                        <path d="M 205 75 L 285 75 L 275 110 L 215 110 Z" fill="#cc0066"/>
+                        <polygon points="220,50 240,55 225,65" fill="var(--yellow)"/>
+                        <polygon points="260,50 240,55 255,65" fill="var(--yellow)"/>
+                        <path d="M 270 140 L 360 200 L 320 300 L 270 260 Z" fill="#660099"/>
+                        <rect x="290" y="280" width="60" height="60" rx="10" fill="#cc0066"/>
+                    </g>
                 </svg>
             </div>
+        </main>
+    </div>
+
+    <!-- CONTROLES -->
+    <div class="panel">
+        <div class="controls">
+            <button id="btn-atk" class="btn btn-atk" onclick="action('atk')">ATACAR</button>
+            <button id="btn-def" class="btn btn-def" onclick="action('def')">BLOQUEAR</button>
+            <button id="btn-ult" class="btn btn-ult" onclick="openTrivia()">SISTEMA CEREBRO (HACK)</button>
         </div>
     </div>
 
-    <div class="panel">
-        <button id="btn-atk" class="btn" onclick="playerAttack()">ATAQUE RÁPIDO</button>
-        <button id="btn-def" class="btn" onclick="playerDefend()">BLOQUEO</button>
-        <button id="btn-ult" class="btn btn-ult" onclick="openTrivia()">SISTEMA CEREBRO (HACKEAR)</button>
-    </div>
-
-    <!-- MODAL -->
+    <!-- MODAL DE PREGUNTAS -->
     <div class="modal" id="modal">
         <div class="m-box">
-            <div class="m-q" id="m-q">Cargando pregunta...</div>
+            <h2 class="m-title">ENLACE NEURAL (GFPI)</h2>
+            <p class="m-q" id="m-q">Cargando datos...</p>
             <div id="m-opts"></div>
         </div>
     </div>
 
     <script>
-        // ==========================================
-        // 1. BANCO DE PREGUNTAS COMPLETO (20 PREGUNTAS)
-        // ==========================================
+        // --- 1. LAS 20 PREGUNTAS ---
         const bancoDePreguntas = [
             { q: "¿Qué significa el acrónimo RAM en informática?", o: ["Random Access Memory", "Read Access Machine", "Run All Media", "Rapid Action Memory"], a: 0 },
             { q: "¿Cuál de estos NO es un lenguaje de programación?", o: ["Python", "Java", "Cobra", "HTML"], a: 3 },
@@ -165,225 +288,218 @@
             { q: "Si una variable es de tipo 'Boolean', ¿Qué valores puede tener?", o: ["Cualquier número", "Texto y números", "Solo Verdadero o Falso", "Valores decimales"], a: 2 }
         ];
 
-        // ==========================================
-        // 2. CONFIGURACIÓN DEL JUEGO
-        // ==========================================
-        const bosses = [
-            { name: "CENTINELA MK-I", hp: 300, dmg: 20 },
-            { name: "MASTER MOLD", hp: 500, dmg: 35 },
-            { name: "NIMROD DEFINITIVO", hp: 800, dmg: 50 }
+        // --- 2. SISTEMA DE NIVELES Y VARIABLES ---
+        const levels = [
+            { n: "CENTINELA MK-I", hp: 300, dmg: [20, 35] },
+            { n: "MASTER MOLD", hp: 500, dmg: [35, 50] },
+            { n: "OMEGA SENTINEL", hp: 700, dmg: [45, 65] },
+            { n: "NIMROD DEFINITIVO", hp: 1000, dmg: [60, 90] }
         ];
 
-        let state = { pHP: 200, maxPHP: 200, eHP: 300, maxEHP: 300, lvl: 0, combo: 0, def: false };
+        const MAX_HP = 300;
+        let p = { hp: MAX_HP, def: false, combo: 0 };
+        let lvl = 0;
+        let boss = null;
+        let turn = true;
+        let askedQuestions = [];
         let currentQuestion = null;
-        let askedQuestions = []; // Para no repetir preguntas
 
+        // --- 3. FUNCIONES VISUALES (JUICE & UI) ---
         function updateUI() {
-            document.getElementById('hp-p').style.width = Math.max(0, (state.pHP / state.maxPHP) * 100) + '%';
-            document.getElementById('hp-e').style.width = Math.max(0, (state.eHP / state.maxEHP) * 100) + '%';
-            document.getElementById('combo').innerText = state.combo > 1 ? `COMBO x${state.combo}` : `NIVEL ${state.lvl + 1}`;
+            document.getElementById('p-hp').style.width = `${Math.max(0, p.hp/MAX_HP)*100}%`;
+            setTimeout(() => document.getElementById('p-hp-bg').style.width = `${Math.max(0, p.hp/MAX_HP)*100}%`, 300);
+            
+            document.getElementById('e-hp').style.width = `${Math.max(0, boss.hp/boss.mhp)*100}%`;
+            setTimeout(() => document.getElementById('e-hp-bg').style.width = `${Math.max(0, boss.hp/boss.mhp)*100}%`, 300);
+
+            document.getElementById('combo-txt').innerText = p.combo > 1 ? `COMBO x${p.combo}` : `NIVEL ${lvl + 1}`;
         }
 
-        // ==========================================
-        // 3. EFECTOS ESPECIALES (JUICE)
-        // ==========================================
-        function camShake() {
-            const cam = document.getElementById('cam');
-            cam.classList.add('shake');
-            setTimeout(() => cam.classList.remove('shake'), 300);
+        function setBtns(active) {
+            document.querySelectorAll('.btn').forEach(b => b.disabled = !active);
         }
 
-        function createParticles(targetId, color) {
-            const el = document.getElementById(targetId);
-            const rect = el.getBoundingClientRect();
-            for(let i=0; i<15; i++) {
-                const p = document.createElement('div');
-                p.className = 'particle';
-                p.style.background = color;
-                p.style.left = (rect.left + rect.width/2) + 'px';
-                p.style.top = (rect.top + rect.height/2) + 'px';
-                p.style.setProperty('--tx', (Math.random()-0.5)*200 + 'px');
-                p.style.setProperty('--ty', (Math.random()-0.5)*200 + 'px');
-                document.body.appendChild(p);
-                setTimeout(() => p.remove(), 500);
-            }
+        function cameraFx(type) {
+            const c = document.getElementById('cam');
+            c.classList.add(type);
+            setTimeout(() => c.classList.remove(type), type === 'shake' ? 400 : 800);
         }
 
-        function createSlash(targetId, deg) {
+        function spawnSlash(targetId, deg) {
             const el = document.getElementById(targetId);
             const rect = el.getBoundingClientRect();
             const slash = document.createElement('div');
-            slash.className = 'slash';
+            slash.className = 'slash-fx';
             slash.style.setProperty('--rot', `${deg}deg`);
-            slash.style.left = (rect.left + rect.width/2 - 100) + 'px';
-            slash.style.top = (rect.top + rect.height/2) + 'px';
+            slash.style.left = `${rect.left + rect.width/2 - 100}px`;
+            slash.style.top = `${rect.top + rect.height/2}px`;
             document.body.appendChild(slash);
             setTimeout(() => slash.remove(), 250);
         }
 
-        // ==========================================
-        // 4. SISTEMA DE COMBATE
-        // ==========================================
-        function toggleBtns(active) {
-            document.querySelectorAll('.btn').forEach(b => b.disabled = !active);
+        function spawnParticles(targetId, color) {
+            const el = document.getElementById(targetId);
+            const rect = el.getBoundingClientRect();
+            for(let i=0; i<15; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.background = color;
+                particle.style.left = `${rect.left + rect.width/2}px`;
+                particle.style.top = `${rect.top + rect.height/2}px`;
+                particle.style.setProperty('--tx', `${(Math.random()-0.5)*200}px`);
+                particle.style.setProperty('--ty', `${(Math.random()-0.5)*200}px`);
+                document.body.appendChild(particle);
+                setTimeout(() => particle.remove(), 500);
+            }
         }
 
-        function playerAttack() {
-            toggleBtns(false);
-            state.def = false;
-            const hero = document.getElementById('hero');
-            hero.classList.add('attack');
+        // --- 4. MOTOR DE COMBATE ---
+        function initLevel() {
+            if(lvl >= levels.length) {
+                alert("¡SIMULACIÓN SUPERADA! ERES UN X-MAN.");
+                location.reload(); return;
+            }
+            boss = JSON.parse(JSON.stringify(levels[lvl])); boss.mhp = boss.hp;
+            document.getElementById('e-name').innerText = boss.n;
+            p.hp = MAX_HP; p.combo = 0; turn = true;
+            updateUI(); setBtns(true);
+        }
 
-            setTimeout(() => {
-                camShake();
-                createSlash('boss', Math.random()*60 - 30);
-                createParticles('boss', '#fff');
+        function action(type) {
+            if(!turn) return;
+            turn = false; setBtns(false);
+            
+            if(type === 'def') {
+                p.def = true; p.combo = 0; updateUI();
+                setTimeout(bossTurn, 500);
+            } 
+            else if (type === 'atk') {
+                p.def = false;
+                const p1 = document.getElementById('p1');
+                p1.classList.add('atk-dash');
                 
-                let dmg = 15 + (state.combo * 5);
-                state.eHP -= dmg;
-                state.combo++;
-                
-                document.getElementById('boss').classList.add('hit');
-                updateUI();
-
                 setTimeout(() => {
-                    hero.classList.remove('attack');
-                    document.getElementById('boss').classList.remove('hit');
-                    checkState(bossTurn);
-                }, 300);
-            }, 200);
-        }
+                    cameraFx('shake');
+                    spawnSlash('p2', Math.random()*60 - 30);
+                    spawnParticles('p2', '#00ffff');
+                    
+                    let dmg = 25 + (p.combo * 5);
+                    boss.hp -= dmg; p.combo++;
+                    
+                    document.getElementById('p2').classList.add('hit');
+                    updateUI();
 
-        function playerDefend() {
-            state.def = true;
-            state.combo = 0;
-            updateUI();
-            toggleBtns(false);
-            setTimeout(bossTurn, 500);
+                    setTimeout(() => {
+                        p1.classList.remove('atk-dash');
+                        document.getElementById('p2').classList.remove('hit');
+                        setTimeout(checkState, 400);
+                    }, 300);
+                }, 200);
+            }
         }
 
         function bossTurn() {
-            const boss = document.getElementById('boss');
-            boss.classList.add('attack');
-
+            const p2 = document.getElementById('p2');
+            p2.classList.add('atk-boss');
+            
             setTimeout(() => {
-                camShake();
-                createParticles('hero', '#ff0000');
+                cameraFx('shake');
+                spawnParticles('p1', '#ff0000');
                 
-                let dmg = bosses[state.lvl].dmg;
-                if(state.def) dmg = Math.floor(dmg * 0.2); // Reduce daño al defender
+                let d = Math.floor(Math.random() * (boss.dmg[1] - boss.dmg[0])) + boss.dmg[0];
+                if(p.def) d = Math.floor(d * 0.2); // Defensa reduce daño al 20%
                 
-                state.pHP -= dmg;
-                document.getElementById('hero').classList.add('hit');
+                p.hp -= d;
+                document.getElementById('p1').classList.add('hit');
                 updateUI();
 
                 setTimeout(() => {
-                    boss.classList.remove('attack');
-                    document.getElementById('hero').classList.remove('hit');
-                    checkState(() => toggleBtns(true));
+                    p2.classList.remove('atk-boss');
+                    document.getElementById('p1').classList.remove('hit');
+                    setTimeout(() => { turn = true; checkState(); }, 400);
                 }, 300);
             }, 200);
         }
 
-        // ==========================================
-        // 5. SISTEMA CEREBRO (PREGUNTAS DINÁMICAS)
-        // ==========================================
+        function checkState() {
+            if(boss.hp <= 0) {
+                setTimeout(() => { lvl++; initLevel(); }, 1500);
+            } else if (p.hp <= 0) {
+                alert("SISTEMA CRÍTICO. HAS CAÍDO.");
+                location.reload();
+            } else {
+                if(!turn) setTimeout(bossTurn, 500);
+                else setBtns(true);
+            }
+        }
+
+        // --- 5. SISTEMA DE PREGUNTAS (ULTIMATE) ---
         function openTrivia() {
-            // Filtrar preguntas que no se han hecho
-            let preguntasDisponibles = bancoDePreguntas.filter(p => !askedQuestions.includes(p.q));
+            if(!turn) return;
             
+            let preguntasDisponibles = bancoDePreguntas.filter(pq => !askedQuestions.includes(pq.q));
             if(preguntasDisponibles.length === 0) {
-                alert("¡Has agotado todas las preguntas del sistema! Reiniciando banco de datos...");
-                askedQuestions = []; // Reinicia si ya se hicieron todas
+                askedQuestions = [];
                 preguntasDisponibles = bancoDePreguntas;
             }
 
             const randomIndex = Math.floor(Math.random() * preguntasDisponibles.length);
             currentQuestion = preguntasDisponibles[randomIndex];
-            askedQuestions.push(currentQuestion.q); // Guardar para no repetir
+            askedQuestions.push(currentQuestion.q);
 
             document.getElementById('m-q').innerText = currentQuestion.q;
-            const optsContainer = document.getElementById('m-opts');
-            optsContainer.innerHTML = '';
+            const b = document.getElementById('m-opts'); b.innerHTML = '';
             
-            currentQuestion.o.forEach((opcion, i) => {
+            currentQuestion.o.forEach((op, i) => {
                 const btn = document.createElement('button');
-                btn.className = 'opt';
-                btn.innerText = opcion;
-                btn.onclick = () => answerTrivia(i);
-                optsContainer.appendChild(btn);
+                btn.className = 'opt'; btn.innerText = op;
+                btn.onclick = () => solveTrivia(i);
+                b.appendChild(btn);
             });
-
+            
             document.getElementById('modal').classList.add('active');
         }
 
-        function answerTrivia(selectedIndex) {
+        function solveTrivia(sel) {
             document.getElementById('modal').classList.remove('active');
-            toggleBtns(false);
+            turn = false; setBtns(false); p.def = false;
 
-            if(selectedIndex === currentQuestion.a) {
-                // RESPUESTA CORRECTA: ATAQUE ESPECIAL
-                camShake();
-                document.body.style.filter = "invert(1)";
+            if(sel === currentQuestion.a) {
+                // ACIERTO
+                cameraFx('zoom-in');
+                document.body.style.filter = "invert(1) hue-rotate(180deg)";
                 
                 setTimeout(() => {
-                    document.body.style.filter = "none";
-                    camShake();
-                    createSlash('boss', 45); createSlash('boss', -45); createSlash('boss', 0);
-                    createParticles('boss', '#00ffff');
+                    cameraFx('shake');
+                    spawnSlash('p2', 45); spawnSlash('p2', -45); spawnSlash('p2', 0);
+                    spawnParticles('p2', '#ff00ff');
                     
-                    state.eHP -= 150; // Daño masivo
-                    state.combo += 3;
-                    document.getElementById('boss').classList.add('hit');
+                    boss.hp -= 150; p.combo += 3;
+                    document.getElementById('p2').classList.add('hit');
                     updateUI();
                     
                     setTimeout(() => {
-                        document.getElementById('boss').classList.remove('hit');
-                        checkState(() => toggleBtns(true));
+                        document.body.style.filter = "none";
+                        document.getElementById('p2').classList.remove('hit');
+                        setTimeout(checkState, 600);
                     }, 500);
-                }, 300);
-
+                }, 400);
             } else {
-                // RESPUESTA INCORRECTA: PENALIZACIÓN
-                state.pHP -= 40;
-                state.combo = 0;
-                camShake();
-                createParticles('hero', '#ff0000');
-                document.getElementById('hero').classList.add('hit');
+                // FALLO
+                p.hp -= 40; p.combo = 0;
+                cameraFx('shake'); spawnParticles('p1', '#ff0000');
+                document.getElementById('p1').classList.add('hit');
                 updateUI();
                 
                 setTimeout(() => {
-                    document.getElementById('hero').classList.remove('hit');
-                    checkState(bossTurn); // El jefe ataca
+                    document.getElementById('p1').classList.remove('hit');
+                    setTimeout(bossTurn, 500); // El jefe contraataca
                 }, 500);
             }
         }
 
-        // ==========================================
-        // 6. GESTIÓN DE NIVELES
-        // ==========================================
-        function checkState(nextAction) {
-            if(state.eHP <= 0) {
-                state.lvl++;
-                if(state.lvl >= bosses.length) {
-                    alert("¡SIMULACIÓN COMPLETADA! ERES UN X-MAN.");
-                    location.reload();
-                } else {
-                    alert("¡ENEMIGO DESTRUIDO! Preparando siguiente nivel...");
-                    document.getElementById('boss-name').innerText = bosses[state.lvl].name;
-                    state.eHP = bosses[state.lvl].hp;
-                    state.maxEHP = bosses[state.lvl].hp;
-                    state.pHP = state.maxPHP; // Curar al héroe
-                    updateUI();
-                    toggleBtns(true);
-                }
-            } else if (state.pHP <= 0) {
-                alert("SISTEMA CRÍTICO. HAS CAÍDO. Fin del juego.");
-                location.reload();
-            } else {
-                if(nextAction) nextAction();
-            }
-        }
+        // Iniciar
+        initLevel();
     </script>
 </body>
 </html>
