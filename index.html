@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GFPI-F-135: Esperanza entre las Ruinas</title>
+    <title>GFPI-F-135: El Mutante Carmesí</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Special+Elite&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --blood-red: #8b0000;
-            --rust: #a0522d;
-            --dust: #d2b48c;
-            --hope-light: #00ffcc;
-            --bg-sky: #2a2321;
+            --blood-red: #cc0000;
+            --dark-red: #660000;
+            --steel: #b0c4de;
+            --gold: #ffd700;
+            --bg-sky: #1a0f14;
             --font-title: 'Creepster', cursive;
             --font-text: 'Special Elite', monospace;
         }
@@ -27,168 +27,177 @@
             display: flex; flex-direction: column;
         }
 
-        /* --- ESCENARIO DE RUINAS (FONDOS MULTICAPA) --- */
+        /* --- ESCENARIO DE RUINAS --- */
         #ash-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 4; pointer-events: none; }
         
         .sky-gradient {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
-            background: radial-gradient(circle at 50% 100%, #543122 0%, #1a1110 80%);
+            background: radial-gradient(circle at 50% 100%, #3a1111 0%, #0d080a 80%);
         }
 
         .ruins-background {
             position: absolute; bottom: 15vh; left: 0; width: 100%; height: 60vh; z-index: 2;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 300' preserveAspectRatio='none'%3E%3Cpath d='M0,300 L0,150 L50,150 L60,180 L100,100 L120,120 L150,50 L200,80 L220,20 L280,60 L300,150 L350,120 L400,200 L450,180 L500,250 L550,100 L600,130 L650,40 L700,90 L750,150 L800,120 L850,220 L900,180 L950,250 L1000,150 L1000,300 Z' fill='%232c1c18' opacity='0.7'/%3E%3Cpath d='M0,300 L0,200 L80,220 L130,150 L180,180 L250,120 L320,160 L400,100 L480,150 L550,80 L620,140 L700,110 L780,190 L850,140 L920,200 L1000,160 L1000,300 Z' fill='%231f1311'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 300' preserveAspectRatio='none'%3E%3Cpath d='M0,300 L0,150 L50,150 L60,180 L100,100 L120,120 L150,50 L200,80 L220,20 L280,60 L300,150 L350,120 L400,200 L450,180 L500,250 L550,100 L600,130 L650,40 L700,90 L750,150 L800,120 L850,220 L900,180 L950,250 L1000,150 L1000,300 Z' fill='%231a0a0a' opacity='0.8'/%3E%3Cpath d='M0,300 L0,200 L80,220 L130,150 L180,180 L250,120 L320,160 L400,100 L480,150 L550,80 L620,140 L700,110 L780,190 L850,140 L920,200 L1000,160 L1000,300 Z' fill='%230a0404'/%3E%3C/svg%3E");
             background-size: cover; background-position: bottom;
         }
 
         .ground {
             position: absolute; bottom: 0; left: 0; width: 100%; height: 25vh; z-index: 3;
-            background: linear-gradient(to bottom, #1f1412, #0a0605);
-            border-top: 5px solid #3d2622;
+            background: linear-gradient(to bottom, #140808, #000000);
+            border-top: 3px solid #330000;
         }
 
-        /* --- INTERFAZ ÓXIDO/SANGRE --- */
+        /* --- INTERFAZ --- */
         .hud {
             position: relative; z-index: 10; display: flex; justify-content: space-between;
-            padding: 20px 40px; background: rgba(0,0,0,0.6);
-            border-bottom: 3px dashed var(--rust);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            padding: 20px 40px; background: rgba(0,0,0,0.8);
+            border-bottom: 2px solid var(--blood-red);
+            box-shadow: 0 10px 30px rgba(204, 0, 0, 0.2);
         }
 
         .fighter { width: 40%; }
         .enemy-side { text-align: right; }
 
         .name {
-            font-family: var(--font-title); font-size: 2rem; color: var(--dust);
-            letter-spacing: 2px; margin-bottom: 5px; text-shadow: 2px 2px 0px #000;
+            font-family: var(--font-title); font-size: 2.2rem; color: #fff;
+            letter-spacing: 2px; margin-bottom: 5px; text-shadow: 0 0 10px var(--blood-red);
         }
 
         .hp-track {
-            width: 100%; height: 35px; background: #1a0f0f;
-            border: 3px solid #331a1a; position: relative; overflow: hidden;
+            width: 100%; height: 30px; background: #111;
+            border: 2px solid #440000; position: relative; overflow: hidden;
             box-shadow: inset 0 0 15px #000;
         }
 
         .hp-fill {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            transform-origin: left center; transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transform-origin: left center; transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
-        .player-hp { background: linear-gradient(90deg, #2e8b57, var(--hope-light)); }
-        .enemy-hp { background: linear-gradient(90deg, #5c0000, var(--blood-red)); transform-origin: right center; }
+        .player-hp { background: linear-gradient(90deg, #880000, var(--blood-red)); box-shadow: 0 0 10px var(--blood-red);}
+        .enemy-hp { background: linear-gradient(90deg, #4d2600, #ff8c00); transform-origin: right center; }
 
         .hp-text {
-            position: absolute; width: 100%; text-align: center; font-size: 1.2rem;
-            line-height: 29px; color: #fff; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; z-index: 2;
+            position: absolute; width: 100%; text-align: center; font-size: 1.1rem; font-weight: bold;
+            line-height: 28px; color: #fff; text-shadow: 1px 1px 2px #000; z-index: 2;
         }
 
         /* --- ESCENARIO DE PELEA --- */
         .arena { flex: 1; position: relative; z-index: 5; }
 
         .characters-container {
-            position: absolute; bottom: 5vh; /* Parados en el suelo */
+            position: absolute; bottom: 5vh; 
             left: 0; width: 100%; display: flex; justify-content: space-between;
             padding: 0 10%; align-items: flex-end;
         }
 
         .avatar {
-            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-            transform-origin: bottom center; /* Pivotan desde los pies */
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-origin: bottom center;
         }
 
-        /* Animaciones orgánicas pesadas (respiración) */
+        /* Animaciones */
         .player-avatar { 
-            width: 250px; height: 300px;
-            animation: heavyBreathe 3s ease-in-out infinite; 
+            width: 250px; height: 320px;
+            animation: demonBreathe 2.5s ease-in-out infinite; 
+            filter: drop-shadow(0 0 15px rgba(204, 0, 0, 0.3));
         }
         .enemy-avatar { 
-            width: 400px; height: 450px; /* Villano enorme */
+            width: 400px; height: 450px; 
             animation: monsterBreathe 4s ease-in-out infinite alternate; 
+            filter: drop-shadow(0 0 20px rgba(255, 140, 0, 0.2));
         }
 
-        @keyframes heavyBreathe {
+        @keyframes demonBreathe {
             0%, 100% { transform: scaleY(1) scaleX(1); }
-            50% { transform: scaleY(0.97) scaleX(1.02); }
+            50% { transform: scaleY(0.98) scaleX(1.02) translateY(3px); }
         }
         @keyframes monsterBreathe {
             0% { transform: scaleY(1) scaleX(1) translateY(0); }
-            100% { transform: scaleY(1.03) scaleX(0.98) translateY(-5px); }
+            100% { transform: scaleY(1.02) scaleX(0.98) translateY(-5px); }
         }
 
-        /* Golpes físicos (Saltos torpes/Embestidas) */
-        .dash-right { transform: translate(30vw, -30px) rotate(15deg) !important; z-index: 10; }
-        .dash-left { transform: translate(-30vw, -50px) rotate(-10deg) scale(1.1) !important; z-index: 10; }
+        /* Golpes físicos con espadas */
+        .dash-right { transform: translate(35vw, -40px) scale(1.1) rotate(15deg) !important; z-index: 10; }
+        .dash-left { transform: translate(-30vw, -30px) scale(1.1) rotate(-10deg) !important; z-index: 10; }
         
-        .hit-shake { animation: fleshImpact 0.4s ease-out both; filter: brightness(0.5) sepia(1) hue-rotate(300deg) !important; }
-        @keyframes fleshImpact { 
-            0% { transform: translate(0, 0) scale(1); } 
-            25% { transform: translate(-20px, 10px) scale(0.9); } 
-            50% { transform: translate(15px, -5px) scale(1.05); } 
-            75% { transform: translate(-10px, 0) scale(0.95); } 
-            100% { transform: translate(0, 0) scale(1); } 
+        .hit-shake { animation: slashImpact 0.3s cubic-bezier(.36,.07,.19,.97) both; filter: brightness(2) drop-shadow(0 0 20px #fff) !important; }
+        @keyframes slashImpact { 
+            0% { transform: translate(0, 0) skewX(0); } 
+            25% { transform: translate(-15px, 0) skewX(-10deg); } 
+            50% { transform: translate(10px, 0) skewX(10deg); } 
+            75% { transform: translate(-10px, 0) skewX(-5deg); } 
+            100% { transform: translate(0, 0) skewX(0); } 
+        }
+
+        /* Slash Effect */
+        .slash {
+            position: absolute; width: 200px; height: 10px; background: #fff;
+            box-shadow: 0 0 20px var(--blood-red), 0 0 40px var(--blood-red);
+            border-radius: 10px; z-index: 20; opacity: 0; pointer-events: none;
+            transform-origin: center;
         }
 
         /* Textos de Daño */
         .dmg-text {
             position: absolute; font-family: var(--font-title); font-size: 4rem; color: #fff;
             text-shadow: 0 0 10px #000, 3px 3px 0 #000; pointer-events: none;
-            animation: bloodSpatter 1s ease-out forwards; z-index: 20;
+            animation: bloodSpatter 1s ease-out forwards; z-index: 25;
         }
-        @keyframes bloodSpatter { 0% { opacity: 1; transform: translate(0, 0) scale(0.5); } 100% { opacity: 0; transform: translate(30px, -100px) scale(1.2) rotate(15deg); } }
+        @keyframes bloodSpatter { 0% { opacity: 1; transform: translate(0, 0) scale(0.5); } 100% { opacity: 0; transform: translate(30px, -80px) scale(1.2); } }
 
         /* --- CONTROLES Y REGISTRO --- */
-        .bottom-panel { position: relative; z-index: 10; background: #1a1110; border-top: 4px solid var(--rust); }
+        .bottom-panel { position: relative; z-index: 10; background: #0d080a; border-top: 2px solid var(--blood-red); }
 
         .log-container {
-            height: 90px; padding: 15px 30px; overflow-y: auto; font-size: 1.1rem; 
-            color: var(--dust); border-bottom: 2px dashed #3d2622; background: #0a0605;
+            height: 90px; padding: 10px 30px; overflow-y: auto; font-size: 1.1rem; 
+            color: #ddd; border-bottom: 1px solid #330000; background: #000;
             display: flex; flex-direction: column; gap: 5px;
         }
         .log-entry { animation: slideIn 0.3s ease-out forwards; }
         @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
-        .text-hero { color: var(--hope-light); text-shadow: 0 0 5px var(--hope-light); } 
-        .text-enemy { color: #ff4d4d; }
+        .text-hero { color: #ff4d4d; font-weight: bold; } 
+        .text-enemy { color: #ff9900; }
 
         .controls {
             display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px 40px;
         }
 
         .btn {
-            background: #2c1c18; border: 2px solid #543122; color: var(--dust);
+            background: #1a0000; border: 1px solid var(--blood-red); color: #fff;
             padding: 15px; font-family: var(--font-text); font-size: 1.2rem; font-weight: bold;
-            cursor: pointer; transition: all 0.2s; box-shadow: 4px 4px 0 #0a0605;
+            cursor: pointer; transition: all 0.2s; text-transform: uppercase;
         }
-        .btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; transform: translate(4px, 4px); }
-        .btn:active:not(:disabled) { transform: translate(4px, 4px); box-shadow: none; }
-        .btn-atk:hover:not(:disabled) { background: #3d2622; border-color: var(--dust); color: #fff; }
-        .btn-def:hover:not(:disabled) { background: #3d2622; border-color: var(--dust); color: #fff; }
+        .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .btn-atk:hover:not(:disabled) { background: var(--dark-red); box-shadow: 0 0 15px var(--blood-red); }
+        .btn-def:hover:not(:disabled) { background: #333; box-shadow: 0 0 15px #aaa; border-color: #aaa;}
         
-        .btn-cerebro { grid-column: span 2; background: #003322; border-color: var(--hope-light); color: var(--hope-light); }
-        .btn-cerebro:hover:not(:disabled) { background: #004d33; color: #fff; }
+        .btn-cerebro { grid-column: span 2; background: rgba(255, 215, 0, 0.1); border-color: var(--gold); color: var(--gold); }
+        .btn-cerebro:hover:not(:disabled) { background: rgba(255, 215, 0, 0.3); box-shadow: 0 0 20px var(--gold); }
         
-        .btn-ultimate { grid-column: span 2; background: var(--hope-light); color: #000; border: none; font-size: 1.5rem; box-shadow: 0 0 20px var(--hope-light); }
+        .btn-ultimate { grid-column: span 2; background: var(--blood-red); color: #fff; border: 2px solid #fff; font-size: 1.5rem; box-shadow: 0 0 30px var(--blood-red); font-family: var(--font-title); letter-spacing: 2px; }
 
         /* --- MODAL DE TRIVIA --- */
         .modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center;
-            opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 100;
+            background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 100; backdrop-filter: blur(5px);
         }
         .modal.active { opacity: 1; pointer-events: auto; }
 
         .rock-panel {
-            background: #1f1412; border: 4px solid var(--rust); padding: 40px;
-            width: 90%; max-width: 800px; box-shadow: 15px 15px 0 rgba(0,0,0,0.9);
+            background: #110000; border: 2px solid var(--blood-red); padding: 40px;
+            width: 90%; max-width: 800px; box-shadow: 0 0 50px rgba(204,0,0,0.5);
         }
-        .modal-title { font-family: var(--font-title); color: var(--hope-light); font-size: 2.5rem; margin-bottom: 15px; }
+        .modal-title { font-family: var(--font-title); color: var(--gold); font-size: 2.5rem; margin-bottom: 15px; }
         .modal-q { font-size: 1.2rem; margin-bottom: 30px; color: #fff; line-height: 1.6; }
         
-        .opt-grid { display: flex; flex-direction: column; gap: 10px; }
+        .opt-grid { display: flex; flex-direction: column; gap: 12px; }
         .opt-btn {
-            background: #0a0605; border: 1px solid #3d2622; color: var(--dust);
+            background: #220000; border: 1px solid var(--dark-red); color: #ddd;
             padding: 15px; font-family: var(--font-text); font-size: 1.1rem;
             cursor: pointer; transition: 0.2s; text-align: left;
         }
-        .opt-btn:hover { background: #3d2622; color: #fff; padding-left: 25px; border-color: var(--rust); }
+        .opt-btn:hover { background: var(--dark-red); color: #fff; border-color: var(--blood-red); padding-left: 25px; }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -202,7 +211,7 @@
 
     <div class="hud">
         <div class="fighter">
-            <div class="name">EL MUTANTE ROTO</div>
+            <div class="name">EL MUTANTE CARMESÍ</div>
             <div class="hp-track"><div id="p-hp" class="hp-fill player-hp"></div><div id="p-hp-txt" class="hp-text">250 / 250</div></div>
         </div>
         <div class="fighter enemy-side">
@@ -214,98 +223,104 @@
     <main class="arena" id="arena">
         <div class="characters-container">
             
-            <!-- HÉROE: MUTANTE DESCABRAJADO (Orgánico, asimétrico, herido pero sonriente) -->
+            <!-- HÉROE: MUTANTE DEMONÍACO (Escamas, cuernos, espadas, collar religioso) -->
             <div id="avatar-p" class="avatar player-avatar">
-                <svg viewBox="0 0 200 300" width="100%" height="100%">
-                    <!-- Piernas tullidas -->
-                    <path d="M70,300 C60,250 80,220 90,220 C100,220 100,280 110,300 Z" fill="#2d3a2d"/>
-                    <path d="M120,300 C130,270 140,240 130,220 C120,200 90,250 140,300 Z" fill="#1e261e"/>
+                <svg viewBox="0 0 300 350" width="100%" height="100%">
+                    <!-- Cola de Demonio -->
+                    <path d="M110,250 C30,280 10,180 50,130 L60,110 L75,135 C30,190 60,260 110,250 Z" fill="#4d0000"/>
                     
-                    <!-- Cuerpo jorobado y lleno de cicatrices -->
-                    <path d="M40,220 C20,150 60,80 100,80 C150,80 160,160 140,220 C120,260 60,250 40,220 Z" fill="#4a5d4a"/>
-                    <!-- Vendas / Parches -->
-                    <path d="M50,180 L130,150 L140,170 L60,200 Z" fill="#8b7355"/>
-                    <path d="M70,120 L150,140 L145,155 L65,135 Z" fill="#6b543c"/>
+                    <!-- Piernas demoníacas (Digitígradas) -->
+                    <path d="M110,210 C90,260 80,300 110,330 L130,330 C110,300 120,260 140,210 Z" fill="#800000"/>
+                    <path d="M160,210 C180,260 190,300 160,330 L140,330 C160,300 150,260 130,210 Z" fill="#660000"/>
+
+                    <!-- Brazo y Espada Izquierda (Atrás) -->
+                    <path d="M100,100 C60,120 40,160 50,200" stroke="#800000" stroke-width="22" stroke-linecap="round" fill="none"/>
+                    <!-- Espada Izquierda -->
+                    <path d="M40,190 L-10,100 L0,90 L60,180 Z" fill="#a9a9a9"/>
+                    <rect x="35" y="180" width="25" height="10" fill="#222" transform="rotate(-60 40 190)"/>
+
+                    <!-- Torso Rojo Musculoso con Escamas -->
+                    <path d="M100,90 C70,140 80,220 135,230 C190,220 200,140 170,90 C150,110 120,110 100,90 Z" fill="#cc0000"/>
+                    <!-- Textura de Escamas (Arcos oscuros) -->
+                    <path d="M110,130 Q135,150 160,130" stroke="#800000" stroke-width="3" fill="none"/>
+                    <path d="M115,150 Q135,170 155,150" stroke="#800000" stroke-width="3" fill="none"/>
+                    <path d="M120,170 Q135,190 150,170" stroke="#800000" stroke-width="3" fill="none"/>
+                    <path d="M125,190 Q135,210 145,190" stroke="#800000" stroke-width="3" fill="none"/>
                     
-                    <!-- Brazo largo y torpe apoyado en el suelo -->
-                    <path d="M60,110 C20,160 10,250 30,290 C50,290 40,200 80,140 Z" fill="#384738"/>
+                    <!-- Collar Religioso (Cruz de Oro) -->
+                    <path d="M115,90 C125,130 145,130 155,90" stroke="#ffd700" stroke-width="2" fill="none"/>
+                    <!-- La Cruz -->
+                    <path d="M135,123 L135,145 M127,130 L143,130" stroke="#ffd700" stroke-width="4" fill="none"/>
+
+                    <!-- Cabeza Demoniaca -->
+                    <circle cx="135" cy="65" r="30" fill="#cc0000"/>
+                    <!-- Cuernos Negros -->
+                    <path d="M115,45 C90,10 70,5 60,30 C80,35 90,45 110,55 Z" fill="#111"/>
+                    <path d="M155,45 C180,10 200,5 210,30 C190,35 180,45 160,55 Z" fill="#111"/>
                     
-                    <!-- Cabeza deforme -->
-                    <path d="M80,85 C70,40 100,20 130,30 C160,40 150,90 120,95 Z" fill="#4a5d4a"/>
-                    
-                    <!-- Gran ojo brillante (Esperanza) -->
-                    <circle cx="110" cy="55" r="20" fill="#003322"/>
-                    <circle cx="115" cy="55" r="12" fill="#00ffcc">
-                        <animate attributeName="r" values="12;14;12" dur="2s" repeatCount="indefinite"/>
-                    </circle>
-                    <circle cx="120" cy="52" r="4" fill="#ffffff"/>
-                    
-                    <!-- Sonrisa pequeña y dulce a pesar de todo -->
-                    <path d="M125,75 Q135,85 145,70" stroke="#1e261e" stroke-width="4" fill="none" stroke-linecap="round"/>
+                    <!-- Ojos Blancos sin Pupila (Estilo X-Men) -->
+                    <polygon points="115,60 125,65 120,70" fill="#ffffff" filter="drop-shadow(0 0 5px #fff)"/>
+                    <polygon points="155,60 145,65 150,70" fill="#ffffff" filter="drop-shadow(0 0 5px #fff)"/>
+
+                    <!-- Brazo y Espada Derecha (Al frente) -->
+                    <path d="M170,100 C210,120 230,160 220,200" stroke="#b30000" stroke-width="22" stroke-linecap="round" fill="none"/>
+                    <!-- Espada Derecha -->
+                    <path d="M220,190 L280,100 L290,110 L240,200 Z" fill="#e6e6e6"/>
+                    <rect x="220" y="190" width="25" height="10" fill="#222" transform="rotate(50 220 190)"/>
                 </svg>
             </div>
 
-            <!-- VILLANO: MONSTRUO COLOSAL ORGÁNICO -->
+            <!-- VILLANO COLOSAL (Sin cambios, monstruo gigante) -->
             <div id="avatar-e" class="avatar enemy-avatar">
                 <svg viewBox="0 0 300 350" width="100%" height="100%">
-                    <!-- Piernas gruesas como troncos -->
                     <path d="M80,350 C70,280 100,200 130,200 L160,350 Z" fill="#2b0a0a"/>
                     <path d="M220,350 C240,280 190,200 170,200 L140,350 Z" fill="#1c0404"/>
-                    
-                    <!-- Torso masivo y jorobado -->
                     <path d="M40,220 C-10,120 80,40 150,40 C220,40 310,120 260,220 C240,280 60,280 40,220 Z" fill="#4a0e0e"/>
-                    
-                    <!-- Músculos/Tumores orgánicos -->
                     <circle cx="100" cy="120" r="40" fill="#5c1111"/>
                     <circle cx="200" cy="140" r="45" fill="#3a0707"/>
                     <circle cx="150" cy="180" r="50" fill="#5c1111"/>
-
-                    <!-- Picos óseos en la espalda -->
-                    <path d="M90,60 L50,10 L120,50 Z" fill="#d2b48c"/>
-                    <path d="M150,40 L160,-10 L190,50 Z" fill="#a89070"/>
-                    <path d="M210,60 L260,20 L230,70 Z" fill="#d2b48c"/>
-
-                    <!-- Brazos como mazos -->
+                    <path d="M90,60 L50,10 L120,50 Z" fill="#ff8c00"/>
+                    <path d="M150,40 L160,-10 L190,50 Z" fill="#cc6600"/>
+                    <path d="M210,60 L260,20 L230,70 Z" fill="#ff8c00"/>
                     <path d="M50,120 C10,180 -10,280 40,320 C80,320 80,200 100,160 Z" fill="#3a0707"/>
                     <path d="M250,120 C290,180 310,280 260,320 C220,320 220,200 200,160 Z" fill="#2b0a0a"/>
-                    
-                    <!-- Rostro brutal hundido en el pecho -->
                     <path d="M110,100 C100,140 200,140 190,100 C170,80 130,80 110,100 Z" fill="#1c0404"/>
-                    <!-- Ojos furiosos -->
-                    <path d="M125,110 L140,115 L130,120 Z" fill="#ff4d4d"/>
-                    <path d="M175,110 L160,115 L170,120 Z" fill="#ff4d4d"/>
-                    <!-- Mandíbula con colmillos -->
-                    <path d="M130,130 Q150,140 170,130" stroke="#d2b48c" stroke-width="3" fill="none"/>
-                    <polygon points="135,132 140,145 145,134" fill="#d2b48c"/>
-                    <polygon points="155,134 160,145 165,132" fill="#d2b48c"/>
+                    <path d="M125,110 L140,115 L130,120 Z" fill="#ff8c00"/>
+                    <path d="M175,110 L160,115 L170,120 Z" fill="#ff8c00"/>
+                    <path d="M130,130 Q150,140 170,130" stroke="#ff8c00" stroke-width="3" fill="none"/>
+                    <polygon points="135,132 140,145 145,134" fill="#ff8c00"/>
+                    <polygon points="155,134 160,145 165,132" fill="#ff8c00"/>
                 </svg>
             </div>
         </div>
+        
+        <!-- Efecto de Corte de Espada -->
+        <div id="slash-fx" class="slash"></div>
     </main>
 
     <div class="bottom-panel">
         <div id="log" class="log-container">
-            <div class="log-entry">El viento arrastra la ceniza. Tú, aunque destrozado, te pones en pie.</div>
+            <div class="log-entry">Afilas tus espadas. El rosario brilla en tu pecho. Que empiece la cacería.</div>
         </div>
         <footer class="controls">
-            <button id="btn-atk" class="btn btn-atk" onclick="attackDash(true)">Ataque Torpe</button>
-            <button id="btn-def" class="btn btn-def" onclick="actionDefend()">Soportar el Dolor</button>
-            <button id="btn-cerebro" class="btn btn-cerebro" onclick="openCerebro()">RECORDAR LAS BASES (Pregunta GFPI)</button>
-            <button id="btn-ult" class="btn btn-ultimate hidden" onclick="actionUltimate()">¡DESTELLO DE ESPERANZA!</button>
+            <button id="btn-atk" class="btn btn-atk" onclick="attackDash(true)">Corte Cruzado</button>
+            <button id="btn-def" class="btn btn-def" onclick="actionDefend()">Guardia Divina</button>
+            <button id="btn-cerebro" class="btn btn-cerebro" onclick="openCerebro()">CÓDICE DE MEMORIA (Pregunta GFPI)</button>
+            <button id="btn-ult" class="btn btn-ultimate hidden" onclick="actionUltimate()">¡FURIA CARMESÍ!</button>
         </footer>
     </div>
 
     <!-- MODAL DE PREGUNTAS (Guía GFPI-F-135 V04) -->
     <div id="modal" class="modal">
         <div class="rock-panel">
-            <h2 class="modal-title">MEMORIA INTACTA</h2>
+            <h2 class="modal-title">MEMORIA DEL CÓDICE</h2>
             <p id="modal-q" class="modal-q">Cargando...</p>
             <div id="modal-opts" class="opt-grid"></div>
         </div>
     </div>
 
     <script>
-        // --- LLUVIA DE CENIZAS EN EL CANVAS ---
+        // --- LLUVIA DE CENIZAS ---
         const canvas = document.getElementById('ash-canvas');
         const ctx = canvas.getContext('2d');
         let w, h, ashes = [];
@@ -314,12 +329,12 @@
             w = canvas.width = window.innerWidth;
             h = canvas.height = window.innerHeight;
             ashes = [];
-            for(let i = 0; i < 60; i++) {
+            for(let i = 0; i < 70; i++) {
                 ashes.push({
                     x: Math.random() * w, y: Math.random() * h,
-                    r: Math.random() * 2 + 1,
-                    vx: Math.random() * 2 - 1, vy: Math.random() * 2 + 1,
-                    color: Math.random() > 0.8 ? '#ff6b35' : '#4a5759' // Ceniza gris o brasas
+                    r: Math.random() * 2 + 0.5,
+                    vx: Math.random() * 3 - 1.5, vy: Math.random() * 3 + 1,
+                    color: Math.random() > 0.9 ? '#ff4d4d' : '#555' 
                 });
             }
         }
@@ -344,14 +359,14 @@
 
         const bosses = [
             {
-                name: "BESTIA DEL HARDWARE MUERTO", hp: 350, maxHp: 350, dmg: [20, 30],
+                name: "BESTIA DEL HARDWARE", hp: 350, maxHp: 350, dmg: [20, 30],
                 trivia: {
-                    q: "En este mundo físico destrozado, ¿Qué es el Software que intentas proteger?",
+                    q: "Debes entender lo que defiendes. ¿Qué es el Software?",
                     opts: [
-                        "Los cables oxidados y placas base rotas.",
+                        "Los cables y placas físicas de un sistema.",
                         "El conjunto de instrucciones, programas y reglas informáticas que permiten a un equipo realizar tareas.",
                         "La electricidad estática del ambiente.",
-                        "El sistema de refrigeración de las antiguas máquinas."
+                        "Un tipo de demonio menor."
                     ],
                     correct: 1
                 }
@@ -359,12 +374,12 @@
             {
                 name: "EL CENSOR CARNOSO", hp: 500, maxHp: 500, dmg: [30, 45],
                 trivia: {
-                    q: "El monstruo ruge intentando restringir tu libertad. ¿Qué es una licencia de software?",
+                    q: "Esta bestia intenta atarte con reglas. ¿Qué es una licencia de software?",
                     opts: [
                         "Un contrato entre el desarrollador y el usuario que define los derechos y restricciones de uso del programa.",
-                        "Un tributo de sangre al creador del código.",
+                        "Un sello de sangre para invocar poder.",
                         "Un tipo de virus informático destructivo.",
-                        "Una contraseña temporal para instalar Windows."
+                        "Una contraseña para entrar a la red."
                     ],
                     correct: 0
                 }
@@ -372,12 +387,12 @@
             {
                 name: "ABOMINACIÓN BINARIA", hp: 700, maxHp: 700, dmg: [40, 55],
                 trivia: {
-                    q: "La bestia cambia de forma. Recuerda los Tipos de licencia de software más comunes para entenderla:",
+                    q: "Para destrozarla, recuerda los Tipos de licencia de software más comunes:",
                     opts: [
                         "Licencias pesadas y Licencias ligeras.",
                         "Software Libre (permite modificación y distribución) y Software Propietario/Privativo (restringido).",
                         "Licencias de pantalla y Licencias de teclado.",
-                        "Licencias locales y Licencias espaciales."
+                        "Licencias celestiales y Licencias infernales."
                     ],
                     correct: 1
                 }
@@ -385,12 +400,12 @@
             {
                 name: "EL SEÑOR DE LA CLAUSURA", hp: 900, maxHp: 900, dmg: [50, 70],
                 trivia: {
-                    q: "Es el jefe final. Para reconstruir este mundo y permitir que todos colaboren libremente, ¿Cuáles licencias son las más adecuadas y por qué?",
+                    q: "Para purificar este mundo y permitir la colaboración libre, ¿Cuáles licencias son las más adecuadas y por qué?",
                     opts: [
-                        "Las Licencias Propietarias, para que nadie toque el código y se mantenga en secreto.",
+                        "Las Licencias Propietarias, para que nadie toque el código.",
                         "Las Licencias Libres/Permisivas (como MIT o GPL), porque fomentan la colaboración, el estudio y la mejora comunitaria del código.",
-                        "No usar licencias, que gane el más fuerte.",
-                        "Las licencias de pago por uso mensual."
+                        "Ninguna licencia, el caos total.",
+                        "Licencias de pago mensual obligatorio."
                     ],
                     correct: 1
                 }
@@ -426,17 +441,30 @@
             setTimeout(() => span.remove(), 1000);
         }
 
+        function showSlash(isPlayer) {
+            const fx = document.getElementById('slash-fx');
+            fx.style.left = isPlayer ? '60%' : '30%';
+            fx.style.top = '40%';
+            fx.style.transform = `rotate(${Math.random() * 360}deg)`;
+            fx.style.opacity = '1';
+            fx.style.transition = 'none';
+            setTimeout(() => {
+                fx.style.transition = 'opacity 0.2s';
+                fx.style.opacity = '0';
+            }, 50);
+        }
+
         function initLevel() {
             if(currentBoss >= bosses.length) {
-                printLog("¡EL MUNDO HA SIDO LIBERADO! La esperanza florece entre las ruinas.", "text-hero");
-                document.querySelector('.controls').innerHTML = `<button class="btn" style="grid-column: span 2;" onclick="location.reload()">Nuevo Amanecer (Reiniciar)</button>`;
+                printLog("¡EL CAOS HA SIDO PURGADO! Guardas tus espadas en la oscuridad.", "text-hero");
+                document.querySelector('.controls').innerHTML = `<button class="btn" style="grid-column: span 2;" onclick="location.reload()">Buscar nueva batalla</button>`;
                 return;
             }
             enemy = JSON.parse(JSON.stringify(bosses[currentBoss]));
             document.getElementById('e-name').innerText = enemy.name;
             player.hp = P_MAX_HP; player.ultimateReady = false;
             updateButtons(); updateUI();
-            printLog(`La tierra tiembla... ${enemy.name} se alza frente a ti.`);
+            printLog(`Un rugido resuena. ${enemy.name} aparece frente a ti.`);
         }
 
         function attackDash(isPlayer) {
@@ -452,18 +480,19 @@
             setTimeout(() => {
                 let dmg = 0;
                 if(isPlayer) {
-                    dmg = Math.floor(Math.random() * 25) + 20; 
+                    showSlash(true);
+                    dmg = Math.floor(Math.random() * 30) + 20; 
                     enemy.hp -= dmg;
-                    printLog(`Te abalanzas torpemente y golpeas. Daño: ${dmg}`, "text-hero");
+                    printLog(`Tus espadas desgarran la carne. Daño: ${dmg}`, "text-hero");
                 } else {
                     dmg = Math.floor(Math.random() * (enemy.dmg[1] - enemy.dmg[0])) + enemy.dmg[0];
-                    if(player.defMode) { dmg = Math.floor(dmg * 0.3); printLog("Te encoges y soportas el impacto. Daño reducido."); }
+                    if(player.defMode) { dmg = Math.floor(dmg * 0.3); printLog("Bloqueas con tus espadas cruzadas. Daño reducido."); }
                     player.hp -= dmg;
-                    printLog(`El coloso te aplasta brutalmente. Daño: ${dmg}`, "text-enemy");
+                    printLog(`El coloso te golpea brutalmente. Daño: ${dmg}`, "text-enemy");
                 }
 
                 target.classList.add('hit-shake');
-                spawnDmgText(isPlayer ? 'avatar-e' : 'avatar-p', `-${dmg}`, isPlayer ? 'var(--hope-light)' : 'var(--blood-red)');
+                spawnDmgText(isPlayer ? 'avatar-e' : 'avatar-p', `-${dmg}`, isPlayer ? '#ff4d4d' : '#ff9900');
                 updateUI();
 
                 setTimeout(() => {
@@ -471,14 +500,14 @@
                     target.classList.remove('hit-shake');
                     setTimeout(() => checkGameLoop(isPlayer), 600);
                 }, 400);
-            }, 500);
+            }, 300);
         }
 
         function actionDefend() {
             if(!isPlayerTurn) return;
             isPlayerTurn = false; player.defMode = true; updateButtons(false);
-            printLog("Te cubres con tus brazos rotos. Estás listo para el impacto.", "text-hero");
-            document.getElementById('avatar-p').style.filter = "brightness(1.5) drop-shadow(0 0 10px var(--hope-light))";
+            printLog("Cruzas las espadas y el rosario brilla. Preparado.", "text-hero");
+            document.getElementById('avatar-p').style.filter = "brightness(1.5) drop-shadow(0 0 15px var(--gold))";
             setTimeout(() => attackDash(false), 1200);
         }
 
@@ -486,15 +515,16 @@
             if(!isPlayerTurn || !player.ultimateReady) return;
             isPlayerTurn = false; player.ultimateReady = false; updateButtons(false);
             
-            printLog("¡TU OJO BRILLA CEGADORAMENTE! La esperanza purifica a la bestia.", "text-hero");
-            document.getElementById('avatar-p').style.transform = "scale(1.2)";
+            printLog("¡DESATAS TU FURIA CARMESÍ! Las espadas se encienden en llamas.", "text-hero");
+            document.getElementById('avatar-p').style.transform = "scale(1.3) translateY(-30px)";
             
             setTimeout(() => {
+                showSlash(true); setTimeout(() => showSlash(true), 150); setTimeout(() => showSlash(true), 300);
                 const dmg = Math.floor(Math.random() * 150) + 200; 
                 enemy.hp -= dmg;
                 document.getElementById('avatar-e').classList.add('hit-shake');
-                spawnDmgText('avatar-e', `-${dmg} LUZ!`, 'var(--hope-light)');
-                document.getElementById('ash-canvas').style.background = "rgba(0, 255, 204, 0.3)"; // Destello
+                spawnDmgText('avatar-e', `-${dmg} FATAL!`, '#ff0000');
+                document.getElementById('ash-canvas').style.background = "rgba(204, 0, 0, 0.4)"; 
                 updateUI();
                 
                 setTimeout(() => {
@@ -502,19 +532,19 @@
                     document.getElementById('ash-canvas').style.background = "transparent";
                     document.getElementById('avatar-e').classList.remove('hit-shake');
                     setTimeout(() => checkGameLoop(true), 800);
-                }, 600);
-            }, 500);
+                }, 800);
+            }, 600);
         }
 
         function checkGameLoop(wasPlayerTurn) {
-            document.getElementById('avatar-p').style.filter = "none"; 
+            document.getElementById('avatar-p').style.filter = "drop-shadow(0 0 15px rgba(204, 0, 0, 0.3))"; 
             
             if(enemy.hp <= 0) {
-                printLog(`El gigante de carne se desploma en la ceniza. ¡Victoria!`, "text-hero");
+                printLog(`La bestia cae despedazada.`, "text-hero");
                 setTimeout(() => { currentBoss++; initLevel(); isPlayerTurn = true; }, 2500);
             } else if (player.hp <= 0) {
-                printLog(`Tus piernas fallan. Caes al suelo helado...`, "text-enemy");
-                document.querySelector('.controls').innerHTML = `<button class="btn" style="grid-column: span 2;" onclick="location.reload()">Levantarse de nuevo</button>`;
+                printLog(`Tus espadas caen al suelo. Has sido derrotado.`, "text-enemy");
+                document.querySelector('.controls').innerHTML = `<button class="btn" style="grid-column: span 2;" onclick="location.reload()">Resucitar</button>`;
             } else {
                 if(wasPlayerTurn) setTimeout(() => attackDash(false), 800);
                 else { isPlayerTurn = true; updateButtons(true); }
@@ -540,11 +570,11 @@
         function evalCerebro(selected, correct) {
             document.getElementById('modal').classList.remove('active');
             if(selected === correct) {
-                printLog("¡Un recuerdo puro! Sientes una energía arrolladora.", "text-hero");
+                printLog("¡El Códice te da la razón! Tu sangre hierve de poder.", "text-hero");
                 player.ultimateReady = true; updateButtons(true);
             } else {
-                printLog("Dudas. La confusión te debilita y el coloso aprovecha. (-50 HP)", "text-enemy");
-                player.hp -= 50; spawnDmgText('avatar-p', "-50", "var(--blood-red)");
+                printLog("Te equivocas. La duda rompe tu guardia. (-50 HP)", "text-enemy");
+                player.hp -= 50; spawnDmgText('avatar-p', "-50", "#cc0000");
                 document.getElementById('avatar-p').classList.add('hit-shake');
                 updateUI();
                 setTimeout(() => { document.getElementById('avatar-p').classList.remove('hit-shake'); }, 400);
@@ -570,3 +600,4 @@
     </script>
 </body>
 </html>
+
