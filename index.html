@@ -1,24 +1,22 @@
-   <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Juego GFPI-F-135: Batalla de Software</title>
+    <title>GFPI-F-135: Esperanza Mutante</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;800&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --neon-blue: #00f0ff;
-            --neon-purple: #b026ff;
-            --neon-gold: #ffb700;
-            --neon-red: #ff3333;
-            --neon-green: #00ffaa;
-            --bg-base: #030508;
-            --glass-bg: rgba(10, 15, 25, 0.85);
-            --glass-border: rgba(0, 240, 255, 0.3);
-            --font-display: 'Orbitron', sans-serif;
-            --font-ui: 'Rajdhani', sans-serif;
+            --hope-glow: #ffcf54;
+            --hero-color: #6d8a6a;
+            --enemy-color: #5a2e5d;
+            --bg-base: #0a0e14;
+            --glass-bg: rgba(20, 25, 35, 0.7);
+            --glass-border: rgba(255, 207, 84, 0.2);
+            --font-display: 'Caveat', cursive;
+            --font-ui: 'Quicksand', sans-serif;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
@@ -30,62 +28,60 @@
             display: flex; justify-content: center; align-items: center;
         }
 
-        /* --- FONDOS Y EFECTOS --- */
-        #bg-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+        /* --- FONDOS DE ALTO RENDIMIENTO (CANVAS) --- */
+        #bg-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.8; }
         
-        .grid-floor {
-            position: absolute; bottom: -20vh; left: -50vw; width: 200vw; height: 60vh;
-            background: 
-                linear-gradient(transparent 0%, rgba(0, 240, 255, 0.3) 2%, transparent 3%),
-                linear-gradient(90deg, transparent 0%, rgba(0, 240, 255, 0.3) 2%, transparent 3%);
-            background-size: 60px 60px;
-            transform: perspective(600px) rotateX(75deg);
-            z-index: 1; animation: gridMove 4s linear infinite; opacity: 0.5;
+        /* Luz de esperanza en el fondo */
+        .hope-light {
+            position: absolute; top: -20vh; left: 50%; transform: translateX(-50%);
+            width: 80vw; height: 80vh;
+            background: radial-gradient(circle, rgba(255, 207, 84, 0.1) 0%, transparent 70%);
+            z-index: 1; pointer-events: none;
+            animation: pulseLight 6s ease-in-out infinite alternate;
         }
-        @keyframes gridMove { from { background-position: 0 0; } to { background-position: 0 60px; } }
+        @keyframes pulseLight { 0% { opacity: 0.5; transform: translateX(-50%) scale(1); } 100% { opacity: 1; transform: translateX(-50%) scale(1.1); } }
 
-        /* --- CONTENEDOR PRINCIPAL --- */
+        /* --- CONTENEDOR DEL JUEGO --- */
         .game-wrapper {
             position: relative; z-index: 2;
             width: 100%; max-width: 1200px; height: 95vh;
             display: flex; flex-direction: column;
-            border-radius: 15px; box-shadow: 0 0 50px rgba(0, 240, 255, 0.15);
+            border-radius: 20px; box-shadow: 0 10px 60px rgba(0, 0, 0, 0.8);
             background: var(--glass-bg); border: 1px solid var(--glass-border);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
         }
 
         /* --- HUD (Barras de Vida) --- */
         .hud {
-            display: flex; justify-content: space-between; padding: 20px 40px;
-            border-bottom: 2px solid var(--glass-border);
-            background: linear-gradient(180deg, rgba(0,0,0,0.9) 0%, transparent 100%);
+            display: flex; justify-content: space-between; padding: 25px 40px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
 
         .fighter { width: 42%; display: flex; flex-direction: column; }
         .enemy-side { align-items: flex-end; text-align: right; }
 
         .name {
-            font-family: var(--font-display); font-size: 1.6rem; color: #fff;
-            text-shadow: 0 0 10px var(--neon-blue); margin-bottom: 10px; letter-spacing: 2px;
+            font-family: var(--font-display); font-size: 2.2rem; color: #fff;
+            text-shadow: 0 0 10px var(--hope-glow); margin-bottom: 8px; letter-spacing: 1px;
         }
-        .enemy-side .name { text-shadow: 0 0 10px var(--neon-red); }
+        .enemy-side .name { text-shadow: 0 0 15px #ff3366; color: #ffb3c6; }
 
         .hp-track {
-            width: 100%; height: 28px; background: rgba(0, 0, 0, 0.8);
-            border: 2px solid rgba(255,255,255,0.2); border-radius: 14px;
-            position: relative; overflow: hidden; box-shadow: inset 0 0 15px #000;
+            width: 100%; height: 20px; background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px; position: relative; overflow: hidden;
         }
 
         .hp-fill {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            transform-origin: left center; transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transform-origin: left center; transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            will-change: transform;
         }
-        .player-hp { background: linear-gradient(90deg, #00d2ff, var(--neon-blue)); box-shadow: 0 0 15px var(--neon-blue); }
-        .enemy-hp { background: linear-gradient(90deg, #ff0055, var(--neon-red)); transform-origin: right center; box-shadow: 0 0 15px var(--neon-red); }
+        .player-hp { background: linear-gradient(90deg, #8fbc8f, var(--hope-glow)); box-shadow: 0 0 10px var(--hope-glow); }
+        .enemy-hp { background: linear-gradient(90deg, #800040, #ff3366); transform-origin: right center; box-shadow: 0 0 10px #ff3366; }
 
         .hp-text {
             position: absolute; width: 100%; text-align: center;
-            font-size: 1.1rem; font-weight: bold; line-height: 25px; text-shadow: 2px 2px 4px #000; z-index: 2;
+            font-size: 0.9rem; font-weight: bold; line-height: 20px; text-shadow: 1px 1px 2px #000; z-index: 2;
         }
 
         /* --- ARENA Y PERSONAJES --- */
@@ -94,194 +90,477 @@
         .characters-container {
             position: absolute; top: 50%; left: 0; width: 100%;
             transform: translateY(-50%); display: flex; justify-content: space-between;
-            padding: 0 10%; z-index: 3;
+            padding: 0 12%; z-index: 3;
         }
 
         .avatar {
-            width: 220px; height: 220px; /* Personajes más grandes */
-            position: relative;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 250px; height: 250px; position: relative;
+            transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
             will-change: transform;
-            filter: drop-shadow(0 0 20px rgba(0, 240, 255, 0.5));
         }
 
-        .player-avatar { animation: float 3s ease-in-out infinite; }
-        .enemy-avatar { filter: drop-shadow(0 0 20px rgba(255, 51, 51, 0.5)); animation: float 4s ease-in-out infinite reverse; }
+        /* Animación ORGÁNICA (Respira, se estira, no es mecánica) */
+        .player-avatar { animation: organicBreathe 4s ease-in-out infinite; filter: drop-shadow(0 15px 15px rgba(109, 138, 106, 0.3)); }
+        .enemy-avatar { animation: parasiteSquirm 3s ease-in-out infinite alternate; filter: drop-shadow(0 20px 20px rgba(255, 51, 102, 0.3)); }
 
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        @keyframes organicBreathe {
+            0%, 100% { transform: scale(1) translateY(0) skewX(0deg); }
+            33% { transform: scale(1.02, 0.96) translateY(5px) skewX(-1deg); }
+            66% { transform: scale(0.98, 1.04) translateY(-8px) skewX(1deg); }
+        }
+        @keyframes parasiteSquirm {
+            0% { transform: scale(1) translateY(0) rotate(0deg); }
+            100% { transform: scale(1.05, 0.95) translateY(-10px) rotate(-3deg); }
+        }
 
-        /* Movimiento de combate */
-        .dash-right { transform: translateX(45vw) scale(1.2) !important; z-index: 10; }
-        .dash-left { transform: translateX(-45vw) scale(1.2) !important; z-index: 10; }
-        .ultimate-rise { transform: translateY(-100px) scale(1.4) !important; filter: drop-shadow(0 0 40px var(--neon-purple)); z-index: 10; }
+        /* Animaciones de Ataque Suaves/Viscosas */
+        .dash-right { transform: translateX(35vw) scale(1.1) rotate(5deg) !important; z-index: 10; }
+        .dash-left { transform: translateX(-35vw) scale(1.1) rotate(-5deg) !important; z-index: 10; }
         
-        .hit-shake { animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both; filter: brightness(2) drop-shadow(0 0 40px red) !important; }
-        @keyframes shake { 10%, 90% { transform: translate3d(-15px, 0, 0); } 20%, 80% { transform: translate3d(15px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-20px, 0, 0); } 40%, 60% { transform: translate3d(20px, 0, 0); } }
-
-        /* Efecto Rayo Ultimate */
-        .laser-beam {
-            position: absolute; top: 50%; left: 25%; height: 50px; width: 0;
-            background: linear-gradient(90deg, transparent, #fff, var(--neon-purple));
-            box-shadow: 0 0 40px var(--neon-purple), 0 0 80px var(--neon-purple);
-            transform: translateY(-50%); z-index: 9; opacity: 0; transition: width 0.2s, opacity 0.2s;
-            border-radius: 25px;
+        .hit-shake { animation: jellyShake 0.5s ease-out both; filter: brightness(1.5) drop-shadow(0 0 20px #fff) !important; }
+        @keyframes jellyShake { 
+            0% { transform: skewX(-15deg); } 25% { transform: skewX(10deg); } 
+            50% { transform: skewX(-5deg); } 75% { transform: skewX(2deg); } 100% { transform: skewX(0); } 
         }
 
-        /* Texto de Daño Flotante */
+        /* Poder especial: Esporas curativas/Luz */
+        .hope-burst {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
+            width: 300px; height: 300px; background: radial-gradient(circle, rgba(255, 207, 84, 0.8) 0%, transparent 70%);
+            border-radius: 50%; opacity: 0; z-index: 9; transition: transform 0.4s ease-out, opacity 0.4s ease-out;
+        }
+        .hope-burst.active { transform: translate(-50%, -50%) scale(3); opacity: 1; }
+
         .dmg-text {
-            position: absolute; font-family: var(--font-display); font-size: 4rem;
-            font-weight: 800; color: #fff; text-shadow: 0 0 15px red, 4px 4px 0 #000;
-            pointer-events: none; animation: floatUpDmg 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; z-index: 20;
+            position: absolute; font-family: var(--font-display); font-size: 3.5rem;
+            color: #fff; text-shadow: 0 0 10px rgba(0,0,0,0.8);
+            pointer-events: none; animation: floatUpText 1.2s ease-out forwards; z-index: 20;
         }
-        @keyframes floatUpDmg { 0% { opacity: 1; transform: translateY(0) scale(0.5); } 20% { transform: translateY(-50px) scale(1.2); } 100% { opacity: 0; transform: translateY(-150px) scale(1); } }
+        @keyframes floatUpText { 0% { opacity: 1; transform: translateY(0) scale(0.8); } 100% { opacity: 0; transform: translateY(-80px) scale(1.2); } }
 
         /* --- CONTROLES Y LOG --- */
         .controls-wrapper { display: flex; flex-direction: column; z-index: 3; }
 
         .log-container {
-            height: 90px; background: rgba(0,0,0,0.85); border-top: 1px solid var(--glass-border);
-            padding: 10px 25px; overflow-y: auto; font-size: 1.2rem; display: flex; flex-direction: column; gap: 5px;
+            height: 80px; background: rgba(0,0,0,0.4); border-top: 1px solid rgba(255,255,255,0.05);
+            padding: 10px 30px; overflow-y: auto; font-size: 1.1rem; display: flex; flex-direction: column; gap: 4px;
         }
-        .log-entry { animation: fadeInLog 0.3s forwards; color: #ddd; }
-        @keyframes fadeInLog { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
-        .text-blue { color: var(--neon-blue); font-weight: bold; } 
-        .text-red { color: var(--neon-red); font-weight: bold; } 
-        .text-purple { color: var(--neon-purple); font-weight: bold; font-size: 1.3rem; }
+        .log-entry { animation: fadeInLog 0.4s ease-out forwards; color: #cbd5e1; }
+        @keyframes fadeInLog { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .text-hero { color: var(--hope-glow); font-weight: bold; } 
+        .text-enemy { color: #ff3366; font-weight: bold; } 
 
         .controls {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 25px 40px;
-            background: rgba(5, 8, 15, 0.95); border-radius: 0 0 15px 15px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 25px 40px;
+            background: rgba(0, 0, 0, 0.6); border-radius: 0 0 20px 20px;
         }
 
         .btn {
-            background: rgba(0, 0, 0, 0.7); border: 2px solid rgba(255,255,255,0.2);
-            color: #fff; padding: 20px; font-family: var(--font-display); font-size: 1.3rem;
-            border-radius: 8px; cursor: pointer; transition: all 0.2s;
-            text-transform: uppercase; letter-spacing: 1px;
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1);
+            color: #fff; padding: 18px; font-family: var(--font-ui); font-size: 1.2rem; font-weight: bold;
+            border-radius: 12px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .btn:disabled { opacity: 0.3; cursor: not-allowed; filter: grayscale(1); }
-        .btn-atk:hover:not(:disabled) { border-color: var(--neon-blue); box-shadow: 0 0 25px rgba(0,240,255,0.4); transform: translateY(-3px); }
-        .btn-def:hover:not(:disabled) { border-color: var(--neon-green); box-shadow: 0 0 25px rgba(0,255,170,0.4); transform: translateY(-3px); }
+        .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .btn-atk:hover:not(:disabled) { background: rgba(109, 138, 106, 0.2); border-color: var(--hero-color); transform: translateY(-2px); }
+        .btn-def:hover:not(:disabled) { background: rgba(255, 255, 255, 0.1); border-color: #fff; transform: translateY(-2px); }
         
-        .btn-cerebro { grid-column: span 2; background: rgba(255, 183, 0, 0.15); border-color: var(--neon-gold); color: var(--neon-gold); }
-        .btn-cerebro:hover:not(:disabled) { background: rgba(255, 183, 0, 0.25); box-shadow: 0 0 30px rgba(255,183,0,0.5); transform: scale(1.02); }
+        .btn-cerebro { grid-column: span 2; background: rgba(255, 207, 84, 0.1); border-color: var(--hope-glow); color: var(--hope-glow); }
+        .btn-cerebro:hover:not(:disabled) { background: rgba(255, 207, 84, 0.2); box-shadow: 0 0 20px rgba(255,207,84,0.3); transform: scale(1.01); }
         
-        .btn-ultimate { grid-column: span 2; background: linear-gradient(90deg, #4a00e0, #8e2de2); border-color: #fff; box-shadow: 0 0 20px rgba(176, 38, 255, 0.8); animation: pulse-ult 1s infinite; font-weight: bold; color: white;}
-        @keyframes pulse-ult { 0%, 100% { box-shadow: 0 0 15px rgba(176,38,255,0.6); } 50% { box-shadow: 0 0 40px rgba(176,38,255,1); } }
+        .btn-ultimate { grid-column: span 2; background: var(--hope-glow); border-color: #fff; color: #000; box-shadow: 0 0 30px rgba(255,207,84,0.5); font-size: 1.4rem; font-family: var(--font-display); }
 
-        /* --- MODAL DE TRIVIA (PREGUNTAS) --- */
+        /* --- MODAL DE PREGUNTAS --- */
         .modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); backdrop-filter: blur(15px);
+            background: rgba(5, 7, 10, 0.9); backdrop-filter: blur(8px);
             display: flex; justify-content: center; align-items: center;
-            opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 100;
+            opacity: 0; pointer-events: none; transition: opacity 0.4s ease; z-index: 100;
         }
         .modal.active { opacity: 1; pointer-events: auto; }
 
         .hologram-panel {
-            background: rgba(10, 15, 25, 0.95); border: 2px solid var(--neon-gold);
-            border-radius: 15px; padding: 50px; width: 90%; max-width: 900px;
-            box-shadow: 0 0 80px rgba(255, 183, 0, 0.3); text-align: center;
+            background: rgba(20, 25, 35, 0.95); border: 1px solid var(--hope-glow);
+            border-radius: 20px; padding: 50px; width: 90%; max-width: 800px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 30px rgba(255,207,84,0.1); text-align: center;
         }
-        .modal-title { font-family: var(--font-display); color: var(--neon-gold); font-size: 2.5rem; margin-bottom: 25px; }
-        .modal-q { font-size: 1.6rem; margin-bottom: 35px; line-height: 1.6; color: #fff; font-weight: bold;}
+        .modal-title { font-family: var(--font-display); color: var(--hope-glow); font-size: 2.8rem; margin-bottom: 20px; }
+        .modal-q { font-size: 1.3rem; margin-bottom: 40px; line-height: 1.5; color: #e2e8f0; }
         
-        .opt-grid { display: flex; flex-direction: column; gap: 15px; }
+        .opt-grid { display: flex; flex-direction: column; gap: 12px; }
         .opt-btn {
-            background: rgba(0,0,0,0.6); border: 1px solid rgba(255,183,0,0.5); color: #fff;
-            padding: 20px 30px; font-size: 1.3rem; font-family: var(--font-ui); border-radius: 10px;
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1;
+            padding: 20px; font-size: 1.1rem; font-family: var(--font-ui); border-radius: 12px;
             cursor: pointer; transition: all 0.2s; text-align: left; line-height: 1.4;
         }
-        .opt-btn:hover { background: rgba(255,183,0,0.25); border-color: var(--neon-gold); transform: translateX(15px); }
+        .opt-btn:hover { background: rgba(255,207,84,0.1); border-color: var(--hope-glow); color: #fff; transform: translateX(10px); }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <!-- Fondo de Partículas -->
+    <!-- Fondo de Esporas Luminosas (Alta eficiencia) -->
     <canvas id="bg-canvas"></canvas>
-    <div class="grid-floor"></div>
+    <div class="hope-light"></div>
 
     <div class="game-wrapper">
-        <!-- HUD -->
         <header class="hud">
             <div class="fighter">
-                <div class="name">APRENDIZ SENA (HÉROE)</div>
+                <div class="name">EL MUTANTE ESPERANZADO</div>
                 <div class="hp-track"><div id="p-hp" class="hp-fill player-hp"></div><div id="p-hp-txt" class="hp-text">200 / 200</div></div>
             </div>
             <div class="fighter enemy-side">
-                <div id="e-name" class="name">VIRUS IGNORANCIA</div>
+                <div id="e-name" class="name">PARÁSITO DE LA IGNORANCIA</div>
                 <div class="hp-track"><div id="e-hp" class="hp-fill enemy-hp"></div><div id="e-hp-txt" class="hp-text">--- / ---</div></div>
             </div>
         </header>
 
-        <!-- ARENA -->
         <main class="arena" id="arena">
             <div class="characters-container">
-                <!-- PERSONAJE JUGADOR (DIBUJADO EN SVG, SIEMPRE SE VERÁ) -->
+                
+                <!-- HÉROE: DIBUJADO EN SVG. Melancólico, descabrajado, con un brillo de esperanza -->
                 <div id="avatar-p" class="avatar player-avatar">
                     <svg viewBox="0 0 200 200" width="100%" height="100%">
-                        <!-- Cuerpo/Traje -->
-                        <path d="M50,180 L50,120 Q100,90 150,120 L150,180 Z" fill="#00f0ff" opacity="0.8"/>
-                        <path d="M60,180 L60,130 Q100,105 140,130 L140,180 Z" fill="#050508"/>
-                        <!-- Cabeza/Casco Futurista -->
-                        <circle cx="100" cy="80" r="45" fill="#00f0ff" />
-                        <circle cx="100" cy="80" r="40" fill="#050508" />
-                        <!-- Visor brillante -->
-                        <rect x="65" y="65" width="70" height="20" rx="10" fill="#000" />
-                        <rect x="75" y="70" width="50" height="10" rx="5" fill="#ff007f" /> <!-- Ojo láser -->
-                        <!-- Detalles -->
-                        <circle cx="100" cy="140" r="15" fill="#00f0ff" />
-                        <circle cx="100" cy="140" r="8" fill="#fff" />
+                        <defs>
+                            <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                                <feGaussianBlur stdDeviation="6" result="blur" />
+                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                            </filter>
+                        </defs>
+                        <!-- Cuerpo orgánico irregular y parchado -->
+                        <path d="M40,160 C20,120 50,70 80,60 C120,40 170,60 170,120 C170,160 140,190 90,190 C60,190 50,180 40,160 Z" fill="#6d8a6a"/>
+                        <!-- Heridas/Roturas del cuerpo -->
+                        <path d="M150,110 C140,115 135,130 155,135 C165,120 160,110 150,110 Z" fill="#0a0e14"/>
+                        <path d="M60,80 Q70,70 80,90" stroke="#4a6348" stroke-width="4" fill="none" stroke-linecap="round"/>
+                        <path d="M65,85 Q75,75 85,95" stroke="#4a6348" stroke-width="4" fill="none" stroke-linecap="round"/>
+                        
+                        <!-- El Gran Ojo de Esperanza (Melancólico pero brillante) -->
+                        <ellipse cx="110" cy="100" rx="30" ry="35" fill="#e2e8f0"/>
+                        <!-- Párpado caído (melancolía) -->
+                        <path d="M75,95 Q110,65 145,100 Q110,85 75,95 Z" fill="#5c7a59"/> 
+                        <circle cx="115" cy="105" r="14" fill="#ffcf54" filter="url(#glow)"/>
+                        <circle cx="120" cy="100" r="4" fill="#fff"/>
+
+                        <!-- Sonrisa ladeada, tierna y rota -->
+                        <path d="M75,145 Q110,170 145,140" stroke="#2c3e2b" stroke-width="5" fill="none" stroke-linecap="round"/>
+                        <path d="M145,140 Q150,135 148,130" stroke="#2c3e2b" stroke-width="4" fill="none" stroke-linecap="round"/>
+                        
+                        <!-- Pedazos descabrajados flotando a su alrededor -->
+                        <path d="M20,60 C10,50 30,30 40,40 C45,50 30,70 20,60 Z" fill="#8fbc8f">
+                            <animateTransform attributeName="transform" type="translate" values="0,0; 0,-15; 0,0" dur="5s" repeatCount="indefinite"/>
+                        </path>
+                        <circle cx="175" cy="165" r="6" fill="#ffcf54" filter="url(#glow)">
+                            <animateTransform attributeName="transform" type="translate" values="0,0; -10,-20; 0,0" dur="4s" repeatCount="indefinite"/>
+                        </circle>
                     </svg>
                 </div>
 
-                <!-- PERSONAJE ENEMIGO (SE ACTUALIZA EN JS) -->
+                <!-- ENEMIGO: SOMBRA PARASITARIA -->
                 <div id="avatar-e" class="avatar enemy-avatar">
-                    <!-- El enemigo se inyectará aquí -->
+                    <svg viewBox="0 0 200 200" width="100%" height="100%">
+                        <path d="M90,40 C40,40 20,90 30,130 C40,170 80,180 120,170 C170,160 180,110 160,70 C140,30 110,40 90,40 Z" fill="#5a2e5d" opacity="0.9"/>
+                        <path d="M30,130 C10,150 20,180 40,190 C60,200 70,180 80,170 Z" fill="#3d1b3f"/>
+                        <path d="M160,70 C180,60 190,80 195,100 C200,120 180,130 170,120 Z" fill="#3d1b3f"/>
+                        <!-- Ojos vacíos/rojos -->
+                        <circle cx="70" cy="100" r="8" fill="#ff3366"/>
+                        <circle cx="120" cy="95" r="12" fill="#ff3366"/>
+                        <circle cx="100" cy="130" r="5" fill="#ff3366"/>
+                    </svg>
                 </div>
             </div>
-            <!-- Efecto Rayo Ultimate -->
-            <div id="laser" class="laser-beam"></div>
+            
+            <div id="hope-burst" class="hope-burst"></div>
         </main>
 
-        <!-- CONTROLES -->
         <div class="controls-wrapper">
             <div id="log" class="log-container">
-                <div class="log-entry">> Inicializando sistema de aprendizaje GFPI-F-135...</div>
+                <div class="log-entry">A pesar del daño, algo dentro de ti aún brilla. La evaluación comienza.</div>
             </div>
             <footer class="controls">
-                <button id="btn-atk" class="btn btn-atk" onclick="attackDash(true)">Ataque Básico</button>
-                <button id="btn-def" class="btn btn-def" onclick="actionDefend()">Escudo / Defender</button>
-                <button id="btn-cerebro" class="btn btn-cerebro" onclick="openCerebro()">RESPONDER PREGUNTA (Cargar Poder)</button>
-                <button id="btn-ult" class="btn btn-ultimate hidden" onclick="actionUltimate()">¡ATAQUE SUPREMO (ULTIMATE)!</button>
+                <button id="btn-atk" class="btn btn-atk" onclick="attackDash(true)">Embestida Orgánica</button>
+                <button id="btn-def" class="btn btn-def" onclick="actionDefend()">Abrazar/Resistir</button>
+                <button id="btn-cerebro" class="btn btn-cerebro" onclick="openCerebro()">RECORDAR CONOCIMIENTO (Pregunta GFPI)</button>
+                <button id="btn-ult" class="btn btn-ultimate hidden" onclick="actionUltimate()">¡LIBERAR ESPERANZA!</button>
             </footer>
         </div>
     </div>
 
-    <!-- MODAL DE PREGUNTAS -->
+    <!-- MODAL DE PREGUNTAS (Basadas en GFPI-F-135 V04) -->
     <div id="modal" class="modal">
         <div class="hologram-panel">
-            <h2 class="modal-title">EVALUACIÓN DE CONOCIMIENTO</h2>
+            <h2 class="modal-title">MEMORIA DE APRENDIZAJE</h2>
             <p id="modal-q" class="modal-q">Cargando...</p>
             <div id="modal-opts" class="opt-grid"></div>
         </div>
     </div>
 
     <script>
-        // --- MOTOR DE PARTÍCULAS DE FONDO ---
+        // --- EFECTO DE ESPORAS EN CANVAS (Rendimiento fluido a 60FPS) ---
         const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
-        let width, height, particles = [];
+        let w, h, spores = [];
 
         function initCanvas() {
-            width = canvas.width = window.innerWidth;
-            height¡Mil disculpas! Como en este momento se ha reiniciado el hilo de nuestra conversación, he perdido el contexto de lo que estábamos hablando y no tengo acceso a los mensajes anteriores. 
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+            spores = [];
+            for(let i = 0; i < 40; i++) {
+                spores.push({
+                    x: Math.random() * w, y: Math.random() * h,
+                    r: Math.random() * 2.5 + 0.5,
+                    vx: (Math.random() - 0.5) * 0.3, vy: -Math.random() * 0.5 - 0.2,
+                    alpha: Math.random() * 0.5 + 0.1
+                });
+            }
+        }
+        function drawCanvas() {
+            ctx.clearRect(0, 0, w, h);
+            spores.forEach(s => {
+                s.x += s.vx; s.y += s.vy;
+                if(s.y < 0) { s.y = h; s.x = Math.random() * w; }
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 207, 84, ${s.alpha})`;
+                ctx.fill();
+            });
+            requestAnimationFrame(drawCanvas);
+        }
+        window.addEventListener('resize', initCanvas);
+        initCanvas(); drawCanvas();
 
-Para poder hacer el texto exactamente como lo necesitas, ¿podrías recordarme rápidamente estos detalles?
+        // --- SISTEMA DEL JUEGO Y PREGUNTAS ---
+        const P_MAX_HP = 250;
+        let player = { hp: P_MAX_HP, defMode: false, ultimateReady: false };
+        let currentBoss = 0;
+        let isPlayerTurn = true;
 
-*   **El tema y las preguntas:** ¿Sobre qué es el tema y cuáles son las preguntas específicas que debo usar?
-*   **Los personajes:** ¿Quiénes son los personajes que deben aparecer en la respuesta y qué dinámica o rol tienen?
+        // Preguntas exactas solicitadas de GFPI-F-135 V04
+        const bosses = [
+            {
+                name: "PARÁSITO DEL DESCONOCIMIENTO", hp: 300, maxHp: 300, dmg: [15, 25],
+                trivia: {
+                    q: "Para entender con qué estás luchando, primero debes definir su base. ¿Qué es Software?",
+                    opts: [
+                        "Los componentes físicos y cables que conforman un computador.",
+                        "El conjunto de instrucciones, programas y reglas informáticas que permiten a un equipo realizar tareas.",
+                        "Una marca registrada de componentes electrónicos.",
+                        "El sistema de refrigeración de los servidores web."
+                    ],
+                    correct: 1
+                }
+            },
+            {
+                name: "SOMBRA LEGAL", hp: 450, maxHp: 450, dmg: [25, 35],
+                trivia: {
+                    q: "La sombra intenta encadenarte con restricciones. ¿Qué es una licencia de software?",
+                    opts: [
+                        "Un contrato entre el desarrollador y el usuario que define los derechos y restricciones de uso del programa.",
+                        "Un pago obligatorio al gobierno para poder usar internet.",
+                        "El código secreto que hace funcionar a los virus informáticos.",
+                        "Un diploma que se entrega a los programadores."
+                    ],
+                    correct: 0
+                }
+            },
+            {
+                name: "AMALGAMA DE CÓDIGO", hp: 600, maxHp: 600, dmg: [35, 45],
+                trivia: {
+                    q: "Esta criatura tiene múltiples formas. Para atacarla, debes conocer la división. Menciona los Tipos de licencia de software más comunes:",
+                    opts: [
+                        "Licencias Rápidas y Licencias Lentas.",
+                        "Licencias Analógicas y Licencias Digitales.",
+                        "Software Libre (permite modificación y distribución) y Software Propietario/Privativo (restringido).",
+                        "Licencias de hardware y Licencias de red."
+                    ],
+                    correct: 2
+                }
+            },
+            {
+                name: "EL ÚLTIMO RESTO DE OSCURIDAD", hp: 800, maxHp: 800, dmg: [40, 55],
+                trivia: {
+                    q: "Para devolver la esperanza y permitir que todos colaboren libremente. ¿Cuáles licencias son las más adecuadas y por qué?",
+                    opts: [
+                        "Las Licencias Propietarias, porque prohíben compartir y aseguran el aislamiento.",
+                        "Las Licencias Libres/Permisivas (como MIT o GPL), porque fomentan la colaboración, el estudio y la mejora comunitaria del código.",
+                        "Ninguna, es mejor no usar licencias y que todo sea un caos legal.",
+                        "Las licencias de un solo uso, porque así se cobra más dinero."
+                    ],
+                    correct: 1
+                }
+            }
+        ];
 
-En cuanto me compartas esa información de nuevo, lo armo integrando todo tal cual me lo pediste. ¡Quedo muy pendiente de tus indicaciones!
+        let enemy = null;
+
+        // --- LÓGICA Y ANIMACIONES ---
+        function updateUI() {
+            document.getElementById('p-hp').style.transform = `scaleX(${Math.max(0, player.hp / P_MAX_HP)})`;
+            document.getElementById('p-hp-txt').innerText = `${Math.max(0, Math.ceil(player.hp))} / ${P_MAX_HP}`;
+            document.getElementById('e-hp').style.transform = `scaleX(${Math.max(0, enemy.hp / enemy.maxHp)})`;
+            document.getElementById('e-hp-txt').innerText = `${Math.max(0, Math.ceil(enemy.hp))} / ${enemy.maxHp}`;
+        }
+
+        function printLog(msg, colorClass = "") {
+            const logBox = document.getElementById('log');
+            const div = document.createElement('div');
+            div.className = `log-entry ${colorClass}`;
+            div.innerText = msg;
+            logBox.appendChild(div);
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        function spawnDmgText(targetId, text, color) {
+            const el = document.getElementById(targetId);
+            const rect = el.getBoundingClientRect();
+            const span = document.createElement('span');
+            span.className = 'dmg-text'; span.style.color = color; span.innerText = text;
+            span.style.left = `${rect.left + (rect.width/2) - 20}px`;
+            span.style.top = `${rect.top}px`;
+            document.body.appendChild(span);
+            setTimeout(() => span.remove(), 1200);
+        }
+
+        function initLevel() {
+            if(currentBoss >= bosses.length) {
+                printLog("¡Tu esperanza ha purificado el sistema! Has ganado.", "text-hero");
+                document.querySelector('.controls').innerHTML = `<button class="btn btn-atk" style="grid-column: span 2;" onclick="location.reload()">Renacer (Jugar de nuevo)</button>`;
+                return;
+            }
+            enemy = JSON.parse(JSON.stringify(bosses[currentBoss]));
+            document.getElementById('e-name').innerText = enemy.name;
+            player.hp = P_MAX_HP; player.ultimateReady = false;
+            updateButtons(); updateUI();
+            printLog(`Una nueva entidad oscura aparece: ${enemy.name}`);
+        }
+
+        function attackDash(isPlayer) {
+            if(isPlayer && !isPlayerTurn) return;
+            if(isPlayer) { isPlayerTurn = false; player.defMode = false; updateButtons(false); }
+
+            const attacker = document.getElementById(isPlayer ? 'avatar-p' : 'avatar-e');
+            const target = document.getElementById(isPlayer ? 'avatar-e' : 'avatar-p');
+            const dashClass = isPlayer ? 'dash-right' : 'dash-left';
+
+            attacker.classList.add(dashClass);
+
+            setTimeout(() => {
+                let dmg = 0;
+                if(isPlayer) {
+                    dmg = Math.floor(Math.random() * 20) + 20; 
+                    enemy.hp -= dmg;
+                    printLog(`Te lanzas con esfuerzo. Daño: ${dmg}`, "text-hero");
+                } else {
+                    dmg = Math.floor(Math.random() * (enemy.dmg[1] - enemy.dmg[0])) + enemy.dmg[0];
+                    if(player.defMode) { dmg = Math.floor(dmg * 0.4); printLog("Resistes valientemente parte del daño."); }
+                    player.hp -= dmg;
+                    printLog(`La sombra te golpea. Daño: ${dmg}`, "text-enemy");
+                }
+
+                target.classList.add('hit-shake');
+                spawnDmgText(isPlayer ? 'avatar-e' : 'avatar-p', `-${dmg}`, isPlayer ? '#ffcf54' : '#ff3366');
+                updateUI();
+
+                setTimeout(() => {
+                    attacker.classList.remove(dashClass);
+                    target.classList.remove('hit-shake');
+                    setTimeout(() => checkGameLoop(isPlayer), 500);
+                }, 400);
+            }, 400);
+        }
+
+        function actionDefend() {
+            if(!isPlayerTurn) return;
+            isPlayerTurn = false; player.defMode = true; updateButtons(false);
+            printLog("Te envuelves en un abrazo protector. Recibirás menos daño.", "text-hero");
+            document.getElementById('avatar-p').style.filter = "drop-shadow(0 0 30px rgba(255, 207, 84, 0.6))";
+            setTimeout(() => attackDash(false), 1000);
+        }
+
+        function actionUltimate() {
+            if(!isPlayerTurn || !player.ultimateReady) return;
+            isPlayerTurn = false; player.ultimateReady = false; updateButtons(false);
+            
+            printLog("¡Liberas toda la luz acumulada de tu interior!", "text-hero");
+            
+            const burst = document.getElementById('hope-burst');
+            burst.classList.add('active');
+            
+            setTimeout(() => {
+                const dmg = Math.floor(Math.random() * 100) + 200; // Daño masivo sanador
+                enemy.hp -= dmg;
+                document.getElementById('avatar-e').classList.add('hit-shake');
+                spawnDmgText('avatar-e', `-${dmg} LUZ`, '#ffcf54');
+                updateUI();
+                
+                setTimeout(() => {
+                    burst.classList.remove('active');
+                    document.getElementById('avatar-e').classList.remove('hit-shake');
+                    setTimeout(() => checkGameLoop(true), 500);
+                }, 500);
+            }, 300);
+        }
+
+        function checkGameLoop(wasPlayerTurn) {
+            document.getElementById('avatar-p').style.filter = "drop-shadow(0 15px 15px rgba(109, 138, 106, 0.3))"; // Reset visual
+            
+            if(enemy.hp <= 0) {
+                printLog(`La sombra se disipa suavemente.`, "text-hero");
+                setTimeout(() => { currentBoss++; initLevel(); isPlayerTurn = true; }, 2000);
+            } else if (player.hp <= 0) {
+                printLog(`Tus fuerzas se desvanecen... por ahora.`, "text-enemy");
+                document.querySelector('.controls').innerHTML = `<button class="btn btn-atk" style="grid-column: span 2;" onclick="location.reload()">Intentar de nuevo</button>`;
+            } else {
+                if(wasPlayerTurn) setTimeout(() => attackDash(false), 600);
+                else { isPlayerTurn = true; updateButtons(true); }
+            }
+        }
+
+        // --- SISTEMA DE PREGUNTAS ---
+        function openCerebro() {
+            if(!isPlayerTurn) return;
+            const t = enemy.trivia;
+            document.getElementById('modal-q').innerText = t.q;
+            const grid = document.getElementById('modal-opts');
+            grid.innerHTML = '';
+            t.opts.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'opt-btn'; btn.innerText = opt;
+                btn.onclick = () => evalCerebro(idx, t.correct);
+                grid.appendChild(btn);
+            });
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function evalCerebro(selected, correct) {
+            document.getElementById('modal').classList.remove('active');
+            if(selected === correct) {
+                printLog("¡Recordaste correctamente! Tu esperanza brilla con fuerza.", "text-hero");
+                player.ultimateReady = true; updateButtons(true);
+            } else {
+                printLog("Te has confundido y la sombra aprovecha la duda. Pierdes 40 de vida.", "text-enemy");
+                player.hp -= 40; spawnDmgText('avatar-p', "-40", "#ff3366");
+                document.getElementById('avatar-p').classList.add('hit-shake');
+                updateUI();
+                setTimeout(() => { document.getElementById('avatar-p').classList.remove('hit-shake'); }, 400);
+                
+                isPlayerTurn = false; updateButtons(false);
+                if(player.hp <= 0) setTimeout(() => checkGameLoop(false), 500);
+                else setTimeout(() => attackDash(false), 1500);
+            }
+        }
+
+        function updateButtons(enable = null) {
+            if(enable !== null) document.querySelectorAll('.controls .btn').forEach(b => b.disabled = !enable);
+            if(player.ultimateReady) {
+                document.getElementById('btn-cerebro').classList.add('hidden');
+                document.getElementById('btn-ult').classList.remove('hidden');
+            } else {
+                document.getElementById('btn-cerebro').classList.remove('hidden');
+                document.getElementById('btn-ult').classList.add('hidden');
+            }
+        }
+
+        initLevel();
+    </script>
+</body>
+</html>
 
