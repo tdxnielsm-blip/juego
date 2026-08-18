@@ -3,529 +3,499 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>X-Men '97: Danger Room Protocol</title>
-    
-    <!-- Fuentes de cómic noventero -->
+    <title>X-Men '97 - Arcade Combat</title>
     <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Teko:wght@600&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            /* Paleta de colores X-Men '97 */
-            --x-blue: #0044cc;
-            --x-yellow: #ffcc00;
-            --mutant-red: #e62e00;
-            --sword-cyan: #00ffff;
-            --sword-pink: #ff00ff;
-            --sentinel-purple: #660099;
-            --sentinel-pink: #cc0066;
-            --ink-black: #0f0f0f;
-            --ui-font: 'Teko', sans-serif;
-            --comic-font: 'Bangers', cursive;
+            --blue: #0033cc; --yellow: #ffcc00; --red: #e62e00;
+            --sword1: #00ffff; --sword2: #ff00ff;
+            --bg-dark: #050a1f; --font-ui: 'Teko', sans-serif; --font-comic: 'Bangers', cursive;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
 
         body {
-            background-color: #111; color: #fff;
-            font-family: var(--ui-font); overflow: hidden;
-            width: 100vw; height: 100vh;
+            background-color: #000; color: #fff; font-family: var(--font-ui);
+            overflow: hidden; width: 100vw; height: 100vh;
             display: flex; flex-direction: column;
-            /* Efecto CRT ligero para TV de los 90s */
-            box-shadow: inset 0 0 100px rgba(0,0,0,0.9);
+            box-shadow: inset 0 0 150px rgba(0,0,0,0.9);
         }
 
-        /* --- ESCENARIO: LA SALA DE PELIGRO (DANGER ROOM) --- */
+        /* EFECTOS DE CÁMARA */
+        .camera { width: 100%; height: 100%; position: absolute; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .shake { animation: camShake 0.4s ease-in-out; }
+        .zoom-in { transform: scale(1.1) translateY(5%); }
+        @keyframes camShake {
+            0%, 100% { transform: translate(0,0); }
+            20% { transform: translate(-15px, 10px); }
+            40% { transform: translate(15px, -15px); }
+            60% { transform: translate(-10px, 15px); }
+            80% { transform: translate(10px, -10px); }
+        }
+
+        /* ESCENARIO: DANGER ROOM 90S */
         .danger-room {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
-            background: linear-gradient(180deg, #001133 0%, #002266 100%);
-            perspective: 1000px;
+            position: absolute; width: 100%; height: 100%; z-index: 1;
+            background: linear-gradient(to bottom, #001133, #000); perspective: 800px;
         }
-
-        /* Cuadrícula Holográfica */
         .grid {
-            position: absolute; bottom: -50%; left: -50%; width: 200%; height: 150%;
+            position: absolute; bottom: 0; left: -50%; width: 200%; height: 60%;
             background-image: 
-                linear-gradient(rgba(0, 255, 255, 0.3) 2px, transparent 2px),
-                linear-gradient(90deg, rgba(0, 255, 255, 0.3) 2px, transparent 2px);
-            background-size: 50px 50px;
-            transform: rotateX(70deg);
-            animation: gridMove 5s linear infinite;
+                linear-gradient(var(--sword1) 1px, transparent 1px),
+                linear-gradient(90deg, var(--sword1) 1px, transparent 1px);
+            background-size: 60px 60px;
+            transform: rotateX(75deg); opacity: 0.3;
+            animation: gridScroll 2s linear infinite;
+        }
+        @keyframes gridScroll { from { background-position: 0 0; } to { background-position: 0 60px; } }
+        
+        .hazard {
+            position: absolute; bottom: 20%; width: 100%; height: 25px;
+            background: repeating-linear-gradient(45deg, var(--yellow), var(--yellow) 20px, #000 20px, #000 40px);
+            border-top: 3px solid #000; z-index: 2;
         }
 
-        @keyframes gridMove { from { background-position: 0 0; } to { background-position: 0 50px; } }
-
-        /* Cintas de Precaución Clásicas de X-Men */
-        .hazard-tape {
-            position: absolute; bottom: 15vh; left: 0; width: 100%; height: 30px; z-index: 2;
-            background: repeating-linear-gradient( 45deg, var(--x-yellow), var(--x-yellow) 20px, #000 20px, #000 40px );
-            border-top: 4px solid var(--ink-black); border-bottom: 4px solid var(--ink-black);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-        }
-
-        /* --- INTERFAZ TIPO ARCADE DE LOS 90S --- */
+        /* HUD - INTERFAZ DE COMBATE */
         .hud {
-            position: relative; z-index: 10; display: flex; justify-content: space-between;
-            padding: 15px 30px; background: rgba(0, 0, 0, 0.8);
-            border-bottom: 4px solid var(--x-yellow);
+            position: relative; z-index: 20; padding: 10px 40px; display: flex; justify-content: space-between;
+            background: linear-gradient(180deg, rgba(0,0,0,0.9), transparent);
         }
+        .plate { width: 40%; }
+        .plate.enemy { text-align: right; }
+        .name { font-family: var(--font-comic); font-size: 2.5rem; letter-spacing: 2px; text-shadow: 2px 2px 0 #000; }
+        .name.hero { color: var(--yellow); }
+        .name.boss { color: #ff3366; }
+        .level-badge { position: absolute; left: 50%; top: 20px; transform: translateX(-50%); font-family: var(--font-comic); font-size: 3rem; color: #fff; text-shadow: 0 0 10px var(--blue); }
 
-        .fighter-plate { width: 40%; display: flex; flex-direction: column; gap: 5px; }
-        .enemy-plate { align-items: flex-end; }
+        /* BARRAS DE VIDA (Con efecto de daño secundario) */
+        .hp-box { width: 100%; height: 30px; background: #222; border: 4px solid #000; position: relative; }
+        .hp-bg { position: absolute; height: 100%; width: 100%; background: #fff; transition: width 0.6s ease-out; }
+        .hp-fill { position: absolute; height: 100%; width: 100%; transition: width 0.2s; }
+        .hp-fill.hero { background: #00ff00; }
+        .hp-fill.boss { background: #ff0000; right: 0; }
+        .plate.enemy .hp-bg { right: 0; }
 
-        .name {
-            font-family: var(--comic-font); font-size: 2.5rem; letter-spacing: 2px;
-            text-transform: uppercase; text-shadow: 2px 2px 0 var(--ink-black), -1px -1px 0 var(--ink-black);
-        }
-        .hero-name { color: var(--x-yellow); }
-        .boss-name { color: var(--sentinel-pink); }
-
-        .hp-bar-bg {
-            width: 100%; height: 35px; background: #222;
-            border: 4px solid var(--ink-black); border-radius: 5px;
-            position: relative; overflow: hidden; box-shadow: inset 0 5px 10px rgba(0,0,0,0.8);
-        }
-
-        .hp-fill {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            transition: width 0.3s ease-out;
-        }
-        .player-hp { background: linear-gradient(180deg, #00ff00 0%, #009900 100%); }
-        .enemy-hp { right: 0; left: auto; background: linear-gradient(180deg, #ff3300 0%, #990000 100%); }
-
-        /* --- CAMPO DE BATALLA --- */
-        .arena { flex: 1; position: relative; z-index: 5; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 18vh; }
-
-        .avatar {
-            position: absolute; bottom: 18vh; transition: 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
-            filter: drop-shadow(10px 15px 5px rgba(0,0,0,0.6));
-        }
-
-        /* ANIMACIONES RESPIRATORIAS (Animación Tradicional) */
-        .hero { left: 10%; width: 350px; height: 350px; animation: breathe 1.5s infinite alternate; }
-        .boss { right: 5%; width: 500px; height: 500px; animation: breatheBoss 2s infinite alternate; }
-
-        @keyframes breathe { 0% { transform: scaleY(1); } 100% { transform: scaleY(0.98) translateY(5px); } }
-        @keyframes breatheBoss { 0% { transform: scaleY(1); } 100% { transform: scaleY(1.02) translateY(-10px); } }
-
-        /* ANIMACIONES DE ATAQUE */
-        .atk-hero { transform: translate(30vw, -30px) scale(1.1) rotate(15deg) !important; z-index: 20; }
-        .atk-boss { transform: translate(-30vw, -50px) scale(1.1) !important; z-index: 20; }
+        /* ARENA Y SPRITES */
+        .arena { flex: 1; position: relative; z-index: 10; display: flex; align-items: flex-end; padding-bottom: 22%; }
         
-        .hit { animation: flashHit 0.2s; filter: brightness(2) sepia(1) hue-rotate(-50deg) saturate(5) !important; }
-        @keyframes flashHit { 0% { transform: translate(0,0); } 25% { transform: translate(-20px, 0); } 75% { transform: translate(20px, 0); } 100% { transform: translate(0,0); } }
+        .fighter { position: absolute; filter: drop-shadow(0 15px 10px rgba(0,0,0,0.8)); transition: all 0.3s; }
+        .fighter.p1 { left: 15%; width: 280px; height: 350px; }
+        .fighter.p2 { right: 15%; width: 400px; height: 450px; }
 
-        /* ONOMATOPEYAS DE CÓMIC ("BAM!", "SLASH!") */
-        .comic-pow {
-            position: absolute; font-family: var(--comic-font); font-size: 6rem;
-            color: #ffea00; text-shadow: 4px 4px 0 #ff0000, 8px 8px 0 #000;
-            z-index: 50; pointer-events: none; transform: scale(0) rotate(-15deg);
-            animation: powPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        /* ANIMACIONES DE COMBATE (ESTILO SPRITE/KEYFRAME) */
+        /* 1. Postura de Combate (Idle) */
+        .idle .body { animation: breathe 1.2s steps(4) infinite alternate; transform-origin: bottom; }
+        .idle .tail { animation: tailSwish 2s ease-in-out infinite alternate; transform-origin: top left; }
+        .idle .arm-f { animation: armBob 1.2s infinite alternate; }
+
+        @keyframes breathe { 0% { transform: scaleY(1); } 100% { transform: scaleY(0.96) translateY(10px); } }
+        @keyframes tailSwish { 0% { transform: rotate(0deg); } 100% { transform: rotate(-25deg); } }
+        @keyframes armBob { 0% { transform: translateY(0); } 100% { transform: translateY(4px); } }
+
+        /* 2. Animación de Ataque (Dash y Slash) */
+        .atk-dash { transform: translateX(35vw) scale(1.1); z-index: 30; }
+        .atk-dash .arm-f { transform: rotate(45deg) translate(20px, -20px); transition: 0.1s; }
+        .atk-dash .sword-f { filter: drop-shadow(0 0 20px var(--sword1)) brightness(1.5); }
+        
+        .atk-boss { transform: translateX(-30vw) scale(1.05); z-index: 30; }
+
+        /* 3. Animación de Daño (Hit) */
+        .hit { animation: takeDamage 0.3s steps(3); filter: brightness(2) sepia(1) hue-rotate(-50deg) saturate(5) !important; }
+        @keyframes takeDamage { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-20px); } }
+
+        /* EFECTOS VISUALES (CORTES Y NÚMEROS) */
+        .slash-fx {
+            position: absolute; width: 200px; height: 10px; background: #fff;
+            box-shadow: 0 0 20px var(--sword1), 0 0 40px var(--sword2);
+            border-radius: 50%; z-index: 50; pointer-events: none;
+            animation: slashAnim 0.2s ease-out forwards; transform-origin: center;
         }
-        @keyframes powPop { 
-            0% { transform: scale(0) rotate(-15deg); opacity: 0; } 
-            50% { transform: scale(1.2) rotate(10deg); opacity: 1; } 
-            100% { transform: scale(1) rotate(5deg); opacity: 0; margin-top: -50px; } 
+        @keyframes slashAnim { 
+            0% { transform: scaleX(0) rotate(var(--rot)); opacity: 1; } 
+            50% { transform: scaleX(1.5) scaleY(3) rotate(var(--rot)); opacity: 1; } 
+            100% { transform: scaleX(2) rotate(var(--rot)); opacity: 0; } 
         }
 
-        /* --- PANEL DE CONTROLES X-MEN --- */
-        .panel { 
-            position: relative; z-index: 10; background: var(--x-blue); 
-            border-top: 6px solid var(--x-yellow); display: flex;
-            box-shadow: 0 -10px 30px rgba(0,0,0,0.8);
+        .dmg-text {
+            position: absolute; font-family: var(--font-comic); font-size: 5rem;
+            color: #ffea00; text-shadow: 4px 4px 0 #ff0000, 6px 6px 0 #000;
+            z-index: 60; pointer-events: none;
+            animation: popText 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
+        @keyframes popText { 0% { transform: scale(0); opacity:1; } 50% { transform: scale(1.2) translateY(-40px); } 100% { transform: scale(1) translateY(-80px); opacity:0; } }
 
-        .log-container {
-            width: 40%; background: #000; border-right: 4px solid var(--x-yellow);
-            padding: 10px 20px; font-size: 1.5rem; color: #00ffff;
-            display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden;
-            font-family: var(--ui-font); text-shadow: 1px 1px 0 #000; line-height: 1.2;
+        /* PANEL DE CONTROL */
+        .panel {
+            position: relative; z-index: 20; height: 150px; background: var(--blue);
+            border-top: 6px solid var(--yellow); display: flex; box-shadow: 0 -10px 20px rgba(0,0,0,0.8);
         }
-
-        .btn-grid { width: 60%; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; }
-
+        .console {
+            width: 40%; background: #000; padding: 15px; color: #00ffcc;
+            font-size: 1.4rem; border-right: 4px solid var(--yellow);
+            display: flex; flex-direction: column; justify-content: flex-end; line-height: 1.2; text-shadow: 1px 1px 0 #000;
+        }
+        .controls { width: 60%; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; }
+        
         .btn {
-            background: #e6e6e6; border: 3px solid var(--ink-black); border-radius: 8px;
-            color: var(--ink-black); padding: 15px; font-family: var(--comic-font); font-size: 1.8rem;
-            cursor: pointer; transition: 0.1s; text-transform: uppercase;
-            box-shadow: inset -3px -3px 0px rgba(0,0,0,0.3), 4px 4px 0px var(--ink-black);
+            background: #ddd; border: 3px solid #000; font-family: var(--font-comic); font-size: 2rem;
+            color: #000; cursor: pointer; transition: 0.1s; text-transform: uppercase; border-radius: 5px;
+            box-shadow: 4px 4px 0 #000;
         }
-        .btn:active:not(:disabled) { box-shadow: inset 3px 3px 0px rgba(0,0,0,0.3), 0px 0px 0px var(--ink-black); transform: translate(4px, 4px); }
-        .btn:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none; }
+        .btn:active:not(:disabled) { transform: translate(4px, 4px); box-shadow: 0px 0px 0 #000; }
+        .btn:disabled { filter: grayscale(1); opacity: 0.5; cursor: not-allowed; }
         
-        .btn-atk { background: var(--mutant-red); color: #fff; }
-        .btn-def { background: var(--x-yellow); color: var(--ink-black); }
-        .btn-cerebro { grid-column: span 2; background: #00ccff; color: var(--ink-black); }
-        .btn-ult { grid-column: span 2; background: #ff00ff; color: #fff; border-color: #fff; text-shadow: 2px 2px 0 #000; }
+        .btn-atk { background: var(--red); color: #fff; }
+        .btn-def { background: var(--yellow); }
+        .btn-cer { grid-column: span 2; background: var(--sword1); }
+        .btn-ult { grid-column: span 2; background: var(--sword2); color: #fff; border-color: #fff; text-shadow: 2px 2px 0 #000; animation: pulseBtn 1s infinite alternate; }
+        @keyframes pulseBtn { from { filter: brightness(1); } to { filter: brightness(1.3); } }
 
-        /* --- MODAL (CEREBRO / PREGUNTAS) --- */
+        /* MODAL PREGUNTAS */
         .modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,20,0.9); display: flex; justify-content: center; align-items: center;
             opacity: 0; pointer-events: none; transition: 0.2s; z-index: 100;
         }
         .modal.active { opacity: 1; pointer-events: auto; }
-
-        .modal-box {
-            background: var(--x-blue); border: 6px solid var(--x-yellow); padding: 40px;
-            width: 90%; max-width: 800px; box-shadow: 20px 20px 0 rgba(0,0,0,0.5);
-            border-radius: 10px;
-        }
-        .modal-title { font-family: var(--comic-font); color: var(--x-yellow); font-size: 3.5rem; margin-bottom: 10px; text-shadow: 2px 2px 0 #000; }
-        .modal-q { font-size: 2rem; margin-bottom: 20px; color: #fff; line-height: 1.1; }
-        
-        .opt-list { display: flex; flex-direction: column; gap: 10px; }
-        .opt-btn {
-            background: #fff; border: 3px solid var(--ink-black); color: var(--ink-black);
-            padding: 15px 20px; font-family: var(--ui-font); font-size: 1.6rem;
-            cursor: pointer; text-align: left; font-weight: bold; border-radius: 5px;
-            box-shadow: 4px 4px 0 var(--ink-black); transition: 0.1s;
-        }
-        .opt-btn:hover { background: var(--x-yellow); transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--ink-black); }
+        .m-box { background: var(--blue); border: 5px solid var(--yellow); padding: 40px; width: 90%; max-width: 800px; border-radius: 10px; }
+        .m-title { font-family: var(--font-comic); color: var(--yellow); font-size: 3rem; margin-bottom: 15px; text-shadow: 2px 2px 0 #000; }
+        .m-q { font-size: 1.8rem; margin-bottom: 20px; line-height: 1.2; }
+        .opt { background: #fff; border: 3px solid #000; padding: 15px; font-family: var(--font-ui); font-size: 1.5rem; font-weight: bold; cursor: pointer; width: 100%; text-align: left; margin-bottom: 10px; transition: 0.1s; box-shadow: 3px 3px 0 #000; }
+        .opt:hover { background: var(--yellow); transform: translate(-2px, -2px); }
         .hidden { display: none !important; }
 
-        /* Estilo general para SVG: Líneas gruesas de cómic */
-        svg { overflow: visible; }
-        .ink { stroke: var(--ink-black); stroke-width: 4; stroke-linejoin: round; stroke-linecap: round; }
+        svg { overflow: visible; stroke: #000; stroke-width: 3; stroke-linejoin: round; }
     </style>
 </head>
 <body>
 
-    <!-- ESCENARIO DANGER ROOM -->
-    <div class="danger-room">
-        <div class="grid"></div>
-        <div class="hazard-tape"></div>
+    <div class="camera" id="cam">
+        <div class="danger-room"><div class="grid"></div><div class="hazard"></div></div>
+
+        <div class="hud">
+            <div class="plate">
+                <div class="name hero">MUTANTE CARMESÍ</div>
+                <div class="hp-box"><div id="p-hp-bg" class="hp-bg"></div><div id="p-hp" class="hp-fill hero"></div></div>
+            </div>
+            <div id="level-txt" class="level-badge">NIVEL 1</div>
+            <div class="plate enemy">
+                <div id="e-name" class="name boss">CENTINELA MK-I</div>
+                <div class="hp-box"><div id="e-hp-bg" class="hp-bg"></div><div id="e-hp" class="hp-fill boss"></div></div>
+            </div>
+        </div>
+
+        <main class="arena">
+            <!-- HÉROE (Joven, delgado, cuernos, cruz, espadas, cola) -->
+            <div id="p1" class="fighter p1 idle">
+                <svg viewBox="0 0 300 300" width="100%" height="100%">
+                    <defs>
+                        <filter id="glowC"><feGaussianBlur stdDeviation="4" result="blur" /><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                        <filter id="glowP"><feGaussianBlur stdDeviation="4" result="blur" /><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                    </defs>
+
+                    <!-- GRUPO CUERPO PRINCIPAL -->
+                    <g class="body">
+                        <!-- Cola (Animada independientemente) -->
+                        <path class="tail" d="M 120 180 Q 40 250 20 150 Q 10 100 40 80 L 50 100 Q 30 150 110 200 Z" fill="var(--red)"/>
+                        
+                        <!-- Piernas y Botas -->
+                        <path d="M 140 180 L 110 260 L 140 260 L 150 200 Z" fill="var(--blue)"/>
+                        <path d="M 110 230 L 140 260 L 110 260 Z" fill="var(--yellow)"/>
+                        <path d="M 160 180 L 180 260 L 210 260 L 180 200 Z" fill="var(--blue)"/>
+                        <path d="M 180 230 L 210 260 L 180 260 Z" fill="var(--yellow)"/>
+
+                        <!-- Brazo y Espada Trasera (Rosa) -->
+                        <path d="M 140 130 L 100 150 L 90 180" fill="none" stroke="var(--red)" stroke-width="12"/>
+                        <polygon points="90,170 10,60 25,50 105,160" fill="#fff" stroke="var(--sword2)" filter="url(#glowP)"/>
+                        
+                        <!-- Torso (Traje X-Men) -->
+                        <path d="M 130 110 Q 120 150 140 190 L 170 190 Q 180 150 170 110 Z" fill="var(--blue)"/>
+                        <path d="M 130 110 L 170 190 M 170 110 L 140 190" fill="none" stroke="var(--yellow)" stroke-width="8"/>
+                        <circle cx="155" cy="150" r="12" fill="var(--red)"/>
+                        <path d="M 149 144 L 161 156 M 161 144 L 149 156" fill="none" stroke="#fff" stroke-width="3"/>
+
+                        <!-- Cruz de Oro -->
+                        <path d="M 140 100 Q 155 120 165 100" fill="none" stroke="#ffcc00" stroke-width="2"/>
+                        <rect x="152" y="115" width="4" height="12" fill="#ffcc00" stroke="none"/>
+                        <rect x="148" y="119" width="12" height="4" fill="#ffcc00" stroke="none"/>
+
+                        <!-- Cabeza, Cuernos y Ojos -->
+                        <path d="M 135 70 Q 150 50 175 70 L 170 100 L 140 100 Z" fill="var(--red)"/>
+                        <path d="M 140 65 L 120 30 L 150 55 Z" fill="#ddd"/>
+                        <path d="M 170 65 L 190 30 L 160 55 Z" fill="#ddd"/>
+                        <!-- Ojos blancos -->
+                        <polygon points="142,78 152,82 145,85" fill="#fff" stroke="none"/>
+                        <polygon points="168,78 158,82 165,85" fill="#fff" stroke="none"/>
+                    </g>
+
+                    <!-- GRUPO BRAZO DELANTERO (Se mueve al atacar) -->
+                    <g class="arm-f" style="transform-origin: 160px 120px;">
+                        <path d="M 160 120 L 200 150 L 190 180" fill="none" stroke="var(--red)" stroke-width="14"/>
+                        <!-- Espada Frontal (Cyan) -->
+                        <polygon class="sword-f" points="190,170 280,100 290,115 200,185" fill="#fff" stroke="var(--sword1)" filter="url(#glowC)"/>
+                        <circle cx="195" cy="180" r="10" fill="var(--red)"/>
+                    </g>
+                </svg>
+            </div>
+
+            <!-- VILLANO -->
+            <div id="p2" class="fighter p2 idle">
+                <svg viewBox="0 0 400 400" width="100%" height="100%">
+                    <g class="body">
+                        <!-- Cuerpo -->
+                        <path d="M 150 150 L 80 200 L 100 300 L 130 280 Z" fill="#660099"/>
+                        <path d="M 180 100 L 300 100 L 320 280 L 180 280 Z" fill="#660099"/>
+                        <path d="M 190 120 L 290 120 L 300 180 L 190 190 Z" fill="#cc0066"/>
+                        <circle cx="245" cy="155" r="25" fill="var(--yellow)"/>
+                        <!-- Cabeza -->
+                        <path d="M 210 30 L 270 30 L 280 100 L 200 100 Z" fill="#660099"/>
+                        <path d="M 205 75 L 285 75 L 275 110 L 215 110 Z" fill="#cc0066"/>
+                        <polygon points="220,50 240,55 225,65" fill="var(--yellow)"/>
+                        <polygon points="260,50 240,55 255,65" fill="var(--yellow)"/>
+                        <!-- Brazo Frontal -->
+                        <path d="M 270 140 L 360 200 L 320 300 L 270 260 Z" fill="#660099"/>
+                        <rect x="290" y="280" width="60" height="60" rx="10" fill="#cc0066"/>
+                    </g>
+                </svg>
+            </div>
+        </main>
     </div>
-
-    <!-- UI -->
-    <div class="hud">
-        <div class="fighter-plate">
-            <div class="name hero-name">Joven Mutante</div>
-            <div class="hp-bar-bg"><div id="p-hp" class="hp-fill player-hp"></div></div>
-        </div>
-        <div class="fighter-plate enemy-plate">
-            <div id="e-name" class="name boss-name">Centinela MK-I</div>
-            <div class="hp-bar-bg"><div id="e-hp" class="hp-fill enemy-hp"></div></div>
-        </div>
-    </div>
-
-    <!-- CAMPO DE BATALLA (PERSONAJES ESTILO ANIMADO 90S) -->
-    <main class="arena">
-        
-        <!-- EL HÉROE: Joven delgado, piel roja, traje azul/amarillo, cruz de oro, 2 espadas, cola, cuernos -->
-        <div id="hero" class="avatar hero">
-            <svg viewBox="0 0 300 300" width="100%" height="100%">
-                <defs>
-                    <!-- Brillo de las espadas -->
-                    <filter id="swordGlowC"><feGaussianBlur stdDeviation="3" result="blur" /><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-                    <filter id="swordGlowP"><feGaussianBlur stdDeviation="3" result="blur" /><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-                </defs>
-
-                <!-- COLA DEMONÍACA (Detrás del cuerpo) -->
-                <path d="M 120 200 C 60 250 20 180 40 120 C 50 90 80 80 110 90 L 120 80 L 100 100 Z" fill="var(--mutant-red)" class="ink"/>
-                <!-- Punta de la cola -->
-                <path d="M 110 90 L 130 60 L 140 85 Z" fill="var(--mutant-red)" class="ink"/>
-
-                <!-- ESPADA TRASERA (Magenta) -->
-                <polygon points="100,160 20,40 35,30 115,150" fill="#fff" stroke="var(--sword-pink)" stroke-width="4" filter="url(#swordGlowP)"/>
-                <rect x="95" y="145" width="30" height="10" fill="#333" class="ink" transform="rotate(-45 110 150)"/>
-                <!-- Brazo trasero (Delgado, rojo) -->
-                <path d="M 150 130 L 120 140 L 105 160" fill="none" class="ink"/>
-                <path d="M 145 135 L 115 145 L 100 165" fill="none" class="ink"/>
-
-                <!-- PIERNAS Y TRAJE (Delgado, ágil, agachado) -->
-                <!-- Pierna Trasera -->
-                <path d="M 150 200 L 130 250 L 150 280 L 170 280 L 160 250 Z" fill="var(--x-blue)" class="ink"/>
-                <!-- Bota Trasera -->
-                <path d="M 130 250 L 150 280 L 170 280 L 160 250 Z" fill="var(--x-yellow)" class="ink"/>
-
-                <!-- Pierna Delantera -->
-                <path d="M 170 200 L 200 240 L 190 290 L 220 290 L 220 240 Z" fill="var(--x-blue)" class="ink"/>
-                <!-- Bota Delantera -->
-                <path d="M 200 240 L 190 290 L 220 290 L 220 240 Z" fill="var(--x-yellow)" class="ink"/>
-
-                <!-- TORSO (Joven, delgado, traje azul con arnés amarillo X-Men) -->
-                <path d="M 140 120 C 130 160 140 200 160 210 C 180 200 190 160 180 120 Z" fill="var(--x-blue)" class="ink"/>
-                <!-- Arnés Amarillo en X -->
-                <path d="M 140 120 L 180 200 M 180 120 L 140 200" fill="none" stroke="var(--x-yellow)" stroke-width="12" class="ink"/>
-                <!-- Hebilla con la X -->
-                <circle cx="160" cy="160" r="15" fill="var(--mutant-red)" class="ink"/>
-                <path d="M 153 153 L 167 167 M 167 153 L 153 167" fill="none" stroke="#fff" stroke-width="4"/>
-
-                <!-- CRUZ DE ORO (Colgando del cuello sobre el pecho) -->
-                <path d="M 150 110 C 155 130 165 130 170 110" fill="none" stroke="#ffcc00" stroke-width="2"/> <!-- Cadena -->
-                <!-- La Cruz -->
-                <rect x="158" y="125" width="4" height="15" fill="#ffcc00" class="ink" stroke-width="1"/>
-                <rect x="153" y="130" width="14" height="4" fill="#ffcc00" class="ink" stroke-width="1"/>
-
-                <!-- CABEZA (Piel carmesí, joven, cuernos, ojos blancos) -->
-                <path d="M 145 70 C 145 50 175 50 175 70 L 180 100 L 160 115 L 140 100 Z" fill="var(--mutant-red)" class="ink"/>
-                <!-- Pelo noventero revuelto/Sombra -->
-                <path d="M 140 75 L 145 60 L 155 65 L 160 50 L 165 65 L 175 55 L 180 75 Z" fill="#000"/>
-                <!-- Cuernos (Saliendo de la frente) -->
-                <path d="M 150 65 L 140 40 L 155 55 Z" fill="#ddd" class="ink"/>
-                <path d="M 170 65 L 180 40 L 165 55 Z" fill="#ddd" class="ink"/>
-                <!-- Ojos Blancos (Estilo cómic, sin pupilas, cejas fruncidas) -->
-                <polygon points="148,80 158,85 152,88" fill="#fff" class="ink" stroke-width="2"/>
-                <polygon points="172,80 162,85 168,88" fill="#fff" class="ink" stroke-width="2"/>
-                <!-- Boca (Mueca desafiante) -->
-                <path d="M 155 100 Q 160 98 165 102" fill="none" stroke="#000" stroke-width="2"/>
-
-                <!-- BRAZO DELANTERO Y ESPADA (Cyan) -->
-                <path d="M 175 125 L 210 160 L 200 180" fill="none" class="ink" stroke-width="14" stroke="var(--mutant-red)"/>
-                <!-- Guantelete amarillo -->
-                <path d="M 195 155 L 215 175 L 205 185 L 185 165 Z" fill="var(--x-yellow)" class="ink"/>
-                
-                <!-- Espada Frontal (Apuntando al enemigo) -->
-                <polygon points="200,175 290,110 295,125 210,185" fill="#fff" stroke="var(--sword-cyan)" stroke-width="4" filter="url(#swordGlowC)"/>
-                <rect x="195" y="170" width="30" height="12" fill="#333" class="ink" transform="rotate(35 200 170)"/>
-                <!-- Mano sosteniendo -->
-                <circle cx="205" cy="180" r="10" fill="var(--mutant-red)" class="ink"/>
-
-            </svg>
-        </div>
-
-        <!-- EL VILLANO: Centinela Gigante (Robot morado y rosa clásico) -->
-        <div id="boss" class="avatar boss">
-            <svg viewBox="0 0 400 400" width="100%" height="100%">
-                <!-- Brazo trasero -->
-                <path d="M 150 150 L 50 200 L 80 300 L 120 280 Z" fill="var(--sentinel-purple)" class="ink"/>
-                <!-- Mano gigante -->
-                <rect x="50" y="280" width="60" height="60" rx="10" fill="var(--sentinel-pink)" class="ink"/>
-
-                <!-- Cuerpo Robot -->
-                <path d="M 180 100 L 300 100 L 320 250 L 200 280 Z" fill="var(--sentinel-purple)" class="ink"/>
-                <!-- Placas del pecho -->
-                <path d="M 190 120 L 290 120 L 300 180 L 200 190 Z" fill="var(--sentinel-pink)" class="ink"/>
-                <!-- Núcleo brillante -->
-                <circle cx="250" cy="150" r="30" fill="var(--x-yellow)" class="ink"/>
-                <circle cx="250" cy="150" r="15" fill="#fff"/>
-
-                <!-- Cabeza de Centinela -->
-                <path d="M 220 30 L 280 30 L 290 100 L 210 100 Z" fill="var(--sentinel-purple)" class="ink"/>
-                <!-- Mandíbula -->
-                <path d="M 215 80 L 285 80 L 275 120 L 225 120 Z" fill="var(--sentinel-pink)" class="ink"/>
-                <!-- Ojos robóticos Amarillos -->
-                <polygon points="230,50 250,55 235,65" fill="var(--x-yellow)" class="ink" stroke-width="2"/>
-                <polygon points="270,50 250,55 265,65" fill="var(--x-yellow)" class="ink" stroke-width="2"/>
-                <!-- Antenas -->
-                <line x1="220" y1="50" x2="190" y2="20" class="ink" stroke-width="6"/>
-                <line x1="280" y1="50" x2="310" y2="20" class="ink" stroke-width="6"/>
-
-                <!-- Brazo Delantero -->
-                <path d="M 280 150 L 380 220 L 340 320 L 280 280 Z" fill="var(--sentinel-purple)" class="ink"/>
-                <!-- Puño frontal -->
-                <rect x="310" y="300" width="70" height="70" rx="15" fill="var(--sentinel-pink)" class="ink"/>
-                <line x1="330" y1="300" x2="330" y2="370" class="ink" stroke-width="3"/>
-                <line x1="350" y1="300" x2="350" y2="370" class="ink" stroke-width="3"/>
-            </svg>
-        </div>
-    </main>
 
     <!-- CONTROLES -->
     <div class="panel">
-        <div id="log" class="log-container">
-            <div>DANGER ROOM INICIADA.</div>
-            <div>MUTANTE DETECTADO.</div>
+        <div class="console" id="log">
+            <div>INICIANDO SIMULACIÓN...</div>
         </div>
-        <div class="btn-grid">
-            <button id="btn-atk" class="btn btn-atk" onclick="attack(true)">Corte X</button>
-            <button id="btn-def" class="btn btn-def" onclick="defend()">Bloqueo Ágil</button>
-            <button id="btn-cer" class="btn btn-cerebro" onclick="openKnowledge()">CONEXIÓN CEREBRO</button>
-            <button id="btn-ult" class="btn btn-ult hidden" onclick="ultimate()">¡MUTACIÓN MÁXIMA!</button>
+        <div class="controls">
+            <button id="btn-atk" class="btn btn-atk" onclick="action('atk')">Atacar</button>
+            <button id="btn-def" class="btn btn-def" onclick="action('def')">Bloquear</button>
+            <button id="btn-cer" class="btn btn-cer" onclick="openTrivia()">SISTEMA CEREBRO</button>
+            <button id="btn-ult" class="btn btn-ult hidden" onclick="action('ult')">¡JUICIO CARMESÍ!</button>
         </div>
     </div>
 
-    <!-- MODAL (ESTILO CEREBRO) -->
-    <div id="modal" class="modal">
-        <div class="modal-box">
-            <h2 class="modal-title">SISTEMA CEREBRO: ARCHIVO GFPI</h2>
-            <p id="modal-q" class="modal-q">Cargando base de datos mutante...</p>
-            <div id="modal-opts" class="opt-list"></div>
+    <!-- MODAL DE PREGUNTAS -->
+    <div class="modal" id="modal">
+        <div class="m-box">
+            <h2 class="m-title">ENLACE NEURAL (GFPI)</h2>
+            <p class="m-q" id="m-q">Pregunta...</p>
+            <div id="m-opts"></div>
         </div>
     </div>
 
     <script>
-        // --- LÓGICA DEL JUEGO ---
+        // --- BASE DE DATOS DEL JUEGO ---
         const MAX_HP = 300;
         let p = { hp: MAX_HP, def: false, ult: false };
-        let stage = 0;
-        let myTurn = true;
+        let lvl = 0;
+        let turn = true; // true = jugador, false = IA
 
-        const lore = [
-            {
-                n: "CENTINELA DE HARDWARE", hp: 400, dmg: [20, 35],
-                t: { q: "Para hackear al Centinela, define: ¿Qué es el Software?", 
-                     o: ["Los circuitos, cables y metal del robot.", "El conjunto de programas, instrucciones y reglas informáticas que lo controlan.", "La fuente de poder nuclear del pecho.", "El manual impreso de la máquina."], a: 1 }
-            },
-            {
-                n: "MASTER MOLD", hp: 600, dmg: [40, 50],
-                t: { q: "Intenta reescribir tus permisos. ¿Qué es una Licencia de Software?", 
-                     o: ["Un contrato legal que dicta cómo puedes usar o modificar el programa.", "Un código de trucos para ser invencible.", "Un virus de computadora creado por Magneto.", "Un impuesto pagado al gobierno por usar internet."], a: 0 }
-            },
-            {
-                n: "OMEGA SENTINEL", hp: 800, dmg: [50, 70],
-                t: { q: "Elige tu bando en la guerra de licencias. ¿Cuáles son los dos tipos principales?", 
-                     o: ["Rápidas y Lentas.", "Físicas y Virtuales.", "Software Libre (permite modificar y compartir) y Propietario (cerrado y restrictivo).", "Licencias Mutantes y Licencias Humanas."], a: 2 }
-            },
-            {
-                n: "NIMROD DEL FUTURO", hp: 1200, dmg: [60, 90],
-                t: { q: "Para salvar el futuro del código, ¿Qué tipo de licencia debes usar para que todos puedan colaborar libremente?", 
-                     o: ["Software Propietario, para ocultar el código.", "Software Libre (como GNU GPL o MIT), para garantizar libertad de uso, estudio y modificación.", "Ninguna licencia, dejarlo sin protección.", "Licencia de Pago, para cobrarle a los demás."], a: 1 }
-            }
+        const levels = [
+            { n: "CENTINELA DE HARDWARE", hp: 300, dmg: [20, 35],
+              q: "¿Cuál es la definición correcta de Software?", 
+              o: ["Componentes físicos.", "Conjunto de programas y reglas.", "El teclado y ratón.", "Sistema de enfriamiento."], a: 1 },
+            { n: "MASTER MOLD", hp: 500, dmg: [35, 50],
+              q: "¿Qué es una Licencia de Software?", 
+              o: ["Un contrato legal de uso y distribución.", "Un virus.", "Un pago obligatorio.", "Una pieza de hardware."], a: 0 },
+            { n: "OMEGA SENTINEL", hp: 700, dmg: [45, 65],
+              q: "Los dos tipos principales de licencias son:", 
+              o: ["Rápidas y lentas.", "Libres (abiertas) y Propietarias (cerradas).", "Windows y Mac.", "Físicas y Virtuales."], a: 1 },
+            { n: "NIMROD DEFINITIVO", hp: 1000, dmg: [60, 90],
+              q: "¿Qué tipo de licencia debes usar para que todos puedan colaborar libremente?", 
+              o: ["Software Propietario.", "Ninguna.", "Software Libre (Ej. GNU GPL).", "Licencia Comercial Restrictiva."], a: 2 }
         ];
 
-        let e = null;
+        let boss = null;
 
-        function renderHP() {
-            document.getElementById('p-hp').style.width = `${Math.max(0, (p.hp / MAX_HP) * 100)}%`;
-            document.getElementById('e-hp').style.width = `${Math.max(0, (e.hp / e.mhp) * 100)}%`;
+        // --- SISTEMA VISUAL ---
+        function updateUI() {
+            document.getElementById('p-hp').style.width = `${Math.max(0, p.hp/MAX_HP)*100}%`;
+            setTimeout(() => document.getElementById('p-hp-bg').style.width = `${Math.max(0, p.hp/MAX_HP)*100}%`, 300);
+            
+            document.getElementById('e-hp').style.width = `${Math.max(0, boss.hp/boss.mhp)*100}%`;
+            setTimeout(() => document.getElementById('e-hp-bg').style.width = `${Math.max(0, boss.hp/boss.mhp)*100}%`, 300);
         }
 
-        function log(msg) {
+        function logMsg(msg) {
             const b = document.getElementById('log');
             b.innerHTML += `<div>> ${msg}</div>`;
             if (b.children.length > 4) b.removeChild(b.firstChild);
         }
 
-        // Efectos de Cómic ("BAM!", "SLASH!")
-        function spawnComicText(tar, isCrit) {
-            const el = document.getElementById(tar);
-            const r = el.getBoundingClientRect();
-            const sp = document.createElement('div');
-            sp.className = 'comic-pow';
-            sp.innerText = isCrit ? "¡KRAK!" : (tar==='boss' ? "¡SLASH!" : "¡BAM!");
-            sp.style.left = `${r.left + r.width/3}px`;
-            sp.style.top = `${r.top + r.height/4}px`;
-            document.body.appendChild(sp);
-            setTimeout(() => sp.remove(), 600);
+        function setBtns(active) {
+            document.querySelectorAll('.btn').forEach(b => b.disabled = !active);
+            document.getElementById('btn-cer').classList.toggle('hidden', p.ult);
+            document.getElementById('btn-ult').classList.toggle('hidden', !p.ult);
         }
 
-        function init() {
-            if(stage >= lore.length) {
-                log("SIMULACIÓN COMPLETADA. EXCELENTE TRABAJO, X-MAN.");
-                document.querySelector('.btn-grid').innerHTML = `<button class="btn btn-ult" onclick="location.reload()">REINICIAR SALA</button>`;
+        // --- EFECTOS VISUALES AVANZADOS ---
+        function spawnSlash(targetId, deg) {
+            const el = document.getElementById(targetId);
+            const rect = el.getBoundingClientRect();
+            const slash = document.createElement('div');
+            slash.className = 'slash-fx';
+            slash.style.setProperty('--rot', `${deg}deg`);
+            slash.style.left = `${rect.left + rect.width/2 - 100}px`;
+            slash.style.top = `${rect.top + rect.height/2}px`;
+            document.body.appendChild(slash);
+            setTimeout(() => slash.remove(), 250);
+        }
+
+        function spawnDmg(targetId, dmg) {
+            const el = document.getElementById(targetId);
+            const rect = el.getBoundingClientRect();
+            const txt = document.createElement('div');
+            txt.className = 'dmg-text'; txt.innerText = dmg;
+            txt.style.left = `${rect.left + rect.width/3}px`;
+            txt.style.top = `${rect.top + rect.height/3}px`;
+            document.body.appendChild(txt);
+            setTimeout(() => txt.remove(), 800);
+        }
+
+        function cameraFx(type) {
+            const c = document.getElementById('cam');
+            c.classList.add(type);
+            setTimeout(() => c.classList.remove(type), type === 'shake' ? 400 : 800);
+        }
+
+        // --- LÓGICA DE COMBATE ---
+        function initLevel() {
+            if(lvl >= levels.length) {
+                logMsg("SIMULACIÓN SUPERADA. ERES UN X-MAN.");
+                document.querySelector('.controls').innerHTML = `<button class="btn btn-ult" onclick="location.reload()">REINICIAR</button>`;
                 return;
             }
-            e = JSON.parse(JSON.stringify(lore[stage])); e.mhp = e.hp;
-            document.getElementById('e-name').innerText = e.n;
-            p.hp = MAX_HP; p.ult = false;
-            btns(); renderHP();
-            log(`NUEVO OBJETIVO: ${e.n}`);
+            boss = JSON.parse(JSON.stringify(levels[lvl])); boss.mhp = boss.hp;
+            document.getElementById('e-name').innerText = boss.n;
+            document.getElementById('level-txt').innerText = `NIVEL ${lvl + 1}`;
+            p.hp = MAX_HP; p.ult = false; turn = true;
+            updateUI(); setBtns(true);
+            logMsg(`SALA CONFIGURADA: ${boss.n}`);
         }
 
-        function attack(isP) {
-            if(isP && !myTurn) return;
-            if(isP) { myTurn = false; p.def = false; btns(false); }
+        function action(type) {
+            if(!turn) return;
+            turn = false; setBtns(false);
+            
+            if(type === 'def') {
+                p.def = true;
+                logMsg("Postura defensiva lista. Esperando impacto.");
+                setTimeout(bossTurn, 800);
+            } 
+            else if (type === 'atk') {
+                p.def = false;
+                const p1 = document.getElementById('p1');
+                p1.classList.add('atk-dash'); // Animación de Dash
+                
+                setTimeout(() => {
+                    // Impacto
+                    cameraFx('shake');
+                    spawnSlash('p2', Math.random()*60 - 30);
+                    let d = Math.floor(Math.random() * 25) + 35;
+                    boss.hp -= d;
+                    spawnDmg('p2', d);
+                    document.getElementById('p2').classList.add('hit');
+                    updateUI();
+                    logMsg(`¡Corte doble! Daño: ${d}`);
 
-            const a = document.getElementById(isP ? 'hero' : 'boss');
-            const t = document.getElementById(isP ? 'boss' : 'hero');
-            a.classList.add(isP ? 'atk-hero' : 'atk-boss');
+                    setTimeout(() => {
+                        p1.classList.remove('atk-dash');
+                        document.getElementById('p2').classList.remove('hit');
+                        setTimeout(checkState, 400);
+                    }, 300); // Retroceso
+                }, 200); // Tiempo que tarda el dash
+            }
+            else if (type === 'ult') {
+                p.def = false; p.ult = false;
+                cameraFx('zoom-in');
+                document.body.style.filter = "invert(1) hue-rotate(180deg)";
+                logMsg("¡PODER MUTANTE LIBERADO!");
+                
+                setTimeout(() => {
+                    cameraFx('shake');
+                    // Múltiples cortes
+                    spawnSlash('p2', 45); spawnSlash('p2', -45); spawnSlash('p2', 0);
+                    let d = Math.floor(Math.random() * 100) + 200;
+                    boss.hp -= d;
+                    spawnDmg('p2', "CRÍTICO!");
+                    document.getElementById('p2').classList.add('hit');
+                    updateUI();
+                    
+                    setTimeout(() => {
+                        document.body.style.filter = "none";
+                        document.getElementById('p2').classList.remove('hit');
+                        setTimeout(checkState, 600);
+                    }, 500);
+                }, 400);
+            }
+        }
 
+        function bossTurn() {
+            const p2 = document.getElementById('p2');
+            p2.classList.add('atk-boss');
+            
             setTimeout(() => {
-                let d = 0;
-                if(isP) {
-                    d = Math.floor(Math.random() * 30) + 30; e.hp -= d;
-                    log(`Corte doble! Daño: ${d}`);
-                    spawnComicText('boss', false);
-                } else {
-                    d = Math.floor(Math.random() * (e.dmg[1] - e.dmg[0])) + e.dmg[0];
-                    if(p.def) { d = Math.floor(d * 0.4); log("Bloqueaste con las espadas!"); }
-                    p.hp -= d;
-                    log(`El Centinela golpea. Daño: ${d}`);
-                    spawnComicText('hero', false);
-                }
-
-                t.classList.add('hit'); renderHP();
+                cameraFx('shake');
+                let d = Math.floor(Math.random() * (boss.dmg[1] - boss.dmg[0])) + boss.dmg[0];
+                if(p.def) { d = Math.floor(d * 0.3); logMsg("¡Bloqueo exitoso!"); }
+                
+                p.hp -= d;
+                spawnDmg('p1', d);
+                document.getElementById('p1').classList.add('hit');
+                updateUI();
+                logMsg(`El Centinela ataca. Daño: ${d}`);
 
                 setTimeout(() => {
-                    a.classList.remove('atk-hero', 'atk-boss');
-                    t.classList.remove('hit');
-                    setTimeout(() => loop(isP), 500);
-                }, 200);
+                    p2.classList.remove('atk-boss');
+                    document.getElementById('p1').classList.remove('hit');
+                    setTimeout(() => { turn = true; checkState(); }, 400);
+                }, 300);
             }, 200);
         }
 
-        function defend() {
-            if(!myTurn) return;
-            myTurn = false; p.def = true; btns(false);
-            log("Postura defensiva lista.");
-            setTimeout(() => attack(false), 800);
-        }
-
-        function ultimate() {
-            if(!myTurn || !p.ult) return;
-            myTurn = false; p.ult = false; btns(false);
-            
-            log("¡ATAQUE MÁXIMO LIBERADO!");
-            
-            // Efecto Flash Blanco
-            const flash = document.createElement('div');
-            flash.style = "position:fixed;top:0;left:0;width:100%;height:100%;background:white;z-index:99;animation: fadeOut 1s forwards;";
-            document.head.insertAdjacentHTML('beforeend', '<style>@keyframes fadeOut{to{opacity:0}}</style>');
-            document.body.appendChild(flash);
-            
-            setTimeout(() => {
-                const d = Math.floor(Math.random() * 200) + 250; e.hp -= d;
-                spawnComicText('boss', true);
-                document.getElementById('boss').classList.add('hit');
-                renderHP();
-                
-                setTimeout(() => {
-                    flash.remove();
-                    document.getElementById('boss').classList.remove('hit');
-                    setTimeout(() => loop(true), 600);
-                }, 500);
-            }, 300);
-        }
-
-        function loop(wasP) {
-            if(e.hp <= 0) {
-                log(`¡${e.n} DESTRUIDO!`);
-                setTimeout(() => { stage++; init(); myTurn = true; }, 1500);
+        function checkState() {
+            if(boss.hp <= 0) {
+                logMsg(`¡${boss.n} DESTRUIDO!`);
+                setTimeout(() => { lvl++; initLevel(); }, 1500);
             } else if (p.hp <= 0) {
-                log(`SISTEMA CRÍTICO. HAS SIDO DERROTADO.`);
-                document.querySelector('.btn-grid').innerHTML = `<button class="btn btn-ult" onclick="location.reload()">REINTENTAR</button>`;
+                logMsg("SISTEMA CRÍTICO. HAS CAÍDO.");
+                document.querySelector('.controls').innerHTML = `<button class="btn btn-ult" onclick="location.reload()">REINTENTAR</button>`;
             } else {
-                if(wasP) setTimeout(() => attack(false), 800);
-                else { myTurn = true; btns(true); }
+                if(!turn) setTimeout(bossTurn, 500); // Si el jugador atacó, sigue el jefe
+                else setBtns(true); // Si el jefe atacó, turno del jugador
             }
         }
 
-        function openKnowledge() {
-            if(!myTurn) return;
-            const t = e.t;
-            document.getElementById('modal-q').innerText = t.q;
-            const b = document.getElementById('modal-opts'); b.innerHTML = '';
-            t.o.forEach((op, i) => {
+        // --- SISTEMA CEREBRO (PREGUNTAS) ---
+        function openTrivia() {
+            if(!turn) return;
+            document.getElementById('m-q').innerText = boss.q;
+            const b = document.getElementById('m-opts'); b.innerHTML = '';
+            boss.o.forEach((op, i) => {
                 const btn = document.createElement('button');
-                btn.className = 'opt-btn'; btn.innerText = op;
-                btn.onclick = () => checkKnowledge(i, t.a);
+                btn.className = 'opt'; btn.innerText = op;
+                btn.onclick = () => solveTrivia(i, boss.a);
                 b.appendChild(btn);
             });
             document.getElementById('modal').classList.add('active');
         }
 
-        function checkKnowledge(sel, ans) {
+        function solveTrivia(sel, ans) {
             document.getElementById('modal').classList.remove('active');
             if(sel === ans) {
-                log("¡ENLACE CORRECTO! ENERGÍA MÁXIMA.");
-                p.ult = true; btns(true);
+                logMsg("¡CONEXIÓN CEREBRO ESTABLECIDA! Poder Máximo.");
+                p.ult = true; setBtns(true);
             } else {
-                log("ERROR DE DATOS. RECIBES DESCARGA NEURAL.");
-                p.hp -= 40; spawnComicText('hero', false); renderHP();
-                myTurn = false; btns(false);
-                if(p.hp <= 0) setTimeout(() => loop(false), 500);
-                else setTimeout(() => attack(false), 1500);
+                logMsg("ERROR DE SISTEMA. Retroceso neural.");
+                p.hp -= 40; spawnDmg('p1', 40); cameraFx('shake'); updateUI();
+                turn = false; setBtns(false);
+                setTimeout(checkState, 1000);
             }
         }
 
-        function btns(en = null) {
-            if(en !== null) document.querySelectorAll('.btn-grid .btn').forEach(b => b.disabled = !en);
-            document.getElementById('btn-cer').classList.toggle('hidden', p.ult);
-            document.getElementById('btn-ult').classList.toggle('hidden', !p.ult);
-        }
-
-        init();
+        // Iniciar
+        initLevel();
     </script>
 </body>
 </html>
