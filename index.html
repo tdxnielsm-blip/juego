@@ -2,34 +2,41 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>X-Men '97 - Arcade Combat Ultimate</title>
+    <title>X-Men '97 - Danger Room Simulator</title>
     <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Teko:wght@600&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --blue: #0033cc; --yellow: #ffcc00; --red: #e62e00;
-            --sword1: #00ffff; --sword2: #ff00ff;
+            --x-blue: #0033cc; --x-yellow: #ffcc00; --x-red: #ff0000;
+            --s-purple: #660099; --s-magenta: #cc0066;
             --font-ui: 'Teko', sans-serif; --font-comic: 'Bangers', cursive;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
 
         body {
-            background-color: #000; color: #fff; font-family: var(--font-ui);
+            background-color: #111; color: #fff; font-family: var(--font-ui);
             overflow: hidden; width: 100vw; height: 100vh;
             display: flex; flex-direction: column;
-            box-shadow: inset 0 0 150px rgba(0,0,0,0.9);
         }
 
-        /* EFECTO CRT Y CÁMARA */
+        /* FONDO ESTILO CÓMIC (Puntos Halftone) + EFECTO CRT */
+        .comic-bg {
+            position: absolute; width: 100%; height: 100%; z-index: 1;
+            background: radial-gradient(circle, #001133 10%, transparent 11%), 
+                        radial-gradient(circle, #001133 10%, transparent 11%), #000;
+            background-size: 10px 10px; background-position: 0 0, 5px 5px;
+            box-shadow: inset 0 0 150px rgba(0,0,0,0.9);
+        }
         .crt {
             position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 100;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
-            background-size: 100% 4px; opacity: 0.2;
+            background-size: 100% 4px; opacity: 0.3;
         }
-        .camera { width: 100%; height: 100%; position: absolute; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        
+        .camera { width: 100%; height: 100%; position: absolute; z-index: 5; transition: transform 0.1s; }
         .shake { animation: camShake 0.4s ease-in-out; }
-        .zoom-in { transform: scale(1.1) translateY(5%); }
+        .zoom-in { transform: scale(1.1) translateY(5%); transition: transform 0.3s; }
         @keyframes camShake {
             0%, 100% { transform: translate(0,0); }
             20% { transform: translate(-15px, 10px); }
@@ -38,133 +45,110 @@
             80% { transform: translate(10px, -10px); }
         }
 
-        /* ESCENARIO: DANGER ROOM */
-        .danger-room {
-            position: absolute; width: 100%; height: 100%; z-index: 1;
-            background: linear-gradient(to bottom, #001133, #000); perspective: 800px;
-        }
-        .grid {
-            position: absolute; bottom: 0; left: -50%; width: 200%; height: 60%;
-            background-image: 
-                linear-gradient(var(--sword1) 1px, transparent 1px),
-                linear-gradient(90deg, var(--sword1) 1px, transparent 1px);
-            background-size: 60px 60px;
-            transform: rotateX(75deg); opacity: 0.3;
-            animation: gridScroll 2s linear infinite;
-        }
-        @keyframes gridScroll { from { background-position: 0 0; } to { background-position: 0 60px; } }
-        
-        .hazard {
-            position: absolute; bottom: 20%; width: 100%; height: 25px;
-            background: repeating-linear-gradient(45deg, var(--yellow), var(--yellow) 20px, #000 20px, #000 40px);
-            border-top: 3px solid #000; z-index: 2;
-        }
-
-        /* HUD - INTERFAZ */
+        /* HUD - INTERFAZ CLÁSICA ARCADE */
         .hud {
-            position: relative; z-index: 20; padding: 10px 40px; display: flex; justify-content: space-between;
-            background: linear-gradient(180deg, rgba(0,0,0,0.9), transparent);
+            position: relative; z-index: 20; padding: 15px 40px; display: flex; justify-content: space-between;
+            background: linear-gradient(180deg, rgba(0,0,0,0.9), transparent); border-bottom: 4px solid var(--x-yellow);
         }
         .plate { width: 40%; }
         .plate.enemy { text-align: right; }
-        .name { font-family: var(--font-comic); font-size: 2.5rem; letter-spacing: 2px; text-shadow: 2px 2px 0 #000; }
-        .name.hero { color: var(--yellow); }
-        .name.boss { color: #ff3366; }
-        .level-badge { position: absolute; left: 50%; top: 20px; transform: translateX(-50%); font-family: var(--font-comic); font-size: 3rem; color: var(--sword1); text-shadow: 0 0 10px var(--blue); }
+        .name { font-family: var(--font-comic); font-size: 2.8rem; letter-spacing: 2px; text-shadow: 3px 3px 0 #000; }
+        .name.hero { color: var(--x-yellow); }
+        .name.boss { color: var(--s-magenta); }
+        .level-badge { position: absolute; left: 50%; top: 20px; transform: translateX(-50%); font-family: var(--font-comic); font-size: 3.5rem; color: var(--x-red); text-shadow: 2px 2px 0 #fff, 4px 4px 0 #000; }
 
-        .hp-box { width: 100%; height: 30px; background: #222; border: 4px solid #000; position: relative; }
-        .hp-bg { position: absolute; height: 100%; width: 100%; background: #fff; transition: width 0.6s ease-out; }
+        .hp-box { width: 100%; height: 35px; background: #222; border: 4px solid #fff; position: relative; box-shadow: 4px 4px 0 #000; transform: skewX(-15deg); }
+        .hp-bg { position: absolute; height: 100%; width: 100%; background: rgba(255,255,255,0.5); transition: width 0.6s ease-out; }
         .hp-fill { position: absolute; height: 100%; width: 100%; transition: width 0.2s; }
-        .hp-fill.hero { background: #00ff00; }
-        .hp-fill.boss { background: #ff0000; right: 0; }
+        .hp-fill.hero { background: linear-gradient(90deg, #009900, #00ff00); }
+        .hp-fill.boss { background: linear-gradient(90deg, #990000, #ff0000); right: 0; }
         .plate.enemy .hp-bg { right: 0; }
 
-        /* ARENA Y SPRITES (LA ANIMACIÓN ORIGINAL RESTAURADA) */
-        .arena { flex: 1; position: relative; z-index: 10; display: flex; align-items: flex-end; padding-bottom: 22%; }
+        /* ARENA Y SPRITES */
+        .arena { flex: 1; position: relative; display: flex; align-items: flex-end; padding-bottom: 5%; }
         
-        .fighter { position: absolute; filter: drop-shadow(0 15px 10px rgba(0,0,0,0.8)); transition: all 0.3s; }
-        .fighter.p1 { left: 15%; width: 280px; height: 350px; }
-        .fighter.p2 { right: 15%; width: 400px; height: 450px; }
+        .fighter { position: absolute; filter: drop-shadow(10px 10px 0px rgba(0,0,0,0.8)); transition: all 0.2s; }
+        .fighter.p1 { left: 10%; width: 250px; height: 400px; transform-origin: bottom center; }
+        .fighter.p2 { right: 5%; width: 450px; height: 500px; transform-origin: bottom center; }
 
-        /* Animaciones de Postura (Idle) */
-        .idle .body { animation: breathe 1.2s steps(4) infinite alternate; transform-origin: bottom; }
-        .idle .tail { animation: tailSwish 2s ease-in-out infinite alternate; transform-origin: top left; }
-        .idle .arm-f { animation: armBob 1.2s infinite alternate; }
+        /* Animaciones de Postura */
+        .idle .hero-body { animation: breathe 1s steps(2) infinite alternate; transform-origin: bottom; }
+        .idle .boss-hover { animation: hoverBoss 2s ease-in-out infinite alternate; }
 
-        @keyframes breathe { 0% { transform: scaleY(1); } 100% { transform: scaleY(0.96) translateY(10px); } }
-        @keyframes tailSwish { 0% { transform: rotate(0deg); } 100% { transform: rotate(-25deg); } }
-        @keyframes armBob { 0% { transform: translateY(0); } 100% { transform: translateY(4px); } }
+        @keyframes breathe { 0% { transform: scaleY(1); } 100% { transform: scaleY(0.97) translateY(5px); } }
+        @keyframes hoverBoss { 0% { transform: translateY(0); } 100% { transform: translateY(-15px); } }
 
-        /* Animaciones de Combate */
-        .atk-dash { transform: translateX(35vw) scale(1.1); z-index: 30; }
-        .atk-dash .arm-f { transform: rotate(45deg) translate(20px, -20px); transition: 0.1s; }
-        .atk-dash .sword-f { filter: drop-shadow(0 0 20px var(--sword1)) brightness(1.5); }
-        
-        .atk-boss { transform: translateX(-30vw) scale(1.05); z-index: 30; }
-        
-        .hit { animation: takeDamage 0.3s steps(3); filter: brightness(2) sepia(1) hue-rotate(-50deg) saturate(5) !important; }
-        @keyframes takeDamage { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-20px); } }
-
-        /* EFECTOS VISUALES (JUICE) */
-        .slash-fx {
-            position: absolute; width: 200px; height: 10px; background: #fff;
-            box-shadow: 0 0 20px var(--sword1), 0 0 40px var(--sword2);
-            border-radius: 50%; z-index: 50; pointer-events: none;
-            animation: slashAnim 0.2s ease-out forwards; transform-origin: center;
+        /* ANIMACIÓN DE ATAQUE (RAYO ÓPTICO) */
+        .optic-beam {
+            position: absolute; left: 180px; top: 125px; width: 0; height: 30px;
+            background: #fff; box-shadow: 0 0 20px var(--x-red), 0 0 40px var(--x-red), inset 0 0 10px var(--x-yellow);
+            z-index: 40; opacity: 0; transform-origin: left; pointer-events: none;
         }
-        @keyframes slashAnim { 
-            0% { transform: scaleX(0) rotate(var(--rot)); opacity: 1; } 
-            50% { transform: scaleX(1.5) scaleY(3) rotate(var(--rot)); opacity: 1; } 
-            100% { transform: scaleX(2) rotate(var(--rot)); opacity: 0; } 
+        .atk-laser .optic-beam { animation: fireLaser 0.4s ease-out; }
+        .atk-laser .hero-arm { transform: rotate(-120deg) translate(-50px, -20px); transition: 0.1s; } /* Lleva la mano al visor */
+
+        @keyframes fireLaser { 
+            0% { width: 0; opacity: 1; } 
+            20% { width: 80vw; height: 40px; opacity: 1; } 
+            80% { width: 80vw; height: 10px; opacity: 1; } 
+            100% { width: 80vw; height: 0; opacity: 0; } 
         }
 
-        .particle { position: absolute; width: 10px; height: 10px; background: #fff; pointer-events: none; animation: explode 0.5s forwards; z-index: 50; }
-        @keyframes explode { to { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } }
+        /* EFECTO DE DAÑO Y CÓMIC */
+        .hit { animation: flashHit 0.3s steps(2); }
+        @keyframes flashHit { 0%, 100% { filter: invert(0); } 50% { filter: invert(1) brightness(2); transform: translateX(-20px); } }
+
+        .comic-text {
+            position: absolute; font-family: var(--font-comic); font-size: 5rem;
+            color: var(--x-yellow); -webkit-text-stroke: 3px #000; text-shadow: 5px 5px 0 var(--x-red);
+            z-index: 60; pointer-events: none; animation: popText 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes popText { 0% { transform: scale(0) rotate(-20deg); opacity: 0; } 50% { transform: scale(1.2) rotate(10deg); opacity: 1; } 100% { transform: scale(1) rotate(0deg); opacity: 0; } }
 
         /* PANEL DE CONTROL */
         .panel {
-            position: relative; z-index: 20; height: 150px; background: var(--blue);
-            border-top: 6px solid var(--yellow); display: flex; box-shadow: 0 -10px 20px rgba(0,0,0,0.8);
+            position: relative; z-index: 20; height: 160px; background: #000;
+            border-top: 8px solid var(--x-blue); display: flex; box-shadow: 0 -10px 20px rgba(0,0,0,0.8);
         }
-        .controls { width: 100%; display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 10px; padding: 25px; }
+        .controls { width: 100%; display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 15px; padding: 25px; }
         
         .btn {
-            background: #ddd; border: 3px solid #000; font-family: var(--font-comic); font-size: 2rem;
-            color: #000; cursor: pointer; transition: 0.1s; text-transform: uppercase; border-radius: 5px;
-            box-shadow: 4px 4px 0 #000;
+            background: #fff; border: 4px solid #000; font-family: var(--font-comic); font-size: 2.2rem; letter-spacing: 1px;
+            color: #000; cursor: pointer; transition: 0.1s; text-transform: uppercase; border-radius: 8px;
+            box-shadow: 5px 5px 0 var(--x-blue);
         }
-        .btn:active:not(:disabled) { transform: translate(4px, 4px); box-shadow: 0px 0px 0 #000; }
+        .btn:active:not(:disabled) { transform: translate(5px, 5px); box-shadow: 0px 0px 0 var(--x-blue); }
         .btn:disabled { filter: grayscale(1); opacity: 0.5; cursor: not-allowed; }
         
-        .btn-atk { background: var(--red); color: #fff; }
-        .btn-def { background: var(--yellow); }
-        .btn-ult { background: var(--sword2); color: #fff; border-color: #fff; text-shadow: 2px 2px 0 #000; animation: pulseBtn 1s infinite alternate; }
-        @keyframes pulseBtn { from { filter: brightness(1); } to { filter: brightness(1.3); } }
+        .btn-atk { background: var(--x-red); color: #fff; box-shadow: 5px 5px 0 #000; }
+        .btn-def { background: var(--x-yellow); box-shadow: 5px 5px 0 #000; }
+        .btn-ult { background: var(--x-blue); color: var(--x-yellow); box-shadow: 5px 5px 0 #fff; animation: pulseUlt 1s infinite alternate; }
+        @keyframes pulseUlt { from { filter: brightness(1); } to { filter: brightness(1.3); } }
 
-        /* MODAL PREGUNTAS */
+        /* MODAL PREGUNTAS (ESTILO CEREBRO) */
         .modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,20,0.9); display: flex; justify-content: center; align-items: center;
+            background: rgba(0,0,20,0.95); display: flex; justify-content: center; align-items: center;
             opacity: 0; pointer-events: none; transition: 0.2s; z-index: 1000;
         }
         .modal.active { opacity: 1; pointer-events: auto; }
-        .m-box { background: var(--blue); border: 5px solid var(--yellow); padding: 40px; width: 90%; max-width: 800px; border-radius: 10px; }
-        .m-title { font-family: var(--font-comic); color: var(--yellow); font-size: 3rem; margin-bottom: 15px; text-shadow: 2px 2px 0 #000; }
-        .m-q { font-size: 1.8rem; margin-bottom: 20px; line-height: 1.2; font-family: sans-serif; }
-        .opt { background: #fff; border: 3px solid #000; padding: 15px; font-family: var(--font-ui); font-size: 1.5rem; font-weight: bold; cursor: pointer; width: 100%; text-align: left; margin-bottom: 10px; transition: 0.1s; box-shadow: 3px 3px 0 #000; }
-        .opt:hover { background: var(--yellow); transform: translate(-2px, -2px); }
+        .m-box { background: var(--x-blue); border: 8px solid var(--x-yellow); padding: 40px; width: 90%; max-width: 800px; box-shadow: 15px 15px 0 #000; }
+        .m-title { font-family: var(--font-comic); color: #fff; font-size: 3.5rem; margin-bottom: 15px; text-shadow: 4px 4px 0 #000; letter-spacing: 2px; }
+        .m-q { font-size: 2rem; margin-bottom: 30px; line-height: 1.2; font-family: var(--font-ui); background: #000; padding: 15px; border-radius: 5px; border-left: 5px solid var(--x-red); }
+        .opt { background: #fff; border: 4px solid #000; padding: 15px; font-family: var(--font-ui); font-size: 1.8rem; font-weight: bold; cursor: pointer; width: 100%; text-align: left; margin-bottom: 12px; transition: 0.1s; box-shadow: 5px 5px 0 #000; }
+        .opt:hover { background: var(--x-yellow); transform: translate(-3px, -3px); box-shadow: 8px 8px 0 #000; }
 
-        svg { overflow: visible; stroke: #000; stroke-width: 3; stroke-linejoin: round; }
+        svg { overflow: visible; stroke: #000; stroke-width: 4; stroke-linejoin: round; }
     </style>
 </head>
 <body>
+    <div class="comic-bg"></div>
     <div class="crt"></div>
+    
     <div class="camera" id="cam">
-        <div class="danger-room"><div class="grid"></div><div class="hazard"></div></div>
-
         <div class="hud">
             <div class="plate">
-                <div class="name hero">MUTANTE CARMESÍ</div>
+                <div class="name hero">LÍDER ÓPTICO</div>
                 <div class="hp-box"><div id="p-hp-bg" class="hp-bg"></div><div id="p-hp" class="hp-fill hero"></div></div>
             </div>
             <div id="combo-txt" class="level-badge">NIVEL 1</div>
@@ -175,96 +159,112 @@
         </div>
 
         <main class="arena">
-            <!-- HÉROE ORIGINAL RESTAURADO CON TODOS LOS DETALLES -->
+            <!-- HÉROE ESTILO CÍCLOPE -->
             <div id="p1" class="fighter p1 idle">
-                <svg viewBox="0 0 300 300" width="100%" height="100%">
-                    <defs>
-                        <filter id="glowC"><feGaussianBlur stdDeviation="4" result="blur" /><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-                        <filter id="glowP"><feGaussianBlur stdDeviation="4" result="blur" /><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-                    </defs>
-
-                    <g class="body">
-                        <!-- Cola Animada -->
-                        <path class="tail" d="M 120 180 Q 40 250 20 150 Q 10 100 40 80 L 50 100 Q 30 150 110 200 Z" fill="var(--red)"/>
+                <!-- Rayo Láser que se activa en el ataque -->
+                <div class="optic-beam"></div>
+                
+                <svg viewBox="0 0 250 400" width="100%" height="100%">
+                    <g class="hero-body">
+                        <!-- Piernas azules y botas amarillas -->
+                        <path d="M 80 250 L 60 380 L 100 380 L 110 250 Z" fill="var(--x-blue)"/>
+                        <path d="M 55 320 L 60 380 L 100 380 L 105 320 Z" fill="var(--x-yellow)"/>
+                        <path d="M 120 250 L 140 380 L 180 380 L 150 250 Z" fill="var(--x-blue)"/>
+                        <path d="M 135 320 L 140 380 L 180 380 L 175 320 Z" fill="var(--x-yellow)"/>
                         
-                        <!-- Piernas y Botas -->
-                        <path d="M 140 180 L 110 260 L 140 260 L 150 200 Z" fill="var(--blue)"/>
-                        <path d="M 110 230 L 140 260 L 110 260 Z" fill="var(--yellow)"/>
-                        <path d="M 160 180 L 180 260 L 210 260 L 180 200 Z" fill="var(--blue)"/>
-                        <path d="M 180 230 L 210 260 L 180 260 Z" fill="var(--yellow)"/>
-
-                        <!-- Brazo y Espada Trasera -->
-                        <path d="M 140 130 L 100 150 L 90 180" fill="none" stroke="var(--red)" stroke-width="12"/>
-                        <polygon points="90,170 10,60 25,50 105,160" fill="#fff" stroke="var(--sword2)" filter="url(#glowP)"/>
+                        <!-- Torso Azul -->
+                        <path d="M 60 120 L 160 120 L 140 250 L 80 250 Z" fill="var(--x-blue)"/>
+                        <!-- Arnes/Correas Amarillas (La X) -->
+                        <path d="M 60 120 L 140 250 M 160 120 L 80 250" fill="none" stroke="var(--x-yellow)" stroke-width="15"/>
+                        <circle cx="110" cy="185" r="15" fill="var(--x-red)" stroke="#000" stroke-width="4"/>
+                        <path d="M 103 178 L 117 192 M 117 178 L 103 192" fill="none" stroke="#000" stroke-width="3"/> <!-- X en el centro -->
                         
-                        <!-- Torso y Detalles de Traje -->
-                        <path d="M 130 110 Q 120 150 140 190 L 170 190 Q 180 150 170 110 Z" fill="var(--blue)"/>
-                        <path d="M 130 110 L 170 190 M 170 110 L 140 190" fill="none" stroke="var(--yellow)" stroke-width="8"/>
-                        <circle cx="155" cy="150" r="12" fill="var(--red)"/>
-                        <path d="M 149 144 L 161 156 M 161 144 L 149 156" fill="none" stroke="#fff" stroke-width="3"/>
+                        <!-- Brazo Trasero -->
+                        <path d="M 160 120 L 200 180 L 180 240" fill="none" stroke="var(--x-blue)" stroke-width="25" stroke-linecap="round"/>
+                        <circle cx="180" cy="240" r="15" fill="var(--x-yellow)"/> <!-- Guante -->
 
-                        <!-- Cruz de Oro Restuarada -->
-                        <path d="M 140 100 Q 155 120 165 100" fill="none" stroke="#ffcc00" stroke-width="2"/>
-                        <rect x="152" y="115" width="4" height="12" fill="#ffcc00" stroke="none"/>
-                        <rect x="148" y="119" width="12" height="4" fill="#ffcc00" stroke="none"/>
-
-                        <!-- Cabeza, Cuernos y Ojos -->
-                        <path d="M 135 70 Q 150 50 175 70 L 170 100 L 140 100 Z" fill="var(--red)"/>
-                        <path d="M 140 65 L 120 30 L 150 55 Z" fill="#ddd"/>
-                        <path d="M 170 65 L 190 30 L 160 55 Z" fill="#ddd"/>
-                        <polygon points="142,78 152,82 145,85" fill="#fff" stroke="none"/>
-                        <polygon points="168,78 158,82 165,85" fill="#fff" stroke="none"/>
+                        <!-- Cabeza -->
+                        <circle cx="110" cy="80" r="35" fill="var(--x-blue)"/>
+                        <path d="M 90 95 L 140 95 L 130 130 L 100 130 Z" fill="#ffcc99"/> <!-- Mandíbula piel -->
+                        
+                        <!-- Visor Dorado y Rojo -->
+                        <rect x="80" y="65" width="65" height="20" rx="5" fill="var(--x-yellow)"/>
+                        <rect x="80" y="70" width="65" height="10" fill="var(--x-red)" stroke="none"/>
+                        <!-- Brillo del visor -->
+                        <circle cx="110" cy="75" r="8" fill="#fff" stroke="none" opacity="0.8"/>
                     </g>
-
-                    <!-- Brazo Frontal Animado -->
-                    <g class="arm-f" style="transform-origin: 160px 120px;">
-                        <path d="M 160 120 L 200 150 L 190 180" fill="none" stroke="var(--red)" stroke-width="14"/>
-                        <polygon class="sword-f" points="190,170 280,100 290,115 200,185" fill="#fff" stroke="var(--sword1)" filter="url(#glowC)"/>
-                        <circle cx="195" cy="180" r="10" fill="var(--red)"/>
+                    <!-- Brazo Frontal (Este se mueve para tocar el visor) -->
+                    <g class="hero-arm" style="transform-origin: 80px 130px;">
+                        <path d="M 70 130 L 40 190 L 60 250" fill="none" stroke="var(--x-blue)" stroke-width="25" stroke-linecap="round"/>
+                        <circle cx="60" cy="250" r="18" fill="var(--x-yellow)"/> <!-- Guante frontal -->
                     </g>
                 </svg>
             </div>
 
-            <!-- VILLANO ORIGINAL RESTAURADO -->
+            <!-- VILLANO ESTILO CENTINELA -->
             <div id="p2" class="fighter p2 idle">
-                <svg viewBox="0 0 400 400" width="100%" height="100%">
-                    <g class="body">
-                        <path d="M 150 150 L 80 200 L 100 300 L 130 280 Z" fill="#660099"/>
-                        <path d="M 180 100 L 300 100 L 320 280 L 180 280 Z" fill="#660099"/>
-                        <path d="M 190 120 L 290 120 L 300 180 L 190 190 Z" fill="#cc0066"/>
-                        <circle cx="245" cy="155" r="25" fill="var(--yellow)"/>
-                        <path d="M 210 30 L 270 30 L 280 100 L 200 100 Z" fill="#660099"/>
-                        <path d="M 205 75 L 285 75 L 275 110 L 215 110 Z" fill="#cc0066"/>
-                        <polygon points="220,50 240,55 225,65" fill="var(--yellow)"/>
-                        <polygon points="260,50 240,55 255,65" fill="var(--yellow)"/>
-                        <path d="M 270 140 L 360 200 L 320 300 L 270 260 Z" fill="#660099"/>
-                        <rect x="290" y="280" width="60" height="60" rx="10" fill="#cc0066"/>
+                <svg viewBox="0 0 450 500" width="100%" height="100%">
+                    <g class="boss-hover">
+                        <!-- Torso morado masivo -->
+                        <path d="M 100 300 L 400 300 L 350 500 L 150 500 Z" fill="var(--s-purple)"/>
+                        
+                        <!-- Hombros magenta -->
+                        <circle cx="100" cy="300" r="60" fill="var(--s-magenta)"/>
+                        <circle cx="400" cy="300" r="60" fill="var(--s-magenta)"/>
+                        
+                        <!-- Detalles de armadura -->
+                        <path d="M 150 320 L 350 320 L 300 400 L 200 400 Z" fill="var(--s-magenta)"/>
+                        <circle cx="250" cy="360" r="30" fill="var(--x-yellow)"/> <!-- Núcleo pecho -->
+
+                        <!-- Tubos de cuello -->
+                        <rect x="200" y="240" width="100" height="60" fill="#333"/>
+                        <line x1="220" y1="240" x2="220" y2="300" stroke="#000" stroke-width="5"/>
+                        <line x1="250" y1="240" x2="250" y2="300" stroke="#000" stroke-width="5"/>
+                        <line x1="280" y1="240" x2="280" y2="300" stroke="#000" stroke-width="5"/>
+
+                        <!-- Cabeza robótica -->
+                        <path d="M 180 80 L 320 80 L 340 240 L 160 240 Z" fill="var(--s-purple)"/>
+                        <!-- Casco/Antenas -->
+                        <path d="M 180 80 L 160 40 L 200 80 Z" fill="var(--s-magenta)"/>
+                        <path d="M 320 80 L 340 40 L 300 80 Z" fill="var(--s-magenta)"/>
+                        
+                        <!-- Placa facial magenta -->
+                        <path d="M 200 130 L 300 130 L 290 220 L 210 220 Z" fill="var(--s-magenta)"/>
+                        
+                        <!-- Ojos Brillantes -->
+                        <polygon points="210,150 240,155 225,165" fill="var(--x-yellow)"/>
+                        <polygon points="290,150 260,155 275,165" fill="var(--x-yellow)"/>
+                        <!-- Boca de parrilla -->
+                        <rect x="230" y="190" width="40" height="20" fill="#222"/>
+                        <line x1="240" y1="190" x2="240" y2="210" stroke="#fff" stroke-width="2"/>
+                        <line x1="250" y1="190" x2="250" y2="210" stroke="#fff" stroke-width="2"/>
+                        <line x1="260" y1="190" x2="260" y2="210" stroke="#fff" stroke-width="2"/>
                     </g>
                 </svg>
             </div>
         </main>
     </div>
 
-    <!-- CONTROLES -->
+    <!-- PANEL DE CONTROL -->
     <div class="panel">
         <div class="controls">
-            <button id="btn-atk" class="btn btn-atk" onclick="action('atk')">ATACAR</button>
-            <button id="btn-def" class="btn btn-def" onclick="action('def')">BLOQUEAR</button>
-            <button id="btn-ult" class="btn btn-ult" onclick="openTrivia()">SISTEMA CEREBRO (HACK)</button>
+            <button id="btn-atk" class="btn btn-atk" onclick="action('atk')">OPTIC BLAST</button>
+            <button id="btn-def" class="btn btn-def" onclick="action('def')">CUBRIRSE</button>
+            <button id="btn-ult" class="btn btn-ult" onclick="openTrivia()">ENLACE CEREBRO (PREGUNTAS)</button>
         </div>
     </div>
 
     <!-- MODAL DE PREGUNTAS -->
     <div class="modal" id="modal">
         <div class="m-box">
-            <h2 class="m-title">ENLACE NEURAL (GFPI)</h2>
+            <h2 class="m-title">SISTEMA CEREBRO ACTIVADO</h2>
             <p class="m-q" id="m-q">Cargando datos...</p>
             <div id="m-opts"></div>
         </div>
     </div>
 
     <script>
-        // --- 1. LAS 20 PREGUNTAS ---
+        // --- 1. BANCO DE 20 PREGUNTAS ---
         const bancoDePreguntas = [
             { q: "¿Qué significa el acrónimo RAM en informática?", o: ["Random Access Memory", "Read Access Machine", "Run All Media", "Rapid Action Memory"], a: 0 },
             { q: "¿Cuál de estos NO es un lenguaje de programación?", o: ["Python", "Java", "Cobra", "HTML"], a: 3 },
@@ -288,12 +288,12 @@
             { q: "Si una variable es de tipo 'Boolean', ¿Qué valores puede tener?", o: ["Cualquier número", "Texto y números", "Solo Verdadero o Falso", "Valores decimales"], a: 2 }
         ];
 
-        // --- 2. SISTEMA DE NIVELES Y VARIABLES ---
+        // --- 2. SISTEMA DE JUEGO ---
         const levels = [
             { n: "CENTINELA MK-I", hp: 300, dmg: [20, 35] },
             { n: "MASTER MOLD", hp: 500, dmg: [35, 50] },
             { n: "OMEGA SENTINEL", hp: 700, dmg: [45, 65] },
-            { n: "NIMROD DEFINITIVO", hp: 1000, dmg: [60, 90] }
+            { n: "NIMROD", hp: 1000, dmg: [60, 90] }
         ];
 
         const MAX_HP = 300;
@@ -304,7 +304,6 @@
         let askedQuestions = [];
         let currentQuestion = null;
 
-        // --- 3. FUNCIONES VISUALES (JUICE & UI) ---
         function updateUI() {
             document.getElementById('p-hp').style.width = `${Math.max(0, p.hp/MAX_HP)*100}%`;
             setTimeout(() => document.getElementById('p-hp-bg').style.width = `${Math.max(0, p.hp/MAX_HP)*100}%`, 300);
@@ -315,9 +314,7 @@
             document.getElementById('combo-txt').innerText = p.combo > 1 ? `COMBO x${p.combo}` : `NIVEL ${lvl + 1}`;
         }
 
-        function setBtns(active) {
-            document.querySelectorAll('.btn').forEach(b => b.disabled = !active);
-        }
+        function setBtns(active) { document.querySelectorAll('.btn').forEach(b => b.disabled = !active); }
 
         function cameraFx(type) {
             const c = document.getElementById('cam');
@@ -325,38 +322,23 @@
             setTimeout(() => c.classList.remove(type), type === 'shake' ? 400 : 800);
         }
 
-        function spawnSlash(targetId, deg) {
+        // CREAR TEXTO ESTILO CÓMIC
+        function createComicText(text, targetId) {
             const el = document.getElementById(targetId);
             const rect = el.getBoundingClientRect();
-            const slash = document.createElement('div');
-            slash.className = 'slash-fx';
-            slash.style.setProperty('--rot', `${deg}deg`);
-            slash.style.left = `${rect.left + rect.width/2 - 100}px`;
-            slash.style.top = `${rect.top + rect.height/2}px`;
-            document.body.appendChild(slash);
-            setTimeout(() => slash.remove(), 250);
+            const txt = document.createElement('div');
+            txt.className = 'comic-text';
+            txt.innerText = text;
+            txt.style.left = `${rect.left + rect.width/2 - 50}px`;
+            txt.style.top = `${rect.top + rect.height/2 - 50}px`;
+            document.body.appendChild(txt);
+            setTimeout(() => txt.remove(), 600);
         }
 
-        function spawnParticles(targetId, color) {
-            const el = document.getElementById(targetId);
-            const rect = el.getBoundingClientRect();
-            for(let i=0; i<15; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.background = color;
-                particle.style.left = `${rect.left + rect.width/2}px`;
-                particle.style.top = `${rect.top + rect.height/2}px`;
-                particle.style.setProperty('--tx', `${(Math.random()-0.5)*200}px`);
-                particle.style.setProperty('--ty', `${(Math.random()-0.5)*200}px`);
-                document.body.appendChild(particle);
-                setTimeout(() => particle.remove(), 500);
-            }
-        }
-
-        // --- 4. MOTOR DE COMBATE ---
+        // --- 3. COMBATE ---
         function initLevel() {
             if(lvl >= levels.length) {
-                alert("¡SIMULACIÓN SUPERADA! ERES UN X-MAN.");
+                alert("¡SALA DE PELIGRO COMPLETADA! APROBADO.");
                 location.reload(); return;
             }
             boss = JSON.parse(JSON.stringify(levels[lvl])); boss.mhp = boss.hp;
@@ -376,12 +358,11 @@
             else if (type === 'atk') {
                 p.def = false;
                 const p1 = document.getElementById('p1');
-                p1.classList.add('atk-dash');
+                p1.classList.add('atk-laser'); // Activa la animación del rayo
                 
                 setTimeout(() => {
                     cameraFx('shake');
-                    spawnSlash('p2', Math.random()*60 - 30);
-                    spawnParticles('p2', '#00ffff');
+                    createComicText("¡BAM!", 'p2');
                     
                     let dmg = 25 + (p.combo * 5);
                     boss.hp -= dmg; p.combo++;
@@ -390,40 +371,34 @@
                     updateUI();
 
                     setTimeout(() => {
-                        p1.classList.remove('atk-dash');
+                        p1.classList.remove('atk-laser');
                         document.getElementById('p2').classList.remove('hit');
                         setTimeout(checkState, 400);
-                    }, 300);
+                    }, 400);
                 }, 200);
             }
         }
 
         function bossTurn() {
-            const p2 = document.getElementById('p2');
-            p2.classList.add('atk-boss');
+            cameraFx('shake');
+            createComicText("¡KRAK!", 'p1');
             
-            setTimeout(() => {
-                cameraFx('shake');
-                spawnParticles('p1', '#ff0000');
-                
-                let d = Math.floor(Math.random() * (boss.dmg[1] - boss.dmg[0])) + boss.dmg[0];
-                if(p.def) d = Math.floor(d * 0.2); // Defensa reduce daño al 20%
-                
-                p.hp -= d;
-                document.getElementById('p1').classList.add('hit');
-                updateUI();
+            let d = Math.floor(Math.random() * (boss.dmg[1] - boss.dmg[0])) + boss.dmg[0];
+            if(p.def) d = Math.floor(d * 0.2); // Defensa
+            
+            p.hp -= d;
+            document.getElementById('p1').classList.add('hit');
+            updateUI();
 
-                setTimeout(() => {
-                    p2.classList.remove('atk-boss');
-                    document.getElementById('p1').classList.remove('hit');
-                    setTimeout(() => { turn = true; checkState(); }, 400);
-                }, 300);
-            }, 200);
+            setTimeout(() => {
+                document.getElementById('p1').classList.remove('hit');
+                setTimeout(() => { turn = true; checkState(); }, 400);
+            }, 300);
         }
 
         function checkState() {
             if(boss.hp <= 0) {
-                setTimeout(() => { lvl++; initLevel(); }, 1500);
+                setTimeout(() => { lvl++; initLevel(); }, 1000);
             } else if (p.hp <= 0) {
                 alert("SISTEMA CRÍTICO. HAS CAÍDO.");
                 location.reload();
@@ -433,14 +408,13 @@
             }
         }
 
-        // --- 5. SISTEMA DE PREGUNTAS (ULTIMATE) ---
+        // --- 4. PREGUNTAS (ATAQUE ESPECIAL) ---
         function openTrivia() {
             if(!turn) return;
             
             let preguntasDisponibles = bancoDePreguntas.filter(pq => !askedQuestions.includes(pq.q));
             if(preguntasDisponibles.length === 0) {
-                askedQuestions = [];
-                preguntasDisponibles = bancoDePreguntas;
+                askedQuestions = []; preguntasDisponibles = bancoDePreguntas;
             }
 
             const randomIndex = Math.floor(Math.random() * preguntasDisponibles.length);
@@ -465,14 +439,14 @@
             turn = false; setBtns(false); p.def = false;
 
             if(sel === currentQuestion.a) {
-                // ACIERTO
+                // ATAQUE CRÍTICO
                 cameraFx('zoom-in');
-                document.body.style.filter = "invert(1) hue-rotate(180deg)";
+                document.body.style.filter = "saturate(3) contrast(1.5)";
                 
                 setTimeout(() => {
+                    document.getElementById('p1').classList.add('atk-laser');
                     cameraFx('shake');
-                    spawnSlash('p2', 45); spawnSlash('p2', -45); spawnSlash('p2', 0);
-                    spawnParticles('p2', '#ff00ff');
+                    createComicText("¡MEGA BLAST!", 'p2');
                     
                     boss.hp -= 150; p.combo += 3;
                     document.getElementById('p2').classList.add('hit');
@@ -480,25 +454,26 @@
                     
                     setTimeout(() => {
                         document.body.style.filter = "none";
+                        document.getElementById('p1').classList.remove('atk-laser');
                         document.getElementById('p2').classList.remove('hit');
                         setTimeout(checkState, 600);
                     }, 500);
                 }, 400);
             } else {
-                // FALLO
+                // PENALIZACIÓN
                 p.hp -= 40; p.combo = 0;
-                cameraFx('shake'); spawnParticles('p1', '#ff0000');
+                cameraFx('shake'); 
+                createComicText("¡ERROR!", 'p1');
                 document.getElementById('p1').classList.add('hit');
                 updateUI();
                 
                 setTimeout(() => {
                     document.getElementById('p1').classList.remove('hit');
-                    setTimeout(bossTurn, 500); // El jefe contraataca
+                    setTimeout(bossTurn, 500);
                 }, 500);
             }
         }
 
-        // Iniciar
         initLevel();
     </script>
 </body>
