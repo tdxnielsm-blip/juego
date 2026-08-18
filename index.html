@@ -4,18 +4,281 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Código Noir: Detective de Datos</title>
-    <link rel="stylesheet" href="styles.css">
+    
     <!-- Fuentes nivel GOD -->
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
-    <!-- Íconos -->
+    <!-- Íconos de FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- ESTILOS CSS INTEGRADOS -->
+    <style>
+        :root {
+            --bg-dark: #050508;
+            --accent-gold: #ffb703;
+            --accent-red: #ff003c;
+            --accent-cyan: #00f5d4;
+            --glass-bg: rgba(15, 15, 22, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --font-title: 'Orbitron', sans-serif;
+            --font-body: 'Rajdhani', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-dark);
+            color: #e0e0e0;
+            font-family: var(--font-body);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Partículas interactivas cubriendo todo el fondo */
+        #particles-js {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #1a1a24 0%, var(--bg-dark) 100%);
+            z-index: 1;
+        }
+
+        .game-wrapper {
+            position: relative;
+            z-index: 2;
+            width: 95%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* --- HUD GLASSMORPHISM --- */
+        .hud-glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .stat-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .stat-group i { font-size: 1.8rem; }
+        .icon-city { color: var(--accent-cyan); }
+        .icon-gold { color: var(--accent-gold); }
+        .icon-fire { color: var(--accent-red); }
+
+        .stat-info { display: flex; flex-direction: column; }
+        
+        .stat-info span {
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            color: #aaa;
+        }
+
+        .stat-info strong {
+            font-family: var(--font-title);
+            font-size: 1.3rem;
+            letter-spacing: 2px;
+        }
+
+        .bar-bg {
+            width: 200px;
+            height: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 6px;
+            margin-top: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #00b4d8, var(--accent-cyan));
+            transition: width 0.4s ease, background 0.4s ease;
+            box-shadow: 0 0 10px var(--accent-cyan);
+        }
+
+        /* --- TARJETA DE MISIÓN --- */
+        .mission-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            position: relative;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 15px;
+        }
+
+        .badge {
+            background: rgba(255, 183, 3, 0.15);
+            color: var(--accent-gold);
+            border: 1px solid var(--accent-gold);
+            padding: 6px 15px;
+            font-family: var(--font-title);
+            font-size: 0.9rem;
+            border-radius: 4px;
+            letter-spacing: 1px;
+        }
+
+        .fingerprint-icon {
+            font-size: 2.5rem;
+            color: rgba(255,255,255,0.05);
+        }
+
+        #question-text {
+            font-size: 1.5rem;
+            font-weight: 500;
+            line-height: 1.4;
+            margin-bottom: 35px;
+            color: #fff;
+        }
+
+        /* --- BOTONES DE OPCIONES --- */
+        .options-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .options-layout { grid-template-columns: 1fr; }
+            .hud-glass { flex-direction: column; gap: 15px; align-items: flex-start; }
+            .bar-bg { width: 100%; }
+        }
+
+        .btn-option {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: var(--font-body);
+            font-size: 1.1rem;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-option:hover {
+            background: rgba(255, 183, 3, 0.05);
+            border-color: var(--accent-gold);
+            color: #fff;
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .btn-option::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-option:hover::before { left: 100%; }
+
+        /* --- PANEL DE GADGETS --- */
+        .gadgets-panel {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .gadget-btn {
+            background: var(--glass-bg);
+            border: 1px solid rgba(0, 245, 212, 0.3);
+            color: var(--accent-cyan);
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-family: var(--font-title);
+            font-size: 0.9rem;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s;
+        }
+
+        .gadget-btn:hover:not(:disabled) {
+            background: var(--accent-cyan);
+            color: #000;
+            box-shadow: 0 0 15px rgba(0, 245, 212, 0.5);
+        }
+
+        .gadget-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            border-color: #555;
+            color: #555;
+        }
+
+        /* --- BANNER DE FEEDBACK --- */
+        .feedback-banner {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-align: center;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .feedback-banner.correct { 
+            background: rgba(0, 245, 212, 0.1); 
+            border-left: 5px solid var(--accent-cyan); 
+            color: var(--accent-cyan); 
+        }
+
+        .feedback-banner.incorrect { 
+            background: rgba(255, 0, 60, 0.1); 
+            border-left: 5px solid var(--accent-red); 
+            color: var(--accent-red); 
+        }
+
+        .feedback-banner.info {
+            background: rgba(255, 183, 3, 0.1); 
+            border-left: 5px solid var(--accent-gold); 
+            color: var(--accent-gold); 
+        }
+
+        .hidden { display: none; }
+    </style>
 </head>
 <body>
-    <!-- Fondo dinámico de partículas -->
+
+    <!-- Fondo de Partículas -->
     <div id="particles-js"></div>
 
     <div class="game-wrapper">
-        <!-- HUD Glassmorphism -->
+        <!-- HUD -->
         <header class="hud-glass">
             <div class="stat-group">
                 <i class="fa-solid fa-city icon-city"></i>
@@ -40,35 +303,257 @@
             </div>
         </header>
 
-        <!-- Expediente del Caso -->
+        <!-- Pantalla de Juego -->
         <main id="game-screen" class="mission-card">
             <div class="card-header">
                 <span id="level-badge" class="badge">EXPEDIENTE 01</span>
                 <i class="fa-solid fa-fingerprint fingerprint-icon"></i>
             </div>
             
-            <h2 id="question-text">Analizando la escena del crimen digital...</h2>
+            <h2 id="question-text">Iniciando sistema...</h2>
             
-            <div id="options-container" class="options-layout">
-                <!-- Generado por JS -->
-            </div>
+            <div id="options-container" class="options-layout"></div>
 
             <div id="feedback" class="feedback-banner hidden"></div>
         </main>
 
-        <!-- Gadgets de Detective -->
+        <!-- Gadgets -->
         <footer class="gadgets-panel">
-            <button class="gadget-btn" onclick="usePowerup('oracle')">
+            <button class="gadget-btn" id="btn-oracle" onclick="usePowerup('oracle', this)">
                 <i class="fa-solid fa-eye"></i> Visión de Detective (50/50)
             </button>
-            <button class="gadget-btn" onclick="usePowerup('shield')">
+            <button class="gadget-btn" id="btn-shield" onclick="usePowerup('shield', this)">
                 <i class="fa-solid fa-shield-halved"></i> Cortafuegos Táctico
             </button>
         </footer>
     </div>
 
-    <!-- Scripts externos -->
+    <!-- Librería externa para partículas (Directo desde CDN) -->
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
-    <script src="game.js"></script>
+    
+    <!-- LÓGICA DEL JUEGO INTEGRADA -->
+    <script>
+        // Inicializar partículas de fondo
+        particlesJS("particles-js", {
+            "particles": {
+                "number": { "value": 80, "density": { "enable": true, "value_area": 800 } },
+                "color": { "value": ["#ffb703", "#00f5d4", "#ffffff"] },
+                "shape": { "type": "circle" },
+                "opacity": { "value": 0.5, "random": true },
+                "size": { "value": 3, "random": true },
+                "line_linked": { "enable": true, "distance": 150, "color": "#ffffff", "opacity": 0.1, "width": 1 },
+                "move": { "enable": true, "speed": 2, "direction": "none", "out_mode": "out" }
+            },
+            "interactivity": {
+                "detect_on": "canvas",
+                "events": {
+                    "onhover": { "enable": true, "mode": "grab" },
+                    "onclick": { "enable": true, "mode": "push" },
+                    "resize": true
+                },
+                "modes": { "grab": { "distance": 140, "line_linked": { "opacity": 0.5 } } }
+            },
+            "retina_detect": true
+        });
+
+        // Base de datos de preguntas
+        const questions = [
+            {
+                level: "EXPEDIENTE 01: EL CÓDIGO FUENTE",
+                question: "🕵️‍♂️ 'La escena del crimen tiene hardware destrozado, pero el perpetrador se llevó lo más valioso... El Software.' ¿Qué se llevó exactamente?",
+                options: [
+                    "El conjunto de componentes físicos del servidor central.",
+                    "El conjunto de programas, instrucciones, reglas y datos que hacen funcionar el sistema.",
+                    "Los planos físicos de los cables de fibra óptica de la ciudad.",
+                    "Un disco duro vacío de repuesto."
+                ],
+                correct: 1,
+                explanation: "Pista correcta. El software es el alma lógica de la máquina. La ciudad recobra esperanza."
+            },
+            {
+                level: "EXPEDIENTE 02: EL CONTRATO ROTO",
+                question: "⚖️ 'Encontramos un documento legal en la caja fuerte. Una Licencia de Software.' ¿Qué le permitía hacer este documento al usuario?",
+                options: [
+                    "Apropiarse legalmente de la empresa creadora del código.",
+                    "Obtener derechos de uso y establecer restricciones bajo los términos del autor original.",
+                    "Destruir la computadora si el software presentaba fallas.",
+                    "Eliminar permanentemente los derechos de autor del creador."
+                ],
+                correct: 1,
+                explanation: "Exacto. La licencia otorga permisos de uso, no transfiere la propiedad intelectual. Buen ojo, detective."
+            },
+            {
+                level: "EXPEDIENTE 03: EL SINDICATO COPYLEFT",
+                question: "🛡️ 'El hacker quería que su código fuera libre, pero exigía que cualquiera que lo modificara TAMBIÉN compartiera su código públicamente.' ¿Qué licencia usó?",
+                options: [
+                    "Licencia Propietaria (Closed Source).",
+                    "Licencia Permisiva (Ejemplo: MIT).",
+                    "Licencia Copyleft / Fuerte (Ejemplo: GNU GPL).",
+                    "Dominio Público sin restricciones."
+                ],
+                correct: 2,
+                explanation: "Has dado en el clavo. El modelo Copyleft (GPL) obliga a heredar las mismas libertades a proyectos derivados."
+            },
+            {
+                level: "EXPEDIENTE FINAL: LA ESTRATEGIA CORPORATIVA",
+                question: "🎯 'Para detener el colapso, debes lanzar un parche de emergencia. Quieres que corporaciones y startups lo implementen masivamente sin miedo a demandas. ¿Cuál es la licencia más adecuada?'",
+                options: [
+                    "GNU GPL, forzando a las corporaciones a liberar sus secretos comerciales.",
+                    "Licencia MIT o Apache 2.0, ya que son permisivas y facilitan la adopción comercial sin fricción.",
+                    "Licencia Privativa estricta, bloqueando el parche bajo un muro de pago.",
+                    "Sin licencia, dejando el software en un limbo legal peligroso."
+                ],
+                correct: 1,
+                explanation: "Caso cerrado. Las licencias permisivas (MIT/Apache) son ideales para maximizar la adopción comercial rápida."
+            }
+        ];
+
+        // Variables de estado del juego
+        let currentQ = 0;
+        let health = 100;
+        let score = 0;
+        let combo = 1;
+        let shieldActive = false;
+
+        function loadQuestion() {
+            if (currentQ >= questions.length) {
+                endGame(true);
+                return;
+            }
+
+            const q = questions[currentQ];
+            document.getElementById("level-badge").innerText = q.level;
+            document.getElementById("question-text").innerText = q.question;
+            
+            const container = document.getElementById("options-container");
+            container.innerHTML = "";
+
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement("button");
+                btn.className = "btn-option";
+                btn.innerHTML = `<strong>${String.fromCharCode(65 + index)}.</strong> ${opt}`;
+                btn.onclick = () => selectAnswer(index);
+                container.appendChild(btn);
+            });
+
+            document.getElementById("feedback").classList.add("hidden");
+        }
+
+        function selectAnswer(index) {
+            const q = questions[currentQ];
+            const feedback = document.getElementById("feedback");
+            feedback.classList.remove("hidden");
+            
+            // Desactivar clics adicionales
+            document.querySelectorAll('.btn-option').forEach(btn => btn.style.pointerEvents = 'none');
+
+            if (index === q.correct) {
+                score += 500 * combo;
+                combo++;
+                feedback.className = "feedback-banner correct";
+                feedback.innerHTML = `<i class="fa-solid fa-check-circle"></i> ${q.explanation}`;
+            } else {
+                if (shieldActive) {
+                    feedback.className = "feedback-banner correct";
+                    feedback.innerHTML = `<i class="fa-solid fa-shield"></i> Cortafuegos Táctico bloqueó el ataque enemigo. No recibes daño.`;
+                    shieldActive = false;
+                } else {
+                    health -= 25;
+                    combo = 1;
+                    feedback.className = "feedback-banner incorrect";
+                    feedback.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ERROR CRÍTICO. ${q.explanation}`;
+                }
+            }
+
+            updateHUD();
+
+            if (health <= 0) {
+                setTimeout(() => endGame(false), 2500);
+                return;
+            }
+
+            setTimeout(() => {
+                currentQ++;
+                loadQuestion();
+            }, 4000);
+        }
+
+        function updateHUD() {
+            const healthBar = document.getElementById("health-bar");
+            healthBar.style.width = health + "%";
+            
+            if (health <= 30) {
+                healthBar.style.background = "linear-gradient(90deg, #ff003c, #8a0021)";
+                healthBar.style.boxShadow = "0 0 15px #ff003c";
+            }
+            
+            document.getElementById("score").innerText = score.toLocaleString();
+            document.getElementById("combo").innerText = "x" + combo;
+        }
+
+        function usePowerup(type, btnElement) {
+            const feedback = document.getElementById("feedback");
+            feedback.classList.remove("hidden");
+            
+            if (type === 'shield') {
+                shieldActive = true;
+                feedback.className = "feedback-banner info";
+                feedback.innerHTML = `<i class="fa-solid fa-shield-halved"></i> <strong>Cortafuegos activado:</strong> Tu próximo error será perdonado.`;
+                btnElement.disabled = true;
+            } else if (type === 'oracle') {
+                const q = questions[currentQ];
+                const buttons = document.querySelectorAll(".btn-option");
+                let removed = 0;
+                buttons.forEach((btn, idx) => {
+                    if (idx !== q.correct && removed < 2) {
+                        btn.style.opacity = "0.2";
+                        btn.style.pointerEvents = "none";
+                        removed++;
+                    }
+                });
+                feedback.className = "feedback-banner info";
+                feedback.innerHTML = `<i class="fa-solid fa-eye"></i> <strong>Visión activada:</strong> Se han descartado 2 opciones falsas.`;
+                btnElement.disabled = true;
+            }
+
+            // Ocultar mensaje después de 3 segundos si no han respondido aún
+            setTimeout(() => { 
+                if(feedback.className.includes('info')) {
+                    feedback.classList.add("hidden"); 
+                }
+            }, 3000);
+        }
+
+        function endGame(win) {
+            const screen = document.getElementById("game-screen");
+            if (win) {
+                screen.innerHTML = `
+                    <div style="text-align: center; animation: fadeIn 1s ease;">
+                        <i class="fa-solid fa-medal" style="font-size: 4rem; color: var(--accent-gold); margin-bottom: 20px;"></i>
+                        <h2 style="font-size: 2rem; color: #fff;">CASO RESUELTO</h2>
+                        <p style="font-size: 1.2rem; margin-bottom: 20px; color: #aaa;">Has limpiado las calles digitales. Eres una leyenda en la red.</p>
+                        <h3 style="font-size: 2.5rem; color: var(--accent-cyan); margin-bottom: 30px; text-shadow: 0 0 10px var(--accent-cyan);">REPUTACIÓN: ${score.toLocaleString()}</h3>
+                        <button class="btn-option" style="text-align: center; border-color: var(--accent-gold); color: var(--accent-gold); width: auto; padding: 15px 30px;" onclick="location.reload()">
+                            <i class="fa-solid fa-rotate-right"></i> Siguiente Expediente
+                        </button>
+                    </div>
+                `;
+            } else {
+                screen.innerHTML = `
+                    <div style="text-align: center; animation: fadeIn 1s ease;">
+                        <i class="fa-solid fa-skull" style="font-size: 4rem; color: var(--accent-red); margin-bottom: 20px; text-shadow: 0 0 15px var(--accent-red);"></i>
+                        <h2 style="font-size: 2rem; color: #fff;">LA CIUDAD HA CAÍDO</h2>
+                        <p style="font-size: 1.2rem; margin-bottom: 30px; color: #aaa;">Tus deducciones fueron incorrectas y el código colapsó.</p>
+                        <button class="btn-option" style="text-align: center; border-color: var(--accent-red); color: var(--accent-red); width: auto; padding: 15px 30px;" onclick="location.reload()">
+                            <i class="fa-solid fa-rotate-right"></i> Volver a Investigar
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Iniciar el juego
+        loadQuestion();
+    </script>
 </body>
 </html>
