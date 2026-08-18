@@ -3,557 +3,615 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Código Noir: Detective de Datos</title>
+    <title>Agencia X: Detectives Mutantes</title>
     
-    <!-- Fuentes nivel GOD -->
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
-    <!-- Íconos de FontAwesome -->
+    <!-- Fuentes Sci-Fi y de Cómic -->
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Rajdhani:wght@500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- ESTILOS CSS INTEGRADOS -->
     <style>
         :root {
-            --bg-dark: #050508;
-            --accent-gold: #ffb703;
-            --accent-red: #ff003c;
-            --accent-cyan: #00f5d4;
-            --glass-bg: rgba(15, 15, 22, 0.65);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --font-title: 'Orbitron', sans-serif;
+            /* Paleta inspirada en los X-Men (Azul y Oro) */
+            --x-blue: #0952a5;
+            --x-blue-dark: #052a5c;
+            --x-gold: #feca2f;
+            --x-gold-dark: #cc9b14;
+            --x-red: #d32f2f;
+            --bg-dark: #0a0e17;
+            --panel-bg: rgba(10, 20, 35, 0.85);
+            
+            --font-title: 'Bangers', cursive;
+            --font-hud: 'Share Tech Mono', monospace;
             --font-body: 'Rajdhani', sans-serif;
         }
 
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
-            margin: 0;
-            padding: 0;
             background-color: var(--bg-dark);
-            color: #e0e0e0;
+            color: #fff;
             font-family: var(--font-body);
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
+            overflow: hidden;
+            background-image: 
+                linear-gradient(rgba(9, 82, 165, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(9, 82, 165, 0.1) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        /* --- CONTENEDOR PRINCIPAL --- */
+        .game-boy {
+            width: 100%;
+            max-width: 900px;
+            height: 90vh;
+            background: var(--panel-bg);
+            border: 3px solid var(--x-blue);
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(9, 82, 165, 0.5), inset 0 0 20px rgba(254, 202, 47, 0.1);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            backdrop-filter: blur(5px);
+        }
+
+        /* --- HEADER / HUD --- */
+        .hud {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 20px;
+            background: var(--x-blue-dark);
+            border-bottom: 3px solid var(--x-gold);
+            border-radius: 12px 12px 0 0;
+        }
+
+        .fighter-stats {
+            width: 40%;
+        }
+
+        .fighter-name {
+            font-family: var(--font-title);
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+            color: var(--x-gold);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .enemy-name { color: var(--x-red); text-align: right; }
+
+        .health-bar-container {
+            width: 100%;
+            height: 18px;
+            background: #222;
+            border: 2px solid #555;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .health-bar {
+            height: 100%;
+            width: 100%;
+            transition: width 0.3s ease-out;
+        }
+
+        #player-hp-bar { background: linear-gradient(90deg, #00f5d4, #00b4d8); }
+        #enemy-hp-bar { background: linear-gradient(90deg, #ff003c, #c0002b); transform-origin: right; float: right; }
+
+        .hp-text {
+            font-family: var(--font-hud);
+            font-size: 0.85rem;
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            top: 0; left: 0;
+            line-height: 14px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px #000;
+        }
+
+        /* --- ZONA DE COMBATE --- */
+        .battle-arena {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
             overflow: hidden;
         }
 
-        /* Partículas interactivas cubriendo todo el fondo */
-        #particles-js {
+        .arena-bg {
             position: absolute;
-            top: 0; left: 0;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 15rem;
+            color: rgba(254, 202, 47, 0.05);
+            z-index: 0;
+        }
+
+        .battle-log {
+            z-index: 1;
+            width: 80%;
+            height: 150px;
+            background: rgba(0,0,0,0.6);
+            border: 1px solid var(--x-blue);
+            border-radius: 8px;
+            padding: 10px;
+            font-family: var(--font-hud);
+            font-size: 1.1rem;
+            color: #00f5d4;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .log-entry.enemy { color: #ff4d4d; }
+        .log-entry.system { color: var(--x-gold); font-style: italic; }
+        .log-entry.power { color: #d400ff; font-weight: bold; font-size: 1.2rem; }
+
+        /* Sprites visuales abstractos */
+        .combat-visuals {
+            display: flex;
+            justify-content: space-around;
             width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at center, #1a1a24 0%, var(--bg-dark) 100%);
+            margin-top: 20px;
             z-index: 1;
         }
 
-        .game-wrapper {
-            position: relative;
-            z-index: 2;
-            width: 95%;
-            max-width: 900px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+        .sprite {
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 3rem;
+            box-shadow: 0 0 20px currentColor;
+            transition: transform 0.2s;
         }
 
-        /* --- HUD GLASSMORPHISM --- */
-        .hud-glass {
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            border-radius: 15px;
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-        }
+        #sprite-player { color: var(--x-blue); background: rgba(9, 82, 165, 0.2); border: 2px solid currentColor; }
+        #sprite-enemy { color: var(--x-red); background: rgba(211, 47, 47, 0.2); border: 2px solid currentColor; }
 
-        .stat-group {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
+        .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-3px, 0, 0); } 20%, 80% { transform: translate3d(4px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-6px, 0, 0); } 40%, 60% { transform: translate3d(6px, 0, 0); } }
 
-        .stat-group i { font-size: 1.8rem; }
-        .icon-city { color: var(--accent-cyan); }
-        .icon-gold { color: var(--accent-gold); }
-        .icon-fire { color: var(--accent-red); }
-
-        .stat-info { display: flex; flex-direction: column; }
-        
-        .stat-info span {
-            font-size: 0.85rem;
-            letter-spacing: 1px;
-            color: #aaa;
-        }
-
-        .stat-info strong {
-            font-family: var(--font-title);
-            font-size: 1.3rem;
-            letter-spacing: 2px;
-        }
-
-        .bar-bg {
-            width: 200px;
-            height: 12px;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 6px;
-            margin-top: 5px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            overflow: hidden;
-        }
-
-        .bar-fill {
-            height: 100%;
-            width: 100%;
-            background: linear-gradient(90deg, #00b4d8, var(--accent-cyan));
-            transition: width 0.4s ease, background 0.4s ease;
-            box-shadow: 0 0 10px var(--accent-cyan);
-        }
-
-        /* --- TARJETA DE MISIÓN --- */
-        .mission-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            border-radius: 15px;
-            padding: 40px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
-            position: relative;
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            padding-bottom: 15px;
-        }
-
-        .badge {
-            background: rgba(255, 183, 3, 0.15);
-            color: var(--accent-gold);
-            border: 1px solid var(--accent-gold);
-            padding: 6px 15px;
-            font-family: var(--font-title);
-            font-size: 0.9rem;
-            border-radius: 4px;
-            letter-spacing: 1px;
-        }
-
-        .fingerprint-icon {
-            font-size: 2.5rem;
-            color: rgba(255,255,255,0.05);
-        }
-
-        #question-text {
-            font-size: 1.5rem;
-            font-weight: 500;
-            line-height: 1.4;
-            margin-bottom: 35px;
-            color: #fff;
-        }
-
-        /* --- BOTONES DE OPCIONES --- */
-        .options-layout {
+        /* --- PANEL DE ACCIÓN --- */
+        .action-panel {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        @media (max-width: 768px) {
-            .options-layout { grid-template-columns: 1fr; }
-            .hud-glass { flex-direction: column; gap: 15px; align-items: flex-start; }
-            .bar-bg { width: 100%; }
-        }
-
-        .btn-option {
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #cbd5e1;
+            gap: 15px;
             padding: 20px;
-            border-radius: 10px;
-            font-family: var(--font-body);
-            font-size: 1.1rem;
-            cursor: pointer;
-            text-align: left;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            position: relative;
-            overflow: hidden;
+            background: rgba(0, 0, 0, 0.5);
+            border-top: 2px solid var(--x-blue);
         }
 
-        .btn-option:hover {
-            background: rgba(255, 183, 3, 0.05);
-            border-color: var(--accent-gold);
+        .btn-action {
+            background: linear-gradient(135deg, var(--x-blue-dark), var(--x-blue));
+            border: 2px solid var(--x-blue);
             color: #fff;
-            transform: translateY(-4px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            padding: 15px;
+            font-family: var(--font-title);
+            font-size: 1.3rem;
+            letter-spacing: 1px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-shadow: 1px 1px 2px #000;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
         }
 
-        .btn-option::before {
-            content: '';
+        .btn-action:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(9, 82, 165, 0.6);
+            filter: brightness(1.2);
+        }
+
+        .btn-action:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
+
+        .btn-cerebro {
+            grid-column: span 2;
+            background: linear-gradient(135deg, #b8860b, var(--x-gold-dark));
+            border-color: var(--x-gold);
+            color: #000;
+            text-shadow: none;
+        }
+
+        .btn-mutant-power {
+            grid-column: span 2;
+            background: linear-gradient(135deg, #7b1fa2, #4a148c);
+            border-color: #d500f9;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(213, 0, 249, 0.5);
+            animation: pulse-power 1.5s infinite;
+        }
+
+        @keyframes pulse-power {
+            0% { box-shadow: 0 0 10px rgba(213, 0, 249, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(213, 0, 249, 0.9); }
+            100% { box-shadow: 0 0 10px rgba(213, 0, 249, 0.5); }
+        }
+
+        /* --- MODAL DE TRIVIA (CEREBRO) --- */
+        .modal-overlay {
             position: absolute;
-            top: 0; left: -100%;
-            width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
-            transition: left 0.5s;
-        }
-
-        .btn-option:hover::before { left: 100%; }
-
-        /* --- PANEL DE GADGETS --- */
-        .gadgets-panel {
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
             display: flex;
             justify-content: center;
-            gap: 20px;
+            align-items: center;
+            z-index: 10;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
         }
 
-        .gadget-btn {
-            background: var(--glass-bg);
-            border: 1px solid rgba(0, 245, 212, 0.3);
-            color: var(--accent-cyan);
-            padding: 12px 25px;
-            border-radius: 30px;
-            font-family: var(--font-title);
-            font-size: 0.9rem;
-            cursor: pointer;
-            backdrop-filter: blur(5px);
-            transition: all 0.3s;
-        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
 
-        .gadget-btn:hover:not(:disabled) {
-            background: var(--accent-cyan);
-            color: #000;
-            box-shadow: 0 0 15px rgba(0, 245, 212, 0.5);
-        }
-
-        .gadget-btn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-            border-color: #555;
-            color: #555;
-        }
-
-        /* --- BANNER DE FEEDBACK --- */
-        .feedback-banner {
-            margin-top: 30px;
-            padding: 20px;
-            border-radius: 10px;
-            font-size: 1.2rem;
-            font-weight: 700;
+        .trivia-box {
+            background: #111;
+            border: 3px solid var(--x-gold);
+            border-radius: 12px;
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 10px 40px rgba(254, 202, 47, 0.3);
             text-align: center;
-            animation: fadeIn 0.4s ease;
         }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .feedback-banner.correct { 
-            background: rgba(0, 245, 212, 0.1); 
-            border-left: 5px solid var(--accent-cyan); 
-            color: var(--accent-cyan); 
+        .trivia-title {
+            font-family: var(--font-title);
+            color: var(--x-gold);
+            font-size: 2rem;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
         }
 
-        .feedback-banner.incorrect { 
-            background: rgba(255, 0, 60, 0.1); 
-            border-left: 5px solid var(--accent-red); 
-            color: var(--accent-red); 
+        .trivia-question {
+            font-size: 1.3rem;
+            margin-bottom: 25px;
+            line-height: 1.4;
         }
 
-        .feedback-banner.info {
-            background: rgba(255, 183, 3, 0.1); 
-            border-left: 5px solid var(--accent-gold); 
-            color: var(--accent-gold); 
+        .trivia-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
-        .hidden { display: none; }
+        .btn-trivia {
+            background: #222;
+            border: 1px solid #555;
+            color: #ddd;
+            padding: 15px;
+            font-family: var(--font-body);
+            font-size: 1.1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .btn-trivia:hover { background: #333; border-color: var(--x-gold); }
+
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <!-- Fondo de Partículas -->
-    <div id="particles-js"></div>
-
-    <div class="game-wrapper">
-        <!-- HUD -->
-        <header class="hud-glass">
-            <div class="stat-group">
-                <i class="fa-solid fa-city icon-city"></i>
-                <div class="stat-info">
-                    <span>ESTADO DE LA CIUDAD</span>
-                    <div class="bar-bg"><div id="health-bar" class="bar-fill"></div></div>
+    <div class="game-boy">
+        <!-- HUD Superior -->
+        <header class="hud">
+            <div class="fighter-stats">
+                <div class="fighter-name"><i class="fa-solid fa-user-ninja"></i> Detective X</div>
+                <div class="health-bar-container">
+                    <div id="player-hp-bar" class="health-bar" style="width: 100%;"></div>
+                    <div id="player-hp-text" class="hp-text">100 / 100</div>
                 </div>
             </div>
-            <div class="stat-group score-group">
-                <i class="fa-solid fa-star icon-gold"></i>
-                <div class="stat-info">
-                    <span>REPUTACIÓN</span>
-                    <strong id="score">0</strong>
-                </div>
-            </div>
-            <div class="stat-group combo-group">
-                <i class="fa-solid fa-fire icon-fire"></i>
-                <div class="stat-info">
-                    <span>COMBO</span>
-                    <strong id="combo">x1</strong>
+            
+            <div class="fighter-stats">
+                <div class="fighter-name enemy-name" id="enemy-name">Centinela Mk.1 <i class="fa-solid fa-robot"></i></div>
+                <div class="health-bar-container">
+                    <div id="enemy-hp-bar" class="health-bar" style="width: 100%;"></div>
+                    <div id="enemy-hp-text" class="hp-text">150 / 150</div>
                 </div>
             </div>
         </header>
 
-        <!-- Pantalla de Juego -->
-        <main id="game-screen" class="mission-card">
-            <div class="card-header">
-                <span id="level-badge" class="badge">EXPEDIENTE 01</span>
-                <i class="fa-solid fa-fingerprint fingerprint-icon"></i>
+        <!-- Zona de Combate -->
+        <main class="battle-arena">
+            <i class="fa-brands fa-x-twitter arena-bg"></i>
+            
+            <div class="combat-visuals">
+                <div id="sprite-player" class="sprite"><i class="fa-solid fa-dna"></i></div>
+                <div id="sprite-enemy" class="sprite"><i class="fa-solid fa-crosshairs"></i></div>
             </div>
-            
-            <h2 id="question-text">Iniciando sistema...</h2>
-            
-            <div id="options-container" class="options-layout"></div>
 
-            <div id="feedback" class="feedback-banner hidden"></div>
+            <div id="battle-log" class="battle-log">
+                <div class="log-entry system">Encuentro iniciado. La ciudad depende de ti.</div>
+            </div>
         </main>
 
-        <!-- Gadgets -->
-        <footer class="gadgets-panel">
-            <button class="gadget-btn" id="btn-oracle" onclick="usePowerup('oracle', this)">
-                <i class="fa-solid fa-eye"></i> Visión de Detective (50/50)
-            </button>
-            <button class="gadget-btn" id="btn-shield" onclick="usePowerup('shield', this)">
-                <i class="fa-solid fa-shield-halved"></i> Cortafuegos Táctico
-            </button>
+        <!-- Panel de Botones -->
+        <footer class="action-panel">
+            <button id="btn-attack" class="btn-action" onclick="playerAttack(false)"><i class="fa-solid fa-hand-fist"></i> Golpe Cinético</button>
+            <button id="btn-defend" class="btn-action" onclick="playerDefend()"><i class="fa-solid fa-shield-halved"></i> Escudo Táctico</button>
+            <button id="btn-cerebro" class="btn-action btn-cerebro" onclick="openCerebro()"><i class="fa-solid fa-brain"></i> Acceder a Terminal (Desbloquear Poder)</button>
+            <button id="btn-mutant-power" class="btn-action btn-mutant-power hidden" onclick="playerAttack(true)"><i class="fa-solid fa-bolt-lightning"></i> RAYO OMEGA (Poder Mutante)</button>
         </footer>
+
+        <!-- Modal de Trivia / CEREBRO -->
+        <div id="cerebro-modal" class="modal-overlay">
+            <div class="trivia-box">
+                <h2 class="trivia-title"><i class="fa-solid fa-microchip"></i> Interfaz de Deducción</h2>
+                <p id="trivia-question" class="trivia-question">Cargando datos del objetivo...</p>
+                <div id="trivia-options" class="trivia-options">
+                    <!-- Opciones generadas por JS -->
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Librería externa para partículas (Directo desde CDN) -->
-    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
-    
-    <!-- LÓGICA DEL JUEGO INTEGRADA -->
+    <!-- LÓGICA DEL JUEGO -->
     <script>
-        // Inicializar partículas de fondo
-        particlesJS("particles-js", {
-            "particles": {
-                "number": { "value": 80, "density": { "enable": true, "value_area": 800 } },
-                "color": { "value": ["#ffb703", "#00f5d4", "#ffffff"] },
-                "shape": { "type": "circle" },
-                "opacity": { "value": 0.5, "random": true },
-                "size": { "value": 3, "random": true },
-                "line_linked": { "enable": true, "distance": 150, "color": "#ffffff", "opacity": 0.1, "width": 1 },
-                "move": { "enable": true, "speed": 2, "direction": "none", "out_mode": "out" }
-            },
-            "interactivity": {
-                "detect_on": "canvas",
-                "events": {
-                    "onhover": { "enable": true, "mode": "grab" },
-                    "onclick": { "enable": true, "mode": "push" },
-                    "resize": true
-                },
-                "modes": { "grab": { "distance": 140, "line_linked": { "opacity": 0.5 } } }
-            },
-            "retina_detect": true
-        });
+        // ESTADO DEL JUEGO
+        let player = { hp: 100, maxHp: 100, isDefending: false, powerUnlocked: false };
+        let currentLevel = 0;
+        let isPlayerTurn = true;
 
-        // Base de datos de preguntas
-        const questions = [
+        // BASE DE DATOS DE NIVELES Y VILLANOS
+        const levels = [
             {
-                level: "EXPEDIENTE 01: EL CÓDIGO FUENTE",
-                question: "🕵️‍♂️ 'La escena del crimen tiene hardware destrozado, pero el perpetrador se llevó lo más valioso... El Software.' ¿Qué se llevó exactamente?",
-                options: [
-                    "El conjunto de componentes físicos del servidor central.",
-                    "El conjunto de programas, instrucciones, reglas y datos que hacen funcionar el sistema.",
-                    "Los planos físicos de los cables de fibra óptica de la ciudad.",
-                    "Un disco duro vacío de repuesto."
-                ],
-                correct: 1,
-                explanation: "Pista correcta. El software es el alma lógica de la máquina. La ciudad recobra esperanza."
+                enemy: { name: "Centinela Mk.1", hp: 120, maxHp: 120, minDmg: 10, maxDmg: 18, icon: "fa-robot" },
+                trivia: {
+                    question: "El Centinela escanea firmas genéticas basándose en proteínas. Si un mutante cambia de forma a un ave, ¿qué ocurre?",
+                    options: [
+                        "El Centinela se apaga por error del sistema.",
+                        "El Centinela lo ignora, un ave no es amenaza.",
+                        "La firma genética original persiste a nivel celular; el Centinela atacará.",
+                        "El Centinela no puede rastrear materia orgánica pequeña."
+                    ],
+                    correct: 2,
+                    powerName: "DESCARGA ELECTROMAGNÉTICA"
+                }
             },
             {
-                level: "EXPEDIENTE 02: EL CONTRATO ROTO",
-                question: "⚖️ 'Encontramos un documento legal en la caja fuerte. Una Licencia de Software.' ¿Qué le permitía hacer este documento al usuario?",
-                options: [
-                    "Apropiarse legalmente de la empresa creadora del código.",
-                    "Obtener derechos de uso y establecer restricciones bajo los términos del autor original.",
-                    "Destruir la computadora si el software presentaba fallas.",
-                    "Eliminar permanentemente los derechos de autor del creador."
-                ],
-                correct: 1,
-                explanation: "Exacto. La licencia otorga permisos de uso, no transfiere la propiedad intelectual. Buen ojo, detective."
+                enemy: { name: "Infiltrado Metamorfo", hp: 160, maxHp: 160, minDmg: 15, maxDmg: 25, icon: "fa-masks-theater" },
+                trivia: {
+                    question: "El asesino ha tomado la forma del alcalde. Físicamente es idéntico, pero ¿qué micro-expresión no puede copiar perfectamente un telépata bajo estrés?",
+                    options: [
+                        "El color del iris.",
+                        "La dilatación de las pupilas ante una pregunta trampa.",
+                        "El tono de su voz en los discursos públicos.",
+                        "Su altura y peso exacto."
+                    ],
+                    correct: 1,
+                    powerName: "INCURSIÓN TELEPÁTICA"
+                }
             },
             {
-                level: "EXPEDIENTE 03: EL SINDICATO COPYLEFT",
-                question: "🛡️ 'El hacker quería que su código fuera libre, pero exigía que cualquiera que lo modificara TAMBIÉN compartiera su código públicamente.' ¿Qué licencia usó?",
-                options: [
-                    "Licencia Propietaria (Closed Source).",
-                    "Licencia Permisiva (Ejemplo: MIT).",
-                    "Licencia Copyleft / Fuerte (Ejemplo: GNU GPL).",
-                    "Dominio Público sin restricciones."
-                ],
-                correct: 2,
-                explanation: "Has dado en el clavo. El modelo Copyleft (GPL) obliga a heredar las mismas libertades a proyectos derivados."
-            },
-            {
-                level: "EXPEDIENTE FINAL: LA ESTRATEGIA CORPORATIVA",
-                question: "🎯 'Para detener el colapso, debes lanzar un parche de emergencia. Quieres que corporaciones y startups lo implementen masivamente sin miedo a demandas. ¿Cuál es la licencia más adecuada?'",
-                options: [
-                    "GNU GPL, forzando a las corporaciones a liberar sus secretos comerciales.",
-                    "Licencia MIT o Apache 2.0, ya que son permisivas y facilitan la adopción comercial sin fricción.",
-                    "Licencia Privativa estricta, bloqueando el parche bajo un muro de pago.",
-                    "Sin licencia, dejando el software en un limbo legal peligroso."
-                ],
-                correct: 1,
-                explanation: "Caso cerrado. Las licencias permisivas (MIT/Apache) son ideales para maximizar la adopción comercial rápida."
+                enemy: { name: "Mente Maestra (Jefe)", hp: 250, maxHp: 250, minDmg: 20, maxDmg: 35, icon: "fa-chess-king" },
+                trivia: {
+                    question: "La habitación está llena de ilusiones. Ves 3 bombas, pero el telépata solo pudo materializar físicamente una. ¿Cómo encuentras la real sin poderes?",
+                    options: [
+                        "Le disparo a todas al mismo tiempo.",
+                        "Uso gafas de visión nocturna.",
+                        "Lanzo polvo al aire; la real bloqueará las partículas de polvo, las ilusiones no.",
+                        "Espero a que el reloj de las ilusiones se desincronice."
+                    ],
+                    correct: 2,
+                    powerName: "DESTRUCCIÓN ABSOLUTA (NIVEL OMEGA)"
+                }
             }
         ];
 
-        // Variables de estado del juego
-        let currentQ = 0;
-        let health = 100;
-        let score = 0;
-        let combo = 1;
-        let shieldActive = false;
+        let enemy = null;
 
-        function loadQuestion() {
-            if (currentQ >= questions.length) {
-                endGame(true);
+        // INICIALIZACIÓN
+        function initLevel() {
+            if (currentLevel >= levels.length) {
+                logMessage("¡Has derrotado a todos los objetivos! La ciudad está a salvo.", "system");
+                document.querySelector('.action-panel').innerHTML = `<button class="btn-action btn-cerebro" onclick="location.reload()">Jugar de Nuevo</button>`;
                 return;
             }
 
-            const q = questions[currentQ];
-            document.getElementById("level-badge").innerText = q.level;
-            document.getElementById("question-text").innerText = q.question;
+            enemy = JSON.parse(JSON.stringify(levels[currentLevel].enemy)); // Clon profundo
+            player.hp = player.maxHp;
+            player.powerUnlocked = false;
             
-            const container = document.getElementById("options-container");
-            container.innerHTML = "";
-
-            q.options.forEach((opt, index) => {
-                const btn = document.createElement("button");
-                btn.className = "btn-option";
-                btn.innerHTML = `<strong>${String.fromCharCode(65 + index)}.</strong> ${opt}`;
-                btn.onclick = () => selectAnswer(index);
-                container.appendChild(btn);
-            });
-
-            document.getElementById("feedback").classList.add("hidden");
+            document.getElementById('enemy-name').innerHTML = `${enemy.name} <i class="fa-solid ${enemy.icon}"></i>`;
+            document.getElementById('sprite-enemy').innerHTML = `<i class="fa-solid ${enemy.icon}"></i>`;
+            
+            updateHUD();
+            resetButtons();
+            logMessage(`--- INICIANDO EXPEDIENTE: ${enemy.name} ---`, "system");
         }
 
-        function selectAnswer(index) {
-            const q = questions[currentQ];
-            const feedback = document.getElementById("feedback");
-            feedback.classList.remove("hidden");
-            
-            // Desactivar clics adicionales
-            document.querySelectorAll('.btn-option').forEach(btn => btn.style.pointerEvents = 'none');
+        // ACTUALIZAR INTERFAZ
+        function updateHUD() {
+            // Player
+            const pPct = Math.max(0, (player.hp / player.maxHp) * 100);
+            document.getElementById('player-hp-bar').style.width = pPct + '%';
+            document.getElementById('player-hp-text').innerText = `${Math.max(0, player.hp)} / ${player.maxHp}`;
 
-            if (index === q.correct) {
-                score += 500 * combo;
-                combo++;
-                feedback.className = "feedback-banner correct";
-                feedback.innerHTML = `<i class="fa-solid fa-check-circle"></i> ${q.explanation}`;
+            // Enemy
+            const ePct = Math.max(0, (enemy.hp / enemy.maxHp) * 100);
+            document.getElementById('enemy-hp-bar').style.width = ePct + '%';
+            document.getElementById('enemy-hp-text').innerText = `${Math.max(0, enemy.hp)} / ${enemy.maxHp}`;
+        }
+
+        function logMessage(text, type = "normal") {
+            const log = document.getElementById('battle-log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.innerText = `> ${text}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight; // Autoscroll
+        }
+
+        function shakeElement(id) {
+            const el = document.getElementById(id);
+            el.classList.remove('shake');
+            void el.offsetWidth; // Trigger reflow
+            el.classList.add('shake');
+        }
+
+        // ACCIONES DEL JUGADOR
+        function setTurnState(isPlayer) {
+            isPlayerTurn = isPlayer;
+            const buttons = document.querySelectorAll('.btn-action');
+            buttons.forEach(b => b.disabled = !isPlayer);
+        }
+
+        function playerAttack(usePower) {
+            if (!isPlayerTurn) return;
+            setTurnState(false);
+            player.isDefending = false;
+
+            let dmg = Math.floor(Math.random() * (15 - 10 + 1)) + 10; // Ataque básico: 10-15 dmg
+            let logTxt = "Atacas con Golpe Cinético.";
+
+            if (usePower && player.powerUnlocked) {
+                dmg = Math.floor(Math.random() * (60 - 45 + 1)) + 45; // Nivel Omega: 45-60 dmg
+                logTxt = `¡LIBERAS TU PODER MUTANTE!`;
+                logMessage(logTxt, "power");
+                
+                // Consumir el poder tras usarlo
+                player.powerUnlocked = false;
+                resetButtons();
             } else {
-                if (shieldActive) {
-                    feedback.className = "feedback-banner correct";
-                    feedback.innerHTML = `<i class="fa-solid fa-shield"></i> Cortafuegos Táctico bloqueó el ataque enemigo. No recibes daño.`;
-                    shieldActive = false;
-                } else {
-                    health -= 25;
-                    combo = 1;
-                    feedback.className = "feedback-banner incorrect";
-                    feedback.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ERROR CRÍTICO. ${q.explanation}`;
-                }
+                logMessage(`${logTxt} Causa ${dmg} de daño.`);
             }
 
+            enemy.hp -= dmg;
+            shakeElement('sprite-enemy');
             updateHUD();
 
-            if (health <= 0) {
-                setTimeout(() => endGame(false), 2500);
-                return;
+            if (enemy.hp <= 0) {
+                setTimeout(winLevel, 1000);
+            } else {
+                setTimeout(enemyTurn, 1500);
+            }
+        }
+
+        function playerDefend() {
+            if (!isPlayerTurn) return;
+            setTurnState(false);
+            
+            player.isDefending = true;
+            logMessage("Levantas un Escudo Táctico. Daño recibido se reducirá al 50%.", "system");
+            
+            setTimeout(enemyTurn, 1000);
+        }
+
+        // TURNO DEL ENEMIGO
+        function enemyTurn() {
+            let dmg = Math.floor(Math.random() * (enemy.maxDmg - enemy.minDmg + 1)) + enemy.minDmg;
+            
+            if (player.isDefending) {
+                dmg = Math.floor(dmg / 2);
+                player.isDefending = false; // Resetear defensa
+                logMessage(`¡Bloqueaste parte del ataque!`, "system");
             }
 
+            logMessage(`${enemy.name} ataca causando ${dmg} de daño.`, "enemy");
+            player.hp -= dmg;
+            shakeElement('sprite-player');
+            updateHUD();
+
+            if (player.hp <= 0) {
+                setTimeout(gameOver, 1000);
+            } else {
+                setTurnState(true);
+            }
+        }
+
+        // CEREBRO (TRIVIA SYSTEM)
+        function openCerebro() {
+            if (!isPlayerTurn) return;
+            const lvlData = levels[currentLevel].trivia;
+            
+            document.getElementById('trivia-question').innerText = lvlData.question;
+            const optionsContainer = document.getElementById('trivia-options');
+            optionsContainer.innerHTML = '';
+
+            lvlData.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-trivia';
+                btn.innerText = opt;
+                btn.onclick = () => answerTrivia(idx, lvlData.correct, lvlData.powerName);
+                optionsContainer.appendChild(btn);
+            });
+
+            document.getElementById('cerebro-modal').classList.add('active');
+        }
+
+        function closeCerebro() {
+            document.getElementById('cerebro-modal').classList.remove('active');
+        }
+
+        function answerTrivia(selectedIndex, correctIndex, powerName) {
+            closeCerebro();
+            
+            if (selectedIndex === correctIndex) {
+                logMessage("¡Deducción correcta! Gen Mutante sincronizado.", "system");
+                logMessage(`Has desbloqueado: ${powerName}`, "power");
+                player.powerUnlocked = true;
+                
+                // Cambiar botones
+                document.getElementById('btn-cerebro').classList.add('hidden');
+                const pwrBtn = document.getElementById('btn-mutant-power');
+                pwrBtn.classList.remove('hidden');
+                pwrBtn.innerHTML = `<i class="fa-solid fa-bolt-lightning"></i> USAR: ${powerName}`;
+                
+            } else {
+                logMessage("Deducción errónea. ¡Sobrecarga neuronal! Pierdes 15 HP.", "enemy");
+                player.hp -= 15;
+                shakeElement('sprite-player');
+                updateHUD();
+                
+                // Desactiva el botón de cerebro unos turnos (lo simulamos desactivándolo temporalmente)
+                document.getElementById('btn-cerebro').disabled = true;
+                setTimeout(() => { document.getElementById('btn-cerebro').disabled = false; }, 4000);
+                
+                if (player.hp <= 0) setTimeout(gameOver, 1000);
+            }
+        }
+
+        function resetButtons() {
+            document.getElementById('btn-cerebro').classList.remove('hidden');
+            document.getElementById('btn-mutant-power').classList.add('hidden');
+        }
+
+        // FLUJO DEL JUEGO
+        function winLevel() {
+            logMessage(`¡Objetivo neutralizado!`, "power");
+            setTurnState(false);
+            
             setTimeout(() => {
-                currentQ++;
-                loadQuestion();
-            }, 4000);
-        }
-
-        function updateHUD() {
-            const healthBar = document.getElementById("health-bar");
-            healthBar.style.width = health + "%";
-            
-            if (health <= 30) {
-                healthBar.style.background = "linear-gradient(90deg, #ff003c, #8a0021)";
-                healthBar.style.boxShadow = "0 0 15px #ff003c";
-            }
-            
-            document.getElementById("score").innerText = score.toLocaleString();
-            document.getElementById("combo").innerText = "x" + combo;
-        }
-
-        function usePowerup(type, btnElement) {
-            const feedback = document.getElementById("feedback");
-            feedback.classList.remove("hidden");
-            
-            if (type === 'shield') {
-                shieldActive = true;
-                feedback.className = "feedback-banner info";
-                feedback.innerHTML = `<i class="fa-solid fa-shield-halved"></i> <strong>Cortafuegos activado:</strong> Tu próximo error será perdonado.`;
-                btnElement.disabled = true;
-            } else if (type === 'oracle') {
-                const q = questions[currentQ];
-                const buttons = document.querySelectorAll(".btn-option");
-                let removed = 0;
-                buttons.forEach((btn, idx) => {
-                    if (idx !== q.correct && removed < 2) {
-                        btn.style.opacity = "0.2";
-                        btn.style.pointerEvents = "none";
-                        removed++;
-                    }
-                });
-                feedback.className = "feedback-banner info";
-                feedback.innerHTML = `<i class="fa-solid fa-eye"></i> <strong>Visión activada:</strong> Se han descartado 2 opciones falsas.`;
-                btnElement.disabled = true;
-            }
-
-            // Ocultar mensaje después de 3 segundos si no han respondido aún
-            setTimeout(() => { 
-                if(feedback.className.includes('info')) {
-                    feedback.classList.add("hidden"); 
-                }
+                currentLevel++;
+                initLevel();
+                setTurnState(true);
             }, 3000);
         }
 
-        function endGame(win) {
-            const screen = document.getElementById("game-screen");
-            if (win) {
-                screen.innerHTML = `
-                    <div style="text-align: center; animation: fadeIn 1s ease;">
-                        <i class="fa-solid fa-medal" style="font-size: 4rem; color: var(--accent-gold); margin-bottom: 20px;"></i>
-                        <h2 style="font-size: 2rem; color: #fff;">CASO RESUELTO</h2>
-                        <p style="font-size: 1.2rem; margin-bottom: 20px; color: #aaa;">Has limpiado las calles digitales. Eres una leyenda en la red.</p>
-                        <h3 style="font-size: 2.5rem; color: var(--accent-cyan); margin-bottom: 30px; text-shadow: 0 0 10px var(--accent-cyan);">REPUTACIÓN: ${score.toLocaleString()}</h3>
-                        <button class="btn-option" style="text-align: center; border-color: var(--accent-gold); color: var(--accent-gold); width: auto; padding: 15px 30px;" onclick="location.reload()">
-                            <i class="fa-solid fa-rotate-right"></i> Siguiente Expediente
-                        </button>
-                    </div>
-                `;
-            } else {
-                screen.innerHTML = `
-                    <div style="text-align: center; animation: fadeIn 1s ease;">
-                        <i class="fa-solid fa-skull" style="font-size: 4rem; color: var(--accent-red); margin-bottom: 20px; text-shadow: 0 0 15px var(--accent-red);"></i>
-                        <h2 style="font-size: 2rem; color: #fff;">LA CIUDAD HA CAÍDO</h2>
-                        <p style="font-size: 1.2rem; margin-bottom: 30px; color: #aaa;">Tus deducciones fueron incorrectas y el código colapsó.</p>
-                        <button class="btn-option" style="text-align: center; border-color: var(--accent-red); color: var(--accent-red); width: auto; padding: 15px 30px;" onclick="location.reload()">
-                            <i class="fa-solid fa-rotate-right"></i> Volver a Investigar
-                        </button>
-                    </div>
-                `;
-            }
+        function gameOver() {
+            logMessage("Tus constantes vitales han caído. La misión ha fracasado.", "enemy");
+            setTurnState(false);
+            document.querySelector('.action-panel').innerHTML = `
+                <button class="btn-action btn-cerebro" onclick="location.reload()">
+                    <i class="fa-solid fa-skull"></i> Reiniciar Simulación
+                </button>
+            `;
         }
 
         // Iniciar el juego
-        loadQuestion();
+        initLevel();
     </script>
 </body>
 </html>
