@@ -3,386 +3,394 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GFPI-F-135: Esperanza Mutante</title>
+    <title>GFPI-F-135: Esperanza entre las Ruinas</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Special+Elite&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --hope-glow: #ffcf54;
-            --hero-color: #6d8a6a;
-            --enemy-color: #5a2e5d;
-            --bg-base: #0a0e14;
-            --glass-bg: rgba(20, 25, 35, 0.7);
-            --glass-border: rgba(255, 207, 84, 0.2);
-            --font-display: 'Caveat', cursive;
-            --font-ui: 'Quicksand', sans-serif;
+            --blood-red: #8b0000;
+            --rust: #a0522d;
+            --dust: #d2b48c;
+            --hope-light: #00ffcc;
+            --bg-sky: #2a2321;
+            --font-title: 'Creepster', cursive;
+            --font-text: 'Special Elite', monospace;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
 
         body {
-            background-color: var(--bg-base); color: #fff;
-            font-family: var(--font-ui); overflow: hidden;
+            background-color: var(--bg-sky); color: #fff;
+            font-family: var(--font-text); overflow: hidden;
             width: 100vw; height: 100vh;
-            display: flex; justify-content: center; align-items: center;
-        }
-
-        /* --- FONDOS DE ALTO RENDIMIENTO (CANVAS) --- */
-        #bg-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.8; }
-        
-        /* Luz de esperanza en el fondo */
-        .hope-light {
-            position: absolute; top: -20vh; left: 50%; transform: translateX(-50%);
-            width: 80vw; height: 80vh;
-            background: radial-gradient(circle, rgba(255, 207, 84, 0.1) 0%, transparent 70%);
-            z-index: 1; pointer-events: none;
-            animation: pulseLight 6s ease-in-out infinite alternate;
-        }
-        @keyframes pulseLight { 0% { opacity: 0.5; transform: translateX(-50%) scale(1); } 100% { opacity: 1; transform: translateX(-50%) scale(1.1); } }
-
-        /* --- CONTENEDOR DEL JUEGO --- */
-        .game-wrapper {
-            position: relative; z-index: 2;
-            width: 100%; max-width: 1200px; height: 95vh;
             display: flex; flex-direction: column;
-            border-radius: 20px; box-shadow: 0 10px 60px rgba(0, 0, 0, 0.8);
-            background: var(--glass-bg); border: 1px solid var(--glass-border);
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
         }
 
-        /* --- HUD (Barras de Vida) --- */
+        /* --- ESCENARIO DE RUINAS (FONDOS MULTICAPA) --- */
+        #ash-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 4; pointer-events: none; }
+        
+        .sky-gradient {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
+            background: radial-gradient(circle at 50% 100%, #543122 0%, #1a1110 80%);
+        }
+
+        .ruins-background {
+            position: absolute; bottom: 15vh; left: 0; width: 100%; height: 60vh; z-index: 2;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 300' preserveAspectRatio='none'%3E%3Cpath d='M0,300 L0,150 L50,150 L60,180 L100,100 L120,120 L150,50 L200,80 L220,20 L280,60 L300,150 L350,120 L400,200 L450,180 L500,250 L550,100 L600,130 L650,40 L700,90 L750,150 L800,120 L850,220 L900,180 L950,250 L1000,150 L1000,300 Z' fill='%232c1c18' opacity='0.7'/%3E%3Cpath d='M0,300 L0,200 L80,220 L130,150 L180,180 L250,120 L320,160 L400,100 L480,150 L550,80 L620,140 L700,110 L780,190 L850,140 L920,200 L1000,160 L1000,300 Z' fill='%231f1311'/%3E%3C/svg%3E");
+            background-size: cover; background-position: bottom;
+        }
+
+        .ground {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 25vh; z-index: 3;
+            background: linear-gradient(to bottom, #1f1412, #0a0605);
+            border-top: 5px solid #3d2622;
+        }
+
+        /* --- INTERFAZ ÓXIDO/SANGRE --- */
         .hud {
-            display: flex; justify-content: space-between; padding: 25px 40px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            position: relative; z-index: 10; display: flex; justify-content: space-between;
+            padding: 20px 40px; background: rgba(0,0,0,0.6);
+            border-bottom: 3px dashed var(--rust);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
         }
 
-        .fighter { width: 42%; display: flex; flex-direction: column; }
-        .enemy-side { align-items: flex-end; text-align: right; }
+        .fighter { width: 40%; }
+        .enemy-side { text-align: right; }
 
         .name {
-            font-family: var(--font-display); font-size: 2.2rem; color: #fff;
-            text-shadow: 0 0 10px var(--hope-glow); margin-bottom: 8px; letter-spacing: 1px;
+            font-family: var(--font-title); font-size: 2rem; color: var(--dust);
+            letter-spacing: 2px; margin-bottom: 5px; text-shadow: 2px 2px 0px #000;
         }
-        .enemy-side .name { text-shadow: 0 0 15px #ff3366; color: #ffb3c6; }
 
         .hp-track {
-            width: 100%; height: 20px; background: rgba(0, 0, 0, 0.5);
-            border-radius: 10px; position: relative; overflow: hidden;
+            width: 100%; height: 35px; background: #1a0f0f;
+            border: 3px solid #331a1a; position: relative; overflow: hidden;
+            box-shadow: inset 0 0 15px #000;
         }
 
         .hp-fill {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            transform-origin: left center; transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            will-change: transform;
+            transform-origin: left center; transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
-        .player-hp { background: linear-gradient(90deg, #8fbc8f, var(--hope-glow)); box-shadow: 0 0 10px var(--hope-glow); }
-        .enemy-hp { background: linear-gradient(90deg, #800040, #ff3366); transform-origin: right center; box-shadow: 0 0 10px #ff3366; }
+        .player-hp { background: linear-gradient(90deg, #2e8b57, var(--hope-light)); }
+        .enemy-hp { background: linear-gradient(90deg, #5c0000, var(--blood-red)); transform-origin: right center; }
 
         .hp-text {
-            position: absolute; width: 100%; text-align: center;
-            font-size: 0.9rem; font-weight: bold; line-height: 20px; text-shadow: 1px 1px 2px #000; z-index: 2;
+            position: absolute; width: 100%; text-align: center; font-size: 1.2rem;
+            line-height: 29px; color: #fff; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; z-index: 2;
         }
 
-        /* --- ARENA Y PERSONAJES --- */
-        .arena { flex: 1; position: relative; overflow: hidden; }
+        /* --- ESCENARIO DE PELEA --- */
+        .arena { flex: 1; position: relative; z-index: 5; }
 
         .characters-container {
-            position: absolute; top: 50%; left: 0; width: 100%;
-            transform: translateY(-50%); display: flex; justify-content: space-between;
-            padding: 0 12%; z-index: 3;
+            position: absolute; bottom: 5vh; /* Parados en el suelo */
+            left: 0; width: 100%; display: flex; justify-content: space-between;
+            padding: 0 10%; align-items: flex-end;
         }
 
         .avatar {
-            width: 250px; height: 250px; position: relative;
-            transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
-            will-change: transform;
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-origin: bottom center; /* Pivotan desde los pies */
         }
 
-        /* Animación ORGÁNICA (Respira, se estira, no es mecánica) */
-        .player-avatar { animation: organicBreathe 4s ease-in-out infinite; filter: drop-shadow(0 15px 15px rgba(109, 138, 106, 0.3)); }
-        .enemy-avatar { animation: parasiteSquirm 3s ease-in-out infinite alternate; filter: drop-shadow(0 20px 20px rgba(255, 51, 102, 0.3)); }
-
-        @keyframes organicBreathe {
-            0%, 100% { transform: scale(1) translateY(0) skewX(0deg); }
-            33% { transform: scale(1.02, 0.96) translateY(5px) skewX(-1deg); }
-            66% { transform: scale(0.98, 1.04) translateY(-8px) skewX(1deg); }
+        /* Animaciones orgánicas pesadas (respiración) */
+        .player-avatar { 
+            width: 250px; height: 300px;
+            animation: heavyBreathe 3s ease-in-out infinite; 
         }
-        @keyframes parasiteSquirm {
-            0% { transform: scale(1) translateY(0) rotate(0deg); }
-            100% { transform: scale(1.05, 0.95) translateY(-10px) rotate(-3deg); }
+        .enemy-avatar { 
+            width: 400px; height: 450px; /* Villano enorme */
+            animation: monsterBreathe 4s ease-in-out infinite alternate; 
         }
 
-        /* Animaciones de Ataque Suaves/Viscosas */
-        .dash-right { transform: translateX(35vw) scale(1.1) rotate(5deg) !important; z-index: 10; }
-        .dash-left { transform: translateX(-35vw) scale(1.1) rotate(-5deg) !important; z-index: 10; }
+        @keyframes heavyBreathe {
+            0%, 100% { transform: scaleY(1) scaleX(1); }
+            50% { transform: scaleY(0.97) scaleX(1.02); }
+        }
+        @keyframes monsterBreathe {
+            0% { transform: scaleY(1) scaleX(1) translateY(0); }
+            100% { transform: scaleY(1.03) scaleX(0.98) translateY(-5px); }
+        }
+
+        /* Golpes físicos (Saltos torpes/Embestidas) */
+        .dash-right { transform: translate(30vw, -30px) rotate(15deg) !important; z-index: 10; }
+        .dash-left { transform: translate(-30vw, -50px) rotate(-10deg) scale(1.1) !important; z-index: 10; }
         
-        .hit-shake { animation: jellyShake 0.5s ease-out both; filter: brightness(1.5) drop-shadow(0 0 20px #fff) !important; }
-        @keyframes jellyShake { 
-            0% { transform: skewX(-15deg); } 25% { transform: skewX(10deg); } 
-            50% { transform: skewX(-5deg); } 75% { transform: skewX(2deg); } 100% { transform: skewX(0); } 
+        .hit-shake { animation: fleshImpact 0.4s ease-out both; filter: brightness(0.5) sepia(1) hue-rotate(300deg) !important; }
+        @keyframes fleshImpact { 
+            0% { transform: translate(0, 0) scale(1); } 
+            25% { transform: translate(-20px, 10px) scale(0.9); } 
+            50% { transform: translate(15px, -5px) scale(1.05); } 
+            75% { transform: translate(-10px, 0) scale(0.95); } 
+            100% { transform: translate(0, 0) scale(1); } 
         }
 
-        /* Poder especial: Esporas curativas/Luz */
-        .hope-burst {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
-            width: 300px; height: 300px; background: radial-gradient(circle, rgba(255, 207, 84, 0.8) 0%, transparent 70%);
-            border-radius: 50%; opacity: 0; z-index: 9; transition: transform 0.4s ease-out, opacity 0.4s ease-out;
-        }
-        .hope-burst.active { transform: translate(-50%, -50%) scale(3); opacity: 1; }
-
+        /* Textos de Daño */
         .dmg-text {
-            position: absolute; font-family: var(--font-display); font-size: 3.5rem;
-            color: #fff; text-shadow: 0 0 10px rgba(0,0,0,0.8);
-            pointer-events: none; animation: floatUpText 1.2s ease-out forwards; z-index: 20;
+            position: absolute; font-family: var(--font-title); font-size: 4rem; color: #fff;
+            text-shadow: 0 0 10px #000, 3px 3px 0 #000; pointer-events: none;
+            animation: bloodSpatter 1s ease-out forwards; z-index: 20;
         }
-        @keyframes floatUpText { 0% { opacity: 1; transform: translateY(0) scale(0.8); } 100% { opacity: 0; transform: translateY(-80px) scale(1.2); } }
+        @keyframes bloodSpatter { 0% { opacity: 1; transform: translate(0, 0) scale(0.5); } 100% { opacity: 0; transform: translate(30px, -100px) scale(1.2) rotate(15deg); } }
 
-        /* --- CONTROLES Y LOG --- */
-        .controls-wrapper { display: flex; flex-direction: column; z-index: 3; }
+        /* --- CONTROLES Y REGISTRO --- */
+        .bottom-panel { position: relative; z-index: 10; background: #1a1110; border-top: 4px solid var(--rust); }
 
         .log-container {
-            height: 80px; background: rgba(0,0,0,0.4); border-top: 1px solid rgba(255,255,255,0.05);
-            padding: 10px 30px; overflow-y: auto; font-size: 1.1rem; display: flex; flex-direction: column; gap: 4px;
+            height: 90px; padding: 15px 30px; overflow-y: auto; font-size: 1.1rem; 
+            color: var(--dust); border-bottom: 2px dashed #3d2622; background: #0a0605;
+            display: flex; flex-direction: column; gap: 5px;
         }
-        .log-entry { animation: fadeInLog 0.4s ease-out forwards; color: #cbd5e1; }
-        @keyframes fadeInLog { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .text-hero { color: var(--hope-glow); font-weight: bold; } 
-        .text-enemy { color: #ff3366; font-weight: bold; } 
+        .log-entry { animation: slideIn 0.3s ease-out forwards; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+        .text-hero { color: var(--hope-light); text-shadow: 0 0 5px var(--hope-light); } 
+        .text-enemy { color: #ff4d4d; }
 
         .controls {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 25px 40px;
-            background: rgba(0, 0, 0, 0.6); border-radius: 0 0 20px 20px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px 40px;
         }
 
         .btn {
-            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1);
-            color: #fff; padding: 18px; font-family: var(--font-ui); font-size: 1.2rem; font-weight: bold;
-            border-radius: 12px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #2c1c18; border: 2px solid #543122; color: var(--dust);
+            padding: 15px; font-family: var(--font-text); font-size: 1.2rem; font-weight: bold;
+            cursor: pointer; transition: all 0.2s; box-shadow: 4px 4px 0 #0a0605;
         }
-        .btn:disabled { opacity: 0.3; cursor: not-allowed; }
-        .btn-atk:hover:not(:disabled) { background: rgba(109, 138, 106, 0.2); border-color: var(--hero-color); transform: translateY(-2px); }
-        .btn-def:hover:not(:disabled) { background: rgba(255, 255, 255, 0.1); border-color: #fff; transform: translateY(-2px); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; transform: translate(4px, 4px); }
+        .btn:active:not(:disabled) { transform: translate(4px, 4px); box-shadow: none; }
+        .btn-atk:hover:not(:disabled) { background: #3d2622; border-color: var(--dust); color: #fff; }
+        .btn-def:hover:not(:disabled) { background: #3d2622; border-color: var(--dust); color: #fff; }
         
-        .btn-cerebro { grid-column: span 2; background: rgba(255, 207, 84, 0.1); border-color: var(--hope-glow); color: var(--hope-glow); }
-        .btn-cerebro:hover:not(:disabled) { background: rgba(255, 207, 84, 0.2); box-shadow: 0 0 20px rgba(255,207,84,0.3); transform: scale(1.01); }
+        .btn-cerebro { grid-column: span 2; background: #003322; border-color: var(--hope-light); color: var(--hope-light); }
+        .btn-cerebro:hover:not(:disabled) { background: #004d33; color: #fff; }
         
-        .btn-ultimate { grid-column: span 2; background: var(--hope-glow); border-color: #fff; color: #000; box-shadow: 0 0 30px rgba(255,207,84,0.5); font-size: 1.4rem; font-family: var(--font-display); }
+        .btn-ultimate { grid-column: span 2; background: var(--hope-light); color: #000; border: none; font-size: 1.5rem; box-shadow: 0 0 20px var(--hope-light); }
 
-        /* --- MODAL DE PREGUNTAS --- */
+        /* --- MODAL DE TRIVIA --- */
         .modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(5, 7, 10, 0.9); backdrop-filter: blur(8px);
-            display: flex; justify-content: center; align-items: center;
-            opacity: 0; pointer-events: none; transition: opacity 0.4s ease; z-index: 100;
+            background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 100;
         }
         .modal.active { opacity: 1; pointer-events: auto; }
 
-        .hologram-panel {
-            background: rgba(20, 25, 35, 0.95); border: 1px solid var(--hope-glow);
-            border-radius: 20px; padding: 50px; width: 90%; max-width: 800px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 30px rgba(255,207,84,0.1); text-align: center;
+        .rock-panel {
+            background: #1f1412; border: 4px solid var(--rust); padding: 40px;
+            width: 90%; max-width: 800px; box-shadow: 15px 15px 0 rgba(0,0,0,0.9);
         }
-        .modal-title { font-family: var(--font-display); color: var(--hope-glow); font-size: 2.8rem; margin-bottom: 20px; }
-        .modal-q { font-size: 1.3rem; margin-bottom: 40px; line-height: 1.5; color: #e2e8f0; }
+        .modal-title { font-family: var(--font-title); color: var(--hope-light); font-size: 2.5rem; margin-bottom: 15px; }
+        .modal-q { font-size: 1.2rem; margin-bottom: 30px; color: #fff; line-height: 1.6; }
         
-        .opt-grid { display: flex; flex-direction: column; gap: 12px; }
+        .opt-grid { display: flex; flex-direction: column; gap: 10px; }
         .opt-btn {
-            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1;
-            padding: 20px; font-size: 1.1rem; font-family: var(--font-ui); border-radius: 12px;
-            cursor: pointer; transition: all 0.2s; text-align: left; line-height: 1.4;
+            background: #0a0605; border: 1px solid #3d2622; color: var(--dust);
+            padding: 15px; font-family: var(--font-text); font-size: 1.1rem;
+            cursor: pointer; transition: 0.2s; text-align: left;
         }
-        .opt-btn:hover { background: rgba(255,207,84,0.1); border-color: var(--hope-glow); color: #fff; transform: translateX(10px); }
+        .opt-btn:hover { background: #3d2622; color: #fff; padding-left: 25px; border-color: var(--rust); }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <!-- Fondo de Esporas Luminosas (Alta eficiencia) -->
-    <canvas id="bg-canvas"></canvas>
-    <div class="hope-light"></div>
+    <!-- Fondos -->
+    <div class="sky-gradient"></div>
+    <div class="ruins-background"></div>
+    <canvas id="ash-canvas"></canvas>
+    <div class="ground"></div>
 
-    <div class="game-wrapper">
-        <header class="hud">
-            <div class="fighter">
-                <div class="name">EL MUTANTE ESPERANZADO</div>
-                <div class="hp-track"><div id="p-hp" class="hp-fill player-hp"></div><div id="p-hp-txt" class="hp-text">200 / 200</div></div>
-            </div>
-            <div class="fighter enemy-side">
-                <div id="e-name" class="name">PARÁSITO DE LA IGNORANCIA</div>
-                <div class="hp-track"><div id="e-hp" class="hp-fill enemy-hp"></div><div id="e-hp-txt" class="hp-text">--- / ---</div></div>
-            </div>
-        </header>
-
-        <main class="arena" id="arena">
-            <div class="characters-container">
-                
-                <!-- HÉROE: DIBUJADO EN SVG. Melancólico, descabrajado, con un brillo de esperanza -->
-                <div id="avatar-p" class="avatar player-avatar">
-                    <svg viewBox="0 0 200 200" width="100%" height="100%">
-                        <defs>
-                            <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                                <feGaussianBlur stdDeviation="6" result="blur" />
-                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                            </filter>
-                        </defs>
-                        <!-- Cuerpo orgánico irregular y parchado -->
-                        <path d="M40,160 C20,120 50,70 80,60 C120,40 170,60 170,120 C170,160 140,190 90,190 C60,190 50,180 40,160 Z" fill="#6d8a6a"/>
-                        <!-- Heridas/Roturas del cuerpo -->
-                        <path d="M150,110 C140,115 135,130 155,135 C165,120 160,110 150,110 Z" fill="#0a0e14"/>
-                        <path d="M60,80 Q70,70 80,90" stroke="#4a6348" stroke-width="4" fill="none" stroke-linecap="round"/>
-                        <path d="M65,85 Q75,75 85,95" stroke="#4a6348" stroke-width="4" fill="none" stroke-linecap="round"/>
-                        
-                        <!-- El Gran Ojo de Esperanza (Melancólico pero brillante) -->
-                        <ellipse cx="110" cy="100" rx="30" ry="35" fill="#e2e8f0"/>
-                        <!-- Párpado caído (melancolía) -->
-                        <path d="M75,95 Q110,65 145,100 Q110,85 75,95 Z" fill="#5c7a59"/> 
-                        <circle cx="115" cy="105" r="14" fill="#ffcf54" filter="url(#glow)"/>
-                        <circle cx="120" cy="100" r="4" fill="#fff"/>
-
-                        <!-- Sonrisa ladeada, tierna y rota -->
-                        <path d="M75,145 Q110,170 145,140" stroke="#2c3e2b" stroke-width="5" fill="none" stroke-linecap="round"/>
-                        <path d="M145,140 Q150,135 148,130" stroke="#2c3e2b" stroke-width="4" fill="none" stroke-linecap="round"/>
-                        
-                        <!-- Pedazos descabrajados flotando a su alrededor -->
-                        <path d="M20,60 C10,50 30,30 40,40 C45,50 30,70 20,60 Z" fill="#8fbc8f">
-                            <animateTransform attributeName="transform" type="translate" values="0,0; 0,-15; 0,0" dur="5s" repeatCount="indefinite"/>
-                        </path>
-                        <circle cx="175" cy="165" r="6" fill="#ffcf54" filter="url(#glow)">
-                            <animateTransform attributeName="transform" type="translate" values="0,0; -10,-20; 0,0" dur="4s" repeatCount="indefinite"/>
-                        </circle>
-                    </svg>
-                </div>
-
-                <!-- ENEMIGO: SOMBRA PARASITARIA -->
-                <div id="avatar-e" class="avatar enemy-avatar">
-                    <svg viewBox="0 0 200 200" width="100%" height="100%">
-                        <path d="M90,40 C40,40 20,90 30,130 C40,170 80,180 120,170 C170,160 180,110 160,70 C140,30 110,40 90,40 Z" fill="#5a2e5d" opacity="0.9"/>
-                        <path d="M30,130 C10,150 20,180 40,190 C60,200 70,180 80,170 Z" fill="#3d1b3f"/>
-                        <path d="M160,70 C180,60 190,80 195,100 C200,120 180,130 170,120 Z" fill="#3d1b3f"/>
-                        <!-- Ojos vacíos/rojos -->
-                        <circle cx="70" cy="100" r="8" fill="#ff3366"/>
-                        <circle cx="120" cy="95" r="12" fill="#ff3366"/>
-                        <circle cx="100" cy="130" r="5" fill="#ff3366"/>
-                    </svg>
-                </div>
-            </div>
-            
-            <div id="hope-burst" class="hope-burst"></div>
-        </main>
-
-        <div class="controls-wrapper">
-            <div id="log" class="log-container">
-                <div class="log-entry">A pesar del daño, algo dentro de ti aún brilla. La evaluación comienza.</div>
-            </div>
-            <footer class="controls">
-                <button id="btn-atk" class="btn btn-atk" onclick="attackDash(true)">Embestida Orgánica</button>
-                <button id="btn-def" class="btn btn-def" onclick="actionDefend()">Abrazar/Resistir</button>
-                <button id="btn-cerebro" class="btn btn-cerebro" onclick="openCerebro()">RECORDAR CONOCIMIENTO (Pregunta GFPI)</button>
-                <button id="btn-ult" class="btn btn-ultimate hidden" onclick="actionUltimate()">¡LIBERAR ESPERANZA!</button>
-            </footer>
+    <div class="hud">
+        <div class="fighter">
+            <div class="name">EL MUTANTE ROTO</div>
+            <div class="hp-track"><div id="p-hp" class="hp-fill player-hp"></div><div id="p-hp-txt" class="hp-text">250 / 250</div></div>
+        </div>
+        <div class="fighter enemy-side">
+            <div id="e-name" class="name">TITÁN DEL CAOS</div>
+            <div class="hp-track"><div id="e-hp" class="hp-fill enemy-hp"></div><div id="e-hp-txt" class="hp-text">--- / ---</div></div>
         </div>
     </div>
 
-    <!-- MODAL DE PREGUNTAS (Basadas en GFPI-F-135 V04) -->
+    <main class="arena" id="arena">
+        <div class="characters-container">
+            
+            <!-- HÉROE: MUTANTE DESCABRAJADO (Orgánico, asimétrico, herido pero sonriente) -->
+            <div id="avatar-p" class="avatar player-avatar">
+                <svg viewBox="0 0 200 300" width="100%" height="100%">
+                    <!-- Piernas tullidas -->
+                    <path d="M70,300 C60,250 80,220 90,220 C100,220 100,280 110,300 Z" fill="#2d3a2d"/>
+                    <path d="M120,300 C130,270 140,240 130,220 C120,200 90,250 140,300 Z" fill="#1e261e"/>
+                    
+                    <!-- Cuerpo jorobado y lleno de cicatrices -->
+                    <path d="M40,220 C20,150 60,80 100,80 C150,80 160,160 140,220 C120,260 60,250 40,220 Z" fill="#4a5d4a"/>
+                    <!-- Vendas / Parches -->
+                    <path d="M50,180 L130,150 L140,170 L60,200 Z" fill="#8b7355"/>
+                    <path d="M70,120 L150,140 L145,155 L65,135 Z" fill="#6b543c"/>
+                    
+                    <!-- Brazo largo y torpe apoyado en el suelo -->
+                    <path d="M60,110 C20,160 10,250 30,290 C50,290 40,200 80,140 Z" fill="#384738"/>
+                    
+                    <!-- Cabeza deforme -->
+                    <path d="M80,85 C70,40 100,20 130,30 C160,40 150,90 120,95 Z" fill="#4a5d4a"/>
+                    
+                    <!-- Gran ojo brillante (Esperanza) -->
+                    <circle cx="110" cy="55" r="20" fill="#003322"/>
+                    <circle cx="115" cy="55" r="12" fill="#00ffcc">
+                        <animate attributeName="r" values="12;14;12" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="120" cy="52" r="4" fill="#ffffff"/>
+                    
+                    <!-- Sonrisa pequeña y dulce a pesar de todo -->
+                    <path d="M125,75 Q135,85 145,70" stroke="#1e261e" stroke-width="4" fill="none" stroke-linecap="round"/>
+                </svg>
+            </div>
+
+            <!-- VILLANO: MONSTRUO COLOSAL ORGÁNICO -->
+            <div id="avatar-e" class="avatar enemy-avatar">
+                <svg viewBox="0 0 300 350" width="100%" height="100%">
+                    <!-- Piernas gruesas como troncos -->
+                    <path d="M80,350 C70,280 100,200 130,200 L160,350 Z" fill="#2b0a0a"/>
+                    <path d="M220,350 C240,280 190,200 170,200 L140,350 Z" fill="#1c0404"/>
+                    
+                    <!-- Torso masivo y jorobado -->
+                    <path d="M40,220 C-10,120 80,40 150,40 C220,40 310,120 260,220 C240,280 60,280 40,220 Z" fill="#4a0e0e"/>
+                    
+                    <!-- Músculos/Tumores orgánicos -->
+                    <circle cx="100" cy="120" r="40" fill="#5c1111"/>
+                    <circle cx="200" cy="140" r="45" fill="#3a0707"/>
+                    <circle cx="150" cy="180" r="50" fill="#5c1111"/>
+
+                    <!-- Picos óseos en la espalda -->
+                    <path d="M90,60 L50,10 L120,50 Z" fill="#d2b48c"/>
+                    <path d="M150,40 L160,-10 L190,50 Z" fill="#a89070"/>
+                    <path d="M210,60 L260,20 L230,70 Z" fill="#d2b48c"/>
+
+                    <!-- Brazos como mazos -->
+                    <path d="M50,120 C10,180 -10,280 40,320 C80,320 80,200 100,160 Z" fill="#3a0707"/>
+                    <path d="M250,120 C290,180 310,280 260,320 C220,320 220,200 200,160 Z" fill="#2b0a0a"/>
+                    
+                    <!-- Rostro brutal hundido en el pecho -->
+                    <path d="M110,100 C100,140 200,140 190,100 C170,80 130,80 110,100 Z" fill="#1c0404"/>
+                    <!-- Ojos furiosos -->
+                    <path d="M125,110 L140,115 L130,120 Z" fill="#ff4d4d"/>
+                    <path d="M175,110 L160,115 L170,120 Z" fill="#ff4d4d"/>
+                    <!-- Mandíbula con colmillos -->
+                    <path d="M130,130 Q150,140 170,130" stroke="#d2b48c" stroke-width="3" fill="none"/>
+                    <polygon points="135,132 140,145 145,134" fill="#d2b48c"/>
+                    <polygon points="155,134 160,145 165,132" fill="#d2b48c"/>
+                </svg>
+            </div>
+        </div>
+    </main>
+
+    <div class="bottom-panel">
+        <div id="log" class="log-container">
+            <div class="log-entry">El viento arrastra la ceniza. Tú, aunque destrozado, te pones en pie.</div>
+        </div>
+        <footer class="controls">
+            <button id="btn-atk" class="btn btn-atk" onclick="attackDash(true)">Ataque Torpe</button>
+            <button id="btn-def" class="btn btn-def" onclick="actionDefend()">Soportar el Dolor</button>
+            <button id="btn-cerebro" class="btn btn-cerebro" onclick="openCerebro()">RECORDAR LAS BASES (Pregunta GFPI)</button>
+            <button id="btn-ult" class="btn btn-ultimate hidden" onclick="actionUltimate()">¡DESTELLO DE ESPERANZA!</button>
+        </footer>
+    </div>
+
+    <!-- MODAL DE PREGUNTAS (Guía GFPI-F-135 V04) -->
     <div id="modal" class="modal">
-        <div class="hologram-panel">
-            <h2 class="modal-title">MEMORIA DE APRENDIZAJE</h2>
+        <div class="rock-panel">
+            <h2 class="modal-title">MEMORIA INTACTA</h2>
             <p id="modal-q" class="modal-q">Cargando...</p>
             <div id="modal-opts" class="opt-grid"></div>
         </div>
     </div>
 
     <script>
-        // --- EFECTO DE ESPORAS EN CANVAS (Rendimiento fluido a 60FPS) ---
-        const canvas = document.getElementById('bg-canvas');
+        // --- LLUVIA DE CENIZAS EN EL CANVAS ---
+        const canvas = document.getElementById('ash-canvas');
         const ctx = canvas.getContext('2d');
-        let w, h, spores = [];
+        let w, h, ashes = [];
 
         function initCanvas() {
             w = canvas.width = window.innerWidth;
             h = canvas.height = window.innerHeight;
-            spores = [];
-            for(let i = 0; i < 40; i++) {
-                spores.push({
+            ashes = [];
+            for(let i = 0; i < 60; i++) {
+                ashes.push({
                     x: Math.random() * w, y: Math.random() * h,
-                    r: Math.random() * 2.5 + 0.5,
-                    vx: (Math.random() - 0.5) * 0.3, vy: -Math.random() * 0.5 - 0.2,
-                    alpha: Math.random() * 0.5 + 0.1
+                    r: Math.random() * 2 + 1,
+                    vx: Math.random() * 2 - 1, vy: Math.random() * 2 + 1,
+                    color: Math.random() > 0.8 ? '#ff6b35' : '#4a5759' // Ceniza gris o brasas
                 });
             }
         }
         function drawCanvas() {
             ctx.clearRect(0, 0, w, h);
-            spores.forEach(s => {
-                s.x += s.vx; s.y += s.vy;
-                if(s.y < 0) { s.y = h; s.x = Math.random() * w; }
-                ctx.beginPath();
-                ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(255, 207, 84, ${s.alpha})`;
-                ctx.fill();
+            ashes.forEach(a => {
+                a.x += a.vx; a.y += a.vy;
+                if(a.y > h) { a.y = -10; a.x = Math.random() * w; }
+                ctx.beginPath(); ctx.arc(a.x, a.y, a.r, 0, Math.PI * 2);
+                ctx.fillStyle = a.color; ctx.fill();
             });
             requestAnimationFrame(drawCanvas);
         }
         window.addEventListener('resize', initCanvas);
         initCanvas(); drawCanvas();
 
-        // --- SISTEMA DEL JUEGO Y PREGUNTAS ---
+        // --- SISTEMA DEL JUEGO Y PREGUNTAS GFPI-F-135 V04 ---
         const P_MAX_HP = 250;
         let player = { hp: P_MAX_HP, defMode: false, ultimateReady: false };
         let currentBoss = 0;
         let isPlayerTurn = true;
 
-        // Preguntas exactas solicitadas de GFPI-F-135 V04
         const bosses = [
             {
-                name: "PARÁSITO DEL DESCONOCIMIENTO", hp: 300, maxHp: 300, dmg: [15, 25],
+                name: "BESTIA DEL HARDWARE MUERTO", hp: 350, maxHp: 350, dmg: [20, 30],
                 trivia: {
-                    q: "Para entender con qué estás luchando, primero debes definir su base. ¿Qué es Software?",
+                    q: "En este mundo físico destrozado, ¿Qué es el Software que intentas proteger?",
                     opts: [
-                        "Los componentes físicos y cables que conforman un computador.",
+                        "Los cables oxidados y placas base rotas.",
                         "El conjunto de instrucciones, programas y reglas informáticas que permiten a un equipo realizar tareas.",
-                        "Una marca registrada de componentes electrónicos.",
-                        "El sistema de refrigeración de los servidores web."
+                        "La electricidad estática del ambiente.",
+                        "El sistema de refrigeración de las antiguas máquinas."
                     ],
                     correct: 1
                 }
             },
             {
-                name: "SOMBRA LEGAL", hp: 450, maxHp: 450, dmg: [25, 35],
+                name: "EL CENSOR CARNOSO", hp: 500, maxHp: 500, dmg: [30, 45],
                 trivia: {
-                    q: "La sombra intenta encadenarte con restricciones. ¿Qué es una licencia de software?",
+                    q: "El monstruo ruge intentando restringir tu libertad. ¿Qué es una licencia de software?",
                     opts: [
                         "Un contrato entre el desarrollador y el usuario que define los derechos y restricciones de uso del programa.",
-                        "Un pago obligatorio al gobierno para poder usar internet.",
-                        "El código secreto que hace funcionar a los virus informáticos.",
-                        "Un diploma que se entrega a los programadores."
+                        "Un tributo de sangre al creador del código.",
+                        "Un tipo de virus informático destructivo.",
+                        "Una contraseña temporal para instalar Windows."
                     ],
                     correct: 0
                 }
             },
             {
-                name: "AMALGAMA DE CÓDIGO", hp: 600, maxHp: 600, dmg: [35, 45],
+                name: "ABOMINACIÓN BINARIA", hp: 700, maxHp: 700, dmg: [40, 55],
                 trivia: {
-                    q: "Esta criatura tiene múltiples formas. Para atacarla, debes conocer la división. Menciona los Tipos de licencia de software más comunes:",
+                    q: "La bestia cambia de forma. Recuerda los Tipos de licencia de software más comunes para entenderla:",
                     opts: [
-                        "Licencias Rápidas y Licencias Lentas.",
-                        "Licencias Analógicas y Licencias Digitales.",
+                        "Licencias pesadas y Licencias ligeras.",
                         "Software Libre (permite modificación y distribución) y Software Propietario/Privativo (restringido).",
-                        "Licencias de hardware y Licencias de red."
+                        "Licencias de pantalla y Licencias de teclado.",
+                        "Licencias locales y Licencias espaciales."
                     ],
-                    correct: 2
+                    correct: 1
                 }
             },
             {
-                name: "EL ÚLTIMO RESTO DE OSCURIDAD", hp: 800, maxHp: 800, dmg: [40, 55],
+                name: "EL SEÑOR DE LA CLAUSURA", hp: 900, maxHp: 900, dmg: [50, 70],
                 trivia: {
-                    q: "Para devolver la esperanza y permitir que todos colaboren libremente. ¿Cuáles licencias son las más adecuadas y por qué?",
+                    q: "Es el jefe final. Para reconstruir este mundo y permitir que todos colaboren libremente, ¿Cuáles licencias son las más adecuadas y por qué?",
                     opts: [
-                        "Las Licencias Propietarias, porque prohíben compartir y aseguran el aislamiento.",
+                        "Las Licencias Propietarias, para que nadie toque el código y se mantenga en secreto.",
                         "Las Licencias Libres/Permisivas (como MIT o GPL), porque fomentan la colaboración, el estudio y la mejora comunitaria del código.",
-                        "Ninguna, es mejor no usar licencias y que todo sea un caos legal.",
-                        "Las licencias de un solo uso, porque así se cobra más dinero."
+                        "No usar licencias, que gane el más fuerte.",
+                        "Las licencias de pago por uso mensual."
                     ],
                     correct: 1
                 }
@@ -391,12 +399,11 @@
 
         let enemy = null;
 
-        // --- LÓGICA Y ANIMACIONES ---
         function updateUI() {
             document.getElementById('p-hp').style.transform = `scaleX(${Math.max(0, player.hp / P_MAX_HP)})`;
-            document.getElementById('p-hp-txt').innerText = `${Math.max(0, Math.ceil(player.hp))} / ${P_MAX_HP}`;
+            document.getElementById('p-hp-txt').innerText = `${Math.max(0, Math.floor(player.hp))} / ${P_MAX_HP}`;
             document.getElementById('e-hp').style.transform = `scaleX(${Math.max(0, enemy.hp / enemy.maxHp)})`;
-            document.getElementById('e-hp-txt').innerText = `${Math.max(0, Math.ceil(enemy.hp))} / ${enemy.maxHp}`;
+            document.getElementById('e-hp-txt').innerText = `${Math.max(0, Math.floor(enemy.hp))} / ${enemy.maxHp}`;
         }
 
         function printLog(msg, colorClass = "") {
@@ -413,23 +420,23 @@
             const rect = el.getBoundingClientRect();
             const span = document.createElement('span');
             span.className = 'dmg-text'; span.style.color = color; span.innerText = text;
-            span.style.left = `${rect.left + (rect.width/2) - 20}px`;
-            span.style.top = `${rect.top}px`;
+            span.style.left = `${rect.left + (rect.width/2) - 30}px`;
+            span.style.top = `${rect.top + 50}px`;
             document.body.appendChild(span);
-            setTimeout(() => span.remove(), 1200);
+            setTimeout(() => span.remove(), 1000);
         }
 
         function initLevel() {
             if(currentBoss >= bosses.length) {
-                printLog("¡Tu esperanza ha purificado el sistema! Has ganado.", "text-hero");
-                document.querySelector('.controls').innerHTML = `<button class="btn btn-atk" style="grid-column: span 2;" onclick="location.reload()">Renacer (Jugar de nuevo)</button>`;
+                printLog("¡EL MUNDO HA SIDO LIBERADO! La esperanza florece entre las ruinas.", "text-hero");
+                document.querySelector('.controls').innerHTML = `<button class="btn" style="grid-column: span 2;" onclick="location.reload()">Nuevo Amanecer (Reiniciar)</button>`;
                 return;
             }
             enemy = JSON.parse(JSON.stringify(bosses[currentBoss]));
             document.getElementById('e-name').innerText = enemy.name;
             player.hp = P_MAX_HP; player.ultimateReady = false;
             updateButtons(); updateUI();
-            printLog(`Una nueva entidad oscura aparece: ${enemy.name}`);
+            printLog(`La tierra tiembla... ${enemy.name} se alza frente a ti.`);
         }
 
         function attackDash(isPlayer) {
@@ -445,76 +452,76 @@
             setTimeout(() => {
                 let dmg = 0;
                 if(isPlayer) {
-                    dmg = Math.floor(Math.random() * 20) + 20; 
+                    dmg = Math.floor(Math.random() * 25) + 20; 
                     enemy.hp -= dmg;
-                    printLog(`Te lanzas con esfuerzo. Daño: ${dmg}`, "text-hero");
+                    printLog(`Te abalanzas torpemente y golpeas. Daño: ${dmg}`, "text-hero");
                 } else {
                     dmg = Math.floor(Math.random() * (enemy.dmg[1] - enemy.dmg[0])) + enemy.dmg[0];
-                    if(player.defMode) { dmg = Math.floor(dmg * 0.4); printLog("Resistes valientemente parte del daño."); }
+                    if(player.defMode) { dmg = Math.floor(dmg * 0.3); printLog("Te encoges y soportas el impacto. Daño reducido."); }
                     player.hp -= dmg;
-                    printLog(`La sombra te golpea. Daño: ${dmg}`, "text-enemy");
+                    printLog(`El coloso te aplasta brutalmente. Daño: ${dmg}`, "text-enemy");
                 }
 
                 target.classList.add('hit-shake');
-                spawnDmgText(isPlayer ? 'avatar-e' : 'avatar-p', `-${dmg}`, isPlayer ? '#ffcf54' : '#ff3366');
+                spawnDmgText(isPlayer ? 'avatar-e' : 'avatar-p', `-${dmg}`, isPlayer ? 'var(--hope-light)' : 'var(--blood-red)');
                 updateUI();
 
                 setTimeout(() => {
                     attacker.classList.remove(dashClass);
                     target.classList.remove('hit-shake');
-                    setTimeout(() => checkGameLoop(isPlayer), 500);
+                    setTimeout(() => checkGameLoop(isPlayer), 600);
                 }, 400);
-            }, 400);
+            }, 500);
         }
 
         function actionDefend() {
             if(!isPlayerTurn) return;
             isPlayerTurn = false; player.defMode = true; updateButtons(false);
-            printLog("Te envuelves en un abrazo protector. Recibirás menos daño.", "text-hero");
-            document.getElementById('avatar-p').style.filter = "drop-shadow(0 0 30px rgba(255, 207, 84, 0.6))";
-            setTimeout(() => attackDash(false), 1000);
+            printLog("Te cubres con tus brazos rotos. Estás listo para el impacto.", "text-hero");
+            document.getElementById('avatar-p').style.filter = "brightness(1.5) drop-shadow(0 0 10px var(--hope-light))";
+            setTimeout(() => attackDash(false), 1200);
         }
 
         function actionUltimate() {
             if(!isPlayerTurn || !player.ultimateReady) return;
             isPlayerTurn = false; player.ultimateReady = false; updateButtons(false);
             
-            printLog("¡Liberas toda la luz acumulada de tu interior!", "text-hero");
-            
-            const burst = document.getElementById('hope-burst');
-            burst.classList.add('active');
+            printLog("¡TU OJO BRILLA CEGADORAMENTE! La esperanza purifica a la bestia.", "text-hero");
+            document.getElementById('avatar-p').style.transform = "scale(1.2)";
             
             setTimeout(() => {
-                const dmg = Math.floor(Math.random() * 100) + 200; // Daño masivo sanador
+                const dmg = Math.floor(Math.random() * 150) + 200; 
                 enemy.hp -= dmg;
                 document.getElementById('avatar-e').classList.add('hit-shake');
-                spawnDmgText('avatar-e', `-${dmg} LUZ`, '#ffcf54');
+                spawnDmgText('avatar-e', `-${dmg} LUZ!`, 'var(--hope-light)');
+                document.getElementById('ash-canvas').style.background = "rgba(0, 255, 204, 0.3)"; // Destello
                 updateUI();
                 
                 setTimeout(() => {
-                    burst.classList.remove('active');
+                    document.getElementById('avatar-p').style.transform = "none";
+                    document.getElementById('ash-canvas').style.background = "transparent";
                     document.getElementById('avatar-e').classList.remove('hit-shake');
-                    setTimeout(() => checkGameLoop(true), 500);
-                }, 500);
-            }, 300);
+                    setTimeout(() => checkGameLoop(true), 800);
+                }, 600);
+            }, 500);
         }
 
         function checkGameLoop(wasPlayerTurn) {
-            document.getElementById('avatar-p').style.filter = "drop-shadow(0 15px 15px rgba(109, 138, 106, 0.3))"; // Reset visual
+            document.getElementById('avatar-p').style.filter = "none"; 
             
             if(enemy.hp <= 0) {
-                printLog(`La sombra se disipa suavemente.`, "text-hero");
-                setTimeout(() => { currentBoss++; initLevel(); isPlayerTurn = true; }, 2000);
+                printLog(`El gigante de carne se desploma en la ceniza. ¡Victoria!`, "text-hero");
+                setTimeout(() => { currentBoss++; initLevel(); isPlayerTurn = true; }, 2500);
             } else if (player.hp <= 0) {
-                printLog(`Tus fuerzas se desvanecen... por ahora.`, "text-enemy");
-                document.querySelector('.controls').innerHTML = `<button class="btn btn-atk" style="grid-column: span 2;" onclick="location.reload()">Intentar de nuevo</button>`;
+                printLog(`Tus piernas fallan. Caes al suelo helado...`, "text-enemy");
+                document.querySelector('.controls').innerHTML = `<button class="btn" style="grid-column: span 2;" onclick="location.reload()">Levantarse de nuevo</button>`;
             } else {
-                if(wasPlayerTurn) setTimeout(() => attackDash(false), 600);
+                if(wasPlayerTurn) setTimeout(() => attackDash(false), 800);
                 else { isPlayerTurn = true; updateButtons(true); }
             }
         }
 
-        // --- SISTEMA DE PREGUNTAS ---
+        // --- SISTEMA DE TRIVIA ---
         function openCerebro() {
             if(!isPlayerTurn) return;
             const t = enemy.trivia;
@@ -533,11 +540,11 @@
         function evalCerebro(selected, correct) {
             document.getElementById('modal').classList.remove('active');
             if(selected === correct) {
-                printLog("¡Recordaste correctamente! Tu esperanza brilla con fuerza.", "text-hero");
+                printLog("¡Un recuerdo puro! Sientes una energía arrolladora.", "text-hero");
                 player.ultimateReady = true; updateButtons(true);
             } else {
-                printLog("Te has confundido y la sombra aprovecha la duda. Pierdes 40 de vida.", "text-enemy");
-                player.hp -= 40; spawnDmgText('avatar-p', "-40", "#ff3366");
+                printLog("Dudas. La confusión te debilita y el coloso aprovecha. (-50 HP)", "text-enemy");
+                player.hp -= 50; spawnDmgText('avatar-p', "-50", "var(--blood-red)");
                 document.getElementById('avatar-p').classList.add('hit-shake');
                 updateUI();
                 setTimeout(() => { document.getElementById('avatar-p').classList.remove('hit-shake'); }, 400);
@@ -563,4 +570,3 @@
     </script>
 </body>
 </html>
-
