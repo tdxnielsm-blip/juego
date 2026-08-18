@@ -2,13 +2,15 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>X-Men '97 - Danger Room Simulator</title>
+    <title>X-Men '97 - Danger Room Simulator (Swordsman)</title>
     <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Teko:wght@600&display=swap" rel="stylesheet">
 
     <style>
         :root {
             --x-blue: #0033cc; --x-yellow: #ffcc00; --x-red: #ff0000;
             --s-purple: #660099; --s-magenta: #cc0066;
+            --hero-skin: #cc0000; /* Piel Roja */
+            --hero-suit: #1a1a1a; /* Traje Negro */
             --font-ui: 'Teko', sans-serif; --font-comic: 'Bangers', cursive;
         }
 
@@ -78,20 +80,20 @@
         @keyframes breathe { 0% { transform: scaleY(1); } 100% { transform: scaleY(0.97) translateY(5px); } }
         @keyframes hoverBoss { 0% { transform: translateY(0); } 100% { transform: translateY(-15px); } }
 
-        /* ANIMACIÓN DE ATAQUE (RAYO ÓPTICO) */
-        .optic-beam {
-            position: absolute; left: 180px; top: 125px; width: 0; height: 30px;
-            background: #fff; box-shadow: 0 0 20px var(--x-red), 0 0 40px var(--x-red), inset 0 0 10px var(--x-yellow);
-            z-index: 40; opacity: 0; transform-origin: left; pointer-events: none;
+        /* ANIMACIÓN DE ATAQUE (CORTE DE ESPADA) */
+        .slash-fx {
+            position: absolute; left: 120px; top: 50px; width: 150px; height: 150px;
+            border-right: 25px solid #fff; border-bottom: 25px solid #fff;
+            border-radius: 50%; filter: drop-shadow(0 0 15px #00ffff) drop-shadow(0 0 5px #fff);
+            opacity: 0; transform-origin: center; pointer-events: none; z-index: 50;
         }
-        .atk-laser .optic-beam { animation: fireLaser 0.4s ease-out; }
-        .atk-laser .hero-arm { transform: rotate(-120deg) translate(-50px, -20px); transition: 0.1s; } /* Lleva la mano al visor */
+        
+        .atk-slash .slash-fx { animation: slashHit 0.3s ease-out; }
+        .atk-slash .hero-arm { transform: rotate(80deg) translate(30px, 30px); transition: transform 0.1s; } /* Brazo baja dando el tajo */
 
-        @keyframes fireLaser { 
-            0% { width: 0; opacity: 1; } 
-            20% { width: 80vw; height: 40px; opacity: 1; } 
-            80% { width: 80vw; height: 10px; opacity: 1; } 
-            100% { width: 80vw; height: 0; opacity: 0; } 
+        @keyframes slashHit { 
+            0% { transform: scale(0.5) rotate(-60deg) translate(0, -50px); opacity: 1; } 
+            100% { transform: scale(3.5) rotate(45deg) translate(150px, 50px); opacity: 0; } 
         }
 
         /* EFECTO DE DAÑO Y CÓMIC */
@@ -125,7 +127,7 @@
         .btn-ult { background: var(--x-blue); color: var(--x-yellow); box-shadow: 5px 5px 0 #fff; animation: pulseUlt 1s infinite alternate; }
         @keyframes pulseUlt { from { filter: brightness(1); } to { filter: brightness(1.3); } }
 
-        /* MODAL PREGUNTAS (ESTILO CEREBRO) */
+        /* MODAL PREGUNTAS */
         .modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,20,0.95); display: flex; justify-content: center; align-items: center;
@@ -148,7 +150,7 @@
     <div class="camera" id="cam">
         <div class="hud">
             <div class="plate">
-                <div class="name hero">LÍDER ÓPTICO</div>
+                <div class="name hero">MUTANTE X</div>
                 <div class="hp-box"><div id="p-hp-bg" class="hp-bg"></div><div id="p-hp" class="hp-fill hero"></div></div>
             </div>
             <div id="combo-txt" class="level-badge">NIVEL 1</div>
@@ -159,49 +161,55 @@
         </div>
 
         <main class="arena">
-            <!-- HÉROE ESTILO CÍCLOPE -->
+            <!-- HÉROE: Piel roja, modcut, delgado, azul/negro, espadas -->
             <div id="p1" class="fighter p1 idle">
-                <!-- Rayo Láser que se activa en el ataque -->
-                <div class="optic-beam"></div>
+                <!-- Efecto de tajo de espada -->
+                <div class="slash-fx"></div>
                 
                 <svg viewBox="0 0 250 400" width="100%" height="100%">
                     <g class="hero-body">
-                        <!-- Piernas azules y botas amarillas -->
-                        <path d="M 80 250 L 60 380 L 100 380 L 110 250 Z" fill="var(--x-blue)"/>
-                        <path d="M 55 320 L 60 380 L 100 380 L 105 320 Z" fill="var(--x-yellow)"/>
-                        <path d="M 120 250 L 140 380 L 180 380 L 150 250 Z" fill="var(--x-blue)"/>
-                        <path d="M 135 320 L 140 380 L 180 380 L 175 320 Z" fill="var(--x-yellow)"/>
+                        <!-- Piernas delgadas (Negro con botas azules) -->
+                        <path d="M 90 250 L 75 380 L 105 380 L 115 250 Z" fill="var(--hero-suit)"/>
+                        <path d="M 70 320 L 75 380 L 105 380 L 100 320 Z" fill="var(--x-blue)"/>
+                        <path d="M 120 250 L 135 380 L 165 380 L 145 250 Z" fill="var(--hero-suit)"/>
+                        <path d="M 130 320 L 135 380 L 165 380 L 160 320 Z" fill="var(--x-blue)"/>
                         
-                        <!-- Torso Azul -->
-                        <path d="M 60 120 L 160 120 L 140 250 L 80 250 Z" fill="var(--x-blue)"/>
-                        <!-- Arnes/Correas Amarillas (La X) -->
-                        <path d="M 60 120 L 140 250 M 160 120 L 80 250" fill="none" stroke="var(--x-yellow)" stroke-width="15"/>
-                        <circle cx="110" cy="185" r="15" fill="var(--x-red)" stroke="#000" stroke-width="4"/>
-                        <path d="M 103 178 L 117 192 M 117 178 L 103 192" fill="none" stroke="#000" stroke-width="3"/> <!-- X en el centro -->
+                        <!-- Torso delgado (Azul y Negro) -->
+                        <path d="M 80 120 L 140 120 L 130 250 L 95 250 Z" fill="var(--x-blue)"/>
+                        <path d="M 75 120 L 85 120 L 100 250 L 90 250 Z" fill="var(--hero-suit)"/> <!-- Detalle negro lateral -->
+                        <path d="M 145 120 L 135 120 L 125 250 L 135 250 Z" fill="var(--hero-suit)"/> <!-- Detalle negro lateral -->
+                        <!-- Cinturón -->
+                        <rect x="90" y="240" width="45" height="15" fill="#333"/>
+                        <circle cx="112" cy="247" r="10" fill="var(--x-yellow)" stroke="#000" stroke-width="2"/>
                         
-                        <!-- Brazo Trasero -->
-                        <path d="M 160 120 L 200 180 L 180 240" fill="none" stroke="var(--x-blue)" stroke-width="25" stroke-linecap="round"/>
-                        <circle cx="180" cy="240" r="15" fill="var(--x-yellow)"/> <!-- Guante -->
+                        <!-- Brazo Trasero Delgado -->
+                        <path d="M 140 120 L 170 180 L 160 230" fill="none" stroke="var(--hero-suit)" stroke-width="18" stroke-linecap="round"/>
+                        <circle cx="160" cy="230" r="12" fill="var(--hero-skin)"/> <!-- Mano roja -->
+                        <!-- Espada trasera (apuntando abajo) -->
+                        <path d="M 160 230 L 180 320" stroke="#ccc" stroke-width="6" stroke-linecap="round"/>
+                        <path d="M 150 240 L 170 235" stroke="var(--x-yellow)" stroke-width="4"/> <!-- Guardia -->
 
-                        <!-- Cabeza -->
-                        <circle cx="110" cy="80" r="35" fill="var(--x-blue)"/>
-                        <path d="M 90 95 L 140 95 L 130 130 L 100 130 Z" fill="#ffcc99"/> <!-- Mandíbula piel -->
-                        
-                        <!-- Visor Dorado y Rojo -->
-                        <rect x="80" y="65" width="65" height="20" rx="5" fill="var(--x-yellow)"/>
-                        <rect x="80" y="70" width="65" height="10" fill="var(--x-red)" stroke="none"/>
-                        <!-- Brillo del visor -->
-                        <circle cx="110" cy="75" r="8" fill="#fff" stroke="none" opacity="0.8"/>
+                        <!-- Cabeza (Piel Roja, Modcut) -->
+                        <circle cx="110" cy="85" r="25" fill="var(--hero-skin)"/> <!-- Cara Roja -->
+                        <!-- Pelo Modcut (Corte tazón texturizado negro) -->
+                        <path d="M 82 85 C 80 40, 140 40, 138 85 L 140 95 C 130 90, 90 90, 80 95 Z" fill="#222" stroke="none"/>
+                        <!-- Ojos Brillantes o detalles faciales (Opcional) -->
+                        <path d="M 100 80 L 110 85 M 120 80 L 115 85" stroke="#fff" stroke-width="2"/>
                     </g>
-                    <!-- Brazo Frontal (Este se mueve para tocar el visor) -->
-                    <g class="hero-arm" style="transform-origin: 80px 130px;">
-                        <path d="M 70 130 L 40 190 L 60 250" fill="none" stroke="var(--x-blue)" stroke-width="25" stroke-linecap="round"/>
-                        <circle cx="60" cy="250" r="18" fill="var(--x-yellow)"/> <!-- Guante frontal -->
+                    <!-- Brazo Frontal Delgado (Este da el sablazo) -->
+                    <g class="hero-arm" style="transform-origin: 80px 120px;">
+                        <!-- Espada levantada hacia atrás por defecto -->
+                        <path d="M 60 210 L 20 60" stroke="#ccc" stroke-width="8" stroke-linecap="round"/>
+                        <path d="M 45 195 L 75 205" stroke="var(--x-yellow)" stroke-width="4"/> <!-- Guardia frontal -->
+                        
+                        <!-- Brazo y mano -->
+                        <path d="M 80 120 L 45 170 L 60 210" fill="none" stroke="var(--hero-suit)" stroke-width="20" stroke-linecap="round"/>
+                        <circle cx="60" cy="210" r="14" fill="var(--hero-skin)"/> <!-- Mano roja -->
                     </g>
                 </svg>
             </div>
 
-            <!-- VILLANO ESTILO CENTINELA -->
+            <!-- VILLANO: CENTINELA -->
             <div id="p2" class="fighter p2 idle">
                 <svg viewBox="0 0 450 500" width="100%" height="100%">
                     <g class="boss-hover">
@@ -214,7 +222,7 @@
                         
                         <!-- Detalles de armadura -->
                         <path d="M 150 320 L 350 320 L 300 400 L 200 400 Z" fill="var(--s-magenta)"/>
-                        <circle cx="250" cy="360" r="30" fill="var(--x-yellow)"/> <!-- Núcleo pecho -->
+                        <circle cx="250" cy="360" r="30" fill="var(--x-yellow)"/>
 
                         <!-- Tubos de cuello -->
                         <rect x="200" y="240" width="100" height="60" fill="#333"/>
@@ -224,11 +232,9 @@
 
                         <!-- Cabeza robótica -->
                         <path d="M 180 80 L 320 80 L 340 240 L 160 240 Z" fill="var(--s-purple)"/>
-                        <!-- Casco/Antenas -->
                         <path d="M 180 80 L 160 40 L 200 80 Z" fill="var(--s-magenta)"/>
                         <path d="M 320 80 L 340 40 L 300 80 Z" fill="var(--s-magenta)"/>
                         
-                        <!-- Placa facial magenta -->
                         <path d="M 200 130 L 300 130 L 290 220 L 210 220 Z" fill="var(--s-magenta)"/>
                         
                         <!-- Ojos Brillantes -->
@@ -248,8 +254,8 @@
     <!-- PANEL DE CONTROL -->
     <div class="panel">
         <div class="controls">
-            <button id="btn-atk" class="btn btn-atk" onclick="action('atk')">OPTIC BLAST</button>
-            <button id="btn-def" class="btn btn-def" onclick="action('def')">CUBRIRSE</button>
+            <button id="btn-atk" class="btn btn-atk" onclick="action('atk')">TAJO X</button>
+            <button id="btn-def" class="btn btn-def" onclick="action('def')">DEFENSA</button>
             <button id="btn-ult" class="btn btn-ult" onclick="openTrivia()">ENLACE CEREBRO (PREGUNTAS)</button>
         </div>
     </div>
@@ -264,7 +270,7 @@
     </div>
 
     <script>
-        // --- 1. BANCO DE 20 PREGUNTAS ---
+        // BANCO DE 20 PREGUNTAS MANTENIDO
         const bancoDePreguntas = [
             { q: "¿Qué significa el acrónimo RAM en informática?", o: ["Random Access Memory", "Read Access Machine", "Run All Media", "Rapid Action Memory"], a: 0 },
             { q: "¿Cuál de estos NO es un lenguaje de programación?", o: ["Python", "Java", "Cobra", "HTML"], a: 3 },
@@ -288,7 +294,6 @@
             { q: "Si una variable es de tipo 'Boolean', ¿Qué valores puede tener?", o: ["Cualquier número", "Texto y números", "Solo Verdadero o Falso", "Valores decimales"], a: 2 }
         ];
 
-        // --- 2. SISTEMA DE JUEGO ---
         const levels = [
             { n: "CENTINELA MK-I", hp: 300, dmg: [20, 35] },
             { n: "MASTER MOLD", hp: 500, dmg: [35, 50] },
@@ -322,7 +327,6 @@
             setTimeout(() => c.classList.remove(type), type === 'shake' ? 400 : 800);
         }
 
-        // CREAR TEXTO ESTILO CÓMIC
         function createComicText(text, targetId) {
             const el = document.getElementById(targetId);
             const rect = el.getBoundingClientRect();
@@ -335,7 +339,6 @@
             setTimeout(() => txt.remove(), 600);
         }
 
-        // --- 3. COMBATE ---
         function initLevel() {
             if(lvl >= levels.length) {
                 alert("¡SALA DE PELIGRO COMPLETADA! APROBADO.");
@@ -358,11 +361,11 @@
             else if (type === 'atk') {
                 p.def = false;
                 const p1 = document.getElementById('p1');
-                p1.classList.add('atk-laser'); // Activa la animación del rayo
+                p1.classList.add('atk-slash'); // Anima el corte de espada
                 
                 setTimeout(() => {
                     cameraFx('shake');
-                    createComicText("¡BAM!", 'p2');
+                    createComicText("¡SLASH!", 'p2');
                     
                     let dmg = 25 + (p.combo * 5);
                     boss.hp -= dmg; p.combo++;
@@ -371,11 +374,11 @@
                     updateUI();
 
                     setTimeout(() => {
-                        p1.classList.remove('atk-laser');
+                        p1.classList.remove('atk-slash');
                         document.getElementById('p2').classList.remove('hit');
                         setTimeout(checkState, 400);
                     }, 400);
-                }, 200);
+                }, 100);
             }
         }
 
@@ -384,7 +387,7 @@
             createComicText("¡KRAK!", 'p1');
             
             let d = Math.floor(Math.random() * (boss.dmg[1] - boss.dmg[0])) + boss.dmg[0];
-            if(p.def) d = Math.floor(d * 0.2); // Defensa
+            if(p.def) d = Math.floor(d * 0.2); 
             
             p.hp -= d;
             document.getElementById('p1').classList.add('hit');
@@ -408,17 +411,16 @@
             }
         }
 
-        // --- 4. PREGUNTAS (ATAQUE ESPECIAL) ---
         function openTrivia() {
             if(!turn) return;
             
-            let preguntasDisponibles = bancoDePreguntas.filter(pq => !askedQuestions.includes(pq.q));
-            if(preguntasDisponibles.length === 0) {
-                askedQuestions = []; preguntasDisponibles = bancoDePreguntas;
+            let pDisp = bancoDePreguntas.filter(pq => !askedQuestions.includes(pq.q));
+            if(pDisp.length === 0) {
+                askedQuestions = []; pDisp = bancoDePreguntas;
             }
 
-            const randomIndex = Math.floor(Math.random() * preguntasDisponibles.length);
-            currentQuestion = preguntasDisponibles[randomIndex];
+            const rIdx = Math.floor(Math.random() * pDisp.length);
+            currentQuestion = pDisp[rIdx];
             askedQuestions.push(currentQuestion.q);
 
             document.getElementById('m-q').innerText = currentQuestion.q;
@@ -439,14 +441,13 @@
             turn = false; setBtns(false); p.def = false;
 
             if(sel === currentQuestion.a) {
-                // ATAQUE CRÍTICO
                 cameraFx('zoom-in');
                 document.body.style.filter = "saturate(3) contrast(1.5)";
                 
                 setTimeout(() => {
-                    document.getElementById('p1').classList.add('atk-laser');
+                    document.getElementById('p1').classList.add('atk-slash');
                     cameraFx('shake');
-                    createComicText("¡MEGA BLAST!", 'p2');
+                    createComicText("¡MEGA TAJO!", 'p2'); // Texto de crítico ajustado a espadas
                     
                     boss.hp -= 150; p.combo += 3;
                     document.getElementById('p2').classList.add('hit');
@@ -454,13 +455,12 @@
                     
                     setTimeout(() => {
                         document.body.style.filter = "none";
-                        document.getElementById('p1').classList.remove('atk-laser');
+                        document.getElementById('p1').classList.remove('atk-slash');
                         document.getElementById('p2').classList.remove('hit');
                         setTimeout(checkState, 600);
                     }, 500);
                 }, 400);
             } else {
-                // PENALIZACIÓN
                 p.hp -= 40; p.combo = 0;
                 cameraFx('shake'); 
                 createComicText("¡ERROR!", 'p1');
