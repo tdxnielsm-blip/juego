@@ -4,108 +4,118 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>X-Men '97 - Danger Room Simulator</title>
-    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Teko:wght@600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Cinzel:wght@700&family=Teko:wght@600&display=swap" rel="stylesheet">
 
     <style>
         :root {
             --x-blue: #0033cc; --x-yellow: #ffcc00; --x-red: #ff0000;
-            --s-purple: #660099; --s-magenta: #cc0066;
-            --hero-skin: #cc0000; /* Piel Roja */
-            --hero-suit: #1a1a1a; /* Traje Negro */
-            --font-ui: 'Teko', sans-serif; --font-comic: 'Bangers', cursive;
+            --s-purple: #4a0e4e; --s-magenta: #ff007f;
+            --hero-skin: #b30000; --hero-suit: #111111;
+            --font-ui: 'Teko', sans-serif; --font-comic: 'Bangers', cursive; --font-real: 'Cinzel', serif;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
 
         body {
-            background-color: #111; color: #fff; font-family: var(--font-ui);
+            background-color: #080808; color: #fff; font-family: var(--font-ui);
             overflow: hidden; width: 100vw; height: 100vh;
             display: flex; flex-direction: column;
         }
 
-        /* FONDO CÓMIC */
+        /* FONDO DINÁMICO DE SALA DE PELIGRO */
         .comic-bg {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
-            background: radial-gradient(circle, #001133 10%, transparent 11%), 
-                        radial-gradient(circle, #001133 10%, transparent 11%), #000;
-            background-size: 10px 10px; background-position: 0 0, 5px 5px;
-            box-shadow: inset 0 0 150px rgba(0,0,0,0.9);
+            background: linear-gradient(135deg, #110022 0%, #000000 50%, #220000 100%);
+            box-shadow: inset 0 0 200px rgba(0,0,0,0.9);
+        }
+        .grid-lines {
+            position: absolute; width: 100%; height: 100%; z-index: 2; pointer-events: none;
+            background-image: linear-gradient(rgba(255, 204, 0, 0.05) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255, 204, 0, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
         }
         
-        .camera { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 5; transition: transform 0.1s; display: flex; flex-direction: column; }
+        .camera { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 5; display: flex; flex-direction: column; }
         .shake { animation: camShake 0.4s ease-in-out; }
-        .zoom-in { transform: scale(1.1) translateY(5%); transition: transform 0.3s; }
+        .zoom-in { transform: scale(1.12) translateY(5%); transition: transform 0.4s cubic-bezier(0.1, 0.9, 0.2, 1); }
         @keyframes camShake {
             0%, 100% { transform: translate(0,0); }
-            20% { transform: translate(-15px, 10px); }
-            40% { transform: translate(15px, -15px); }
-            60% { transform: translate(-10px, 15px); }
-            80% { transform: translate(10px, -10px); }
+            20% { transform: translate(-18px, 12px); }
+            40% { transform: translate(18px, -18px); }
+            60% { transform: translate(-12px, 18px); }
+            80% { transform: translate(12px, -12px); }
         }
 
-        /* HUD */
+        /* HUD CINEMATOGRÁFICO */
         .hud {
             position: relative; z-index: 20; padding: 15px 40px; display: flex; justify-content: space-between;
-            background: linear-gradient(180deg, rgba(0,0,0,0.9), transparent); border-bottom: 4px solid var(--x-yellow);
+            background: linear-gradient(180deg, rgba(0,0,0,0.95), transparent); border-bottom: 4px solid var(--x-yellow);
         }
         .plate { width: 40%; }
         .plate.enemy { text-align: right; }
-        .name { font-family: var(--font-comic); font-size: 2.8rem; letter-spacing: 2px; text-shadow: 3px 3px 0 #000; }
+        .name { font-family: var(--font-real); font-size: 2.2rem; letter-spacing: 2px; text-shadow: 2px 2px 0 #000, 0 0 10px rgba(255,255,255,0.2); }
         .name.hero { color: var(--x-yellow); }
         .name.boss { color: var(--s-magenta); }
-        .level-badge { position: absolute; left: 50%; top: 20px; transform: translateX(-50%); font-family: var(--font-comic); font-size: 3.5rem; color: var(--x-red); text-shadow: 2px 2px 0 #fff, 4px 4px 0 #000; }
+        .level-badge { position: absolute; left: 50%; top: 15px; transform: translateX(-50%); font-family: var(--font-comic); font-size: 3.2rem; color: var(--x-red); text-shadow: 2px 2px 0 #fff, 4px 4px 0 #000; }
 
-        .hp-box { width: 100%; height: 35px; background: #222; border: 4px solid #fff; position: relative; box-shadow: 4px 4px 0 #000; transform: skewX(-15deg); }
-        .hp-bg { position: absolute; height: 100%; width: 100%; background: rgba(255,255,255,0.5); transition: width 0.6s ease-out; }
+        .hp-box { width: 100%; height: 35px; background: #1a1a1a; border: 3px solid #fff; position: relative; box-shadow: 4px 4px 0 #000; transform: skewX(-15deg); }
+        .hp-bg { position: absolute; height: 100%; width: 100%; background: rgba(255,255,255,0.4); transition: width 0.6s ease-out; }
         .hp-fill { position: absolute; height: 100%; width: 100%; transition: width 0.2s; }
-        .hp-fill.hero { background: linear-gradient(90deg, #009900, #00ff00); }
-        .hp-fill.boss { background: linear-gradient(90deg, #990000, #ff0000); right: 0; }
+        .hp-fill.hero { background: linear-gradient(90deg, #007700, #00ff00); }
+        .hp-fill.boss { background: linear-gradient(90deg, #990000, #ff2222); right: 0; }
         .plate.enemy .hp-bg { right: 0; }
 
         /* ARENA Y PERSONAJES */
         .arena { flex: 1; position: relative; display: flex; align-items: flex-end; padding-bottom: 50px; }
         
-        .fighter { position: absolute; bottom: 50px; filter: drop-shadow(10px 10px 0px rgba(0,0,0,0.8)); transition: all 0.2s; z-index: 10; }
-        .fighter.p1 { left: 10%; width: 250px; height: 400px; transform-origin: bottom center; }
-        .fighter.p2 { right: 5%; width: 450px; height: 500px; transform-origin: bottom center; }
+        .fighter { position: absolute; bottom: 50px; z-index: 10; transition: all 0.2s; }
+        .fighter.p1 { left: 12%; width: 300px; height: 420px; transform-origin: bottom center; }
+        .fighter.p2 { right: 8%; width: 450px; height: 500px; transform-origin: bottom center; }
 
-        /* Animaciones base */
-        .idle .hero-body { animation: breathe 1s steps(2) infinite alternate; transform-origin: bottom; }
-        .idle .boss-hover { animation: hoverBoss 2s ease-in-out infinite alternate; }
+        /* Animaciones de Respiración Realista */
+        .idle .hero-realistic { animation: breatheHero 2.5s ease-in-out infinite alternate; transform-origin: bottom center; }
+        .idle .boss-realistic { animation: breatheBoss 3s ease-in-out infinite alternate; transform-origin: bottom center; }
 
-        @keyframes breathe { 0% { transform: scaleY(1); } 100% { transform: scaleY(0.97) translateY(5px); } }
-        @keyframes hoverBoss { 0% { transform: translateY(0); } 100% { transform: translateY(-15px); } }
+        @keyframes breatheHero { 
+            0% { transform: scaleY(1) translateY(0); filter: drop-shadow(0 15px 10px rgba(0,0,0,0.8)); } 
+            100% { transform: scaleY(1.015) translateY(-4px); filter: drop-shadow(0 20px 15px rgba(0,0,0,0.9)); } 
+        }
+        @keyframes breatheBoss { 
+            0% { transform: translateY(0) scale(1); filter: drop-shadow(0 20px 15px rgba(0,0,0,0.9)); } 
+            100% { transform: translateY(-10px) scale(1.005); filter: drop-shadow(0 30px 20px rgba(204,0,102,0.3)); } 
+        }
 
-        /* Animación de Espada */
+        /* Animación de Corte Dinámico Realista */
         .slash-fx {
-            position: absolute; left: 120px; top: 50px; width: 150px; height: 150px;
-            border-right: 25px solid #fff; border-bottom: 25px solid #fff;
-            border-radius: 50%; filter: drop-shadow(0 0 15px #00ffff) drop-shadow(0 0 5px #fff);
-            opacity: 0; transform-origin: center; pointer-events: none; z-index: 50;
+            position: absolute; left: 140px; top: 80px; width: 180px; height: 180px;
+            border-right: 15px solid rgba(255,255,255,0.9); border-bottom: 15px solid rgba(0,255,255,0.8);
+            border-radius: 50%; filter: drop-shadow(0 0 25px #00ffff) drop-shadow(0 0 10px #ffffff);
+            opacity: 0; pointer-events: none; z-index: 50; transform-origin: center;
         }
-        .atk-slash .slash-fx { animation: slashHit 0.3s ease-out; }
-        .atk-slash .hero-arm { transform: rotate(80deg) translate(30px, 30px); transition: transform 0.1s; }
+        .atk-slash .slash-fx { animation: dynamicSlash 0.35s cubic-bezier(0.1, 1, 0.2, 1); }
+        .atk-slash .hero-arm-front { transform: rotate(70deg) translate(40px, 20px); transition: transform 0.08s ease-in-out; }
 
-        @keyframes slashHit { 
-            0% { transform: scale(0.5) rotate(-60deg) translate(0, -50px); opacity: 1; } 
-            100% { transform: scale(3.5) rotate(45deg) translate(150px, 50px); opacity: 0; } 
+        @keyframes dynamicSlash { 
+            0% { transform: scale(0.3) rotate(-80deg) translate(-20px, -60px); opacity: 1; } 
+            50% { transform: scale(2.2) rotate(10deg) translate(80px, 30px); opacity: 0.9; }
+            100% { transform: scale(3.5) rotate(50deg) translate(160px, 60px); opacity: 0; } 
         }
 
-        /* Daño y Textos Cómics */
-        .hit { animation: flashHit 0.3s steps(2); }
-        @keyframes flashHit { 0%, 100% { filter: invert(0); } 50% { filter: invert(1) brightness(2); transform: translateX(-20px); } }
+        /* Daño y Cómics */
+        .hit { animation: flashHit 0.35s steps(2); }
+        @keyframes flashHit { 0%, 100% { filter: brightness(1) drop-shadow(10px 10px 0px rgba(0,0,0,0.8)); } 50% { filter: brightness(3) sepia(1) hue-rotate(-50deg) saturate(5); transform: translateX(-25px); } }
 
         .comic-text {
-            position: absolute; font-family: var(--font-comic); font-size: 5rem;
-            color: var(--x-yellow); -webkit-text-stroke: 3px #000; text-shadow: 5px 5px 0 var(--x-red);
+            position: absolute; font-family: var(--font-comic); font-size: 5.5rem;
+            color: var(--x-yellow); -webkit-text-stroke: 3px #000; text-shadow: 6px 6px 0 var(--x-red);
             z-index: 60; pointer-events: none; animation: popText 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
-        @keyframes popText { 0% { transform: scale(0) rotate(-20deg); opacity: 0; } 50% { transform: scale(1.2) rotate(10deg); opacity: 1; } 100% { transform: scale(1) rotate(0deg); opacity: 0; } }
+        @keyframes popText { 0% { transform: scale(0) rotate(-25deg); opacity: 0; } 60% { transform: scale(1.3) rotate(12deg); opacity: 1; } 100% { transform: scale(1) rotate(0deg); opacity: 0; } }
 
-        /* PANEL */
+        /* PANEL DE CONTROL */
         .panel {
             position: absolute; bottom: 0; width: 100%; z-index: 20; height: 160px; background: #000;
-            border-top: 8px solid var(--x-blue); display: flex; box-shadow: 0 -10px 20px rgba(0,0,0,0.8);
+            border-top: 8px solid var(--x-blue); display: flex; box-shadow: 0 -10px 30px rgba(0,0,0,0.9);
         }
         .controls { width: 100%; display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 15px; padding: 25px; }
         
@@ -128,17 +138,19 @@
             opacity: 0; pointer-events: none; transition: 0.2s; z-index: 1000;
         }
         .modal.active { opacity: 1; pointer-events: auto; }
-        .m-box { background: var(--x-blue); border: 8px solid var(--x-yellow); padding: 40px; width: 90%; max-width: 800px; box-shadow: 15px 15px 0 #000; }
-        .m-title { font-family: var(--font-comic); color: #fff; font-size: 3.5rem; margin-bottom: 15px; }
-        .m-q { font-size: 2rem; margin-bottom: 30px; font-family: var(--font-ui); background: #000; padding: 15px; border-left: 5px solid var(--x-red); }
-        .opt { background: #fff; border: 4px solid #000; padding: 15px; font-family: var(--font-ui); font-size: 1.8rem; font-weight: bold; cursor: pointer; width: 100%; text-align: left; margin-bottom: 12px; }
-        .opt:hover { background: var(--x-yellow); transform: translate(-3px, -3px); box-shadow: 8px 8px 0 #000; }
+        .m-box { background: var(--x-blue); border: 8px solid var(--x-yellow); padding: 40px; width: 90%; max-width: 850px; box-shadow: 15px 15px 0 #000; max-height: 90vh; overflow-y: auto; }
+        .m-title { font-family: var(--font-comic); color: #fff; font-size: 3.2rem; margin-bottom: 10px; text-shadow: 3px 3px 0 #000; }
+        .m-q { font-size: 1.8rem; margin-bottom: 25px; font-family: var(--font-ui); background: #000; padding: 15px; border-left: 6px solid var(--x-red); line-height: 1.2; }
+        .opts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .opt { background: #fff; border: 4px solid #000; padding: 14px; font-family: var(--font-ui); font-size: 1.6rem; font-weight: bold; cursor: pointer; width: 100%; text-align: left; transition: 0.1s; box-shadow: 4px 4px 0 #000; }
+        .opt:hover { background: var(--x-yellow); transform: translate(-2px, -2px); box-shadow: 6px 6px 0 #000; }
 
-        svg { display: block; overflow: visible; stroke: #000; stroke-width: 4; stroke-linejoin: round; }
+        svg { display: block; overflow: visible; stroke: #000; stroke-width: 3.5; stroke-linejoin: round; }
     </style>
 </head>
 <body>
     <div class="comic-bg"></div>
+    <div class="grid-lines"></div>
     
     <div class="camera" id="cam">
         <div class="hud">
@@ -154,75 +166,140 @@
         </div>
 
         <main class="arena">
-            <!-- HÉROE SVG -->
+            <!-- HÉROE ESTILIZADO REALISTA: Piel roja, complexión atlética detallada, modcut y espadas -->
             <div id="p1" class="fighter p1 idle">
                 <div class="slash-fx"></div>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 400" width="250" height="400">
-                    <g class="hero-body">
-                        <!-- Piernas -->
-                        <path d="M 90 250 L 75 380 L 105 380 L 115 250 Z" fill="var(--hero-suit)"/>
-                        <path d="M 70 320 L 75 380 L 105 380 L 100 320 Z" fill="var(--x-blue)"/>
-                        <path d="M 120 250 L 135 380 L 165 380 L 145 250 Z" fill="var(--hero-suit)"/>
-                        <path d="M 130 320 L 135 380 L 165 380 L 160 320 Z" fill="var(--x-blue)"/>
-                        <!-- Torso -->
-                        <path d="M 80 120 L 140 120 L 130 250 L 95 250 Z" fill="var(--x-blue)"/>
-                        <path d="M 75 120 L 85 120 L 100 250 L 90 250 Z" fill="var(--hero-suit)"/> 
-                        <path d="M 145 120 L 135 120 L 125 250 L 135 250 Z" fill="var(--hero-suit)"/> 
-                        <rect x="90" y="240" width="45" height="15" fill="#333"/>
-                        <circle cx="112" cy="247" r="10" fill="var(--x-yellow)" stroke="#000" stroke-width="2"/>
-                        <!-- Brazo Trasero y Espada -->
-                        <path d="M 140 120 L 170 180 L 160 230" fill="none" stroke="var(--hero-suit)" stroke-width="18" stroke-linecap="round"/>
-                        <circle cx="160" cy="230" r="12" fill="var(--hero-skin)"/> 
-                        <path d="M 160 230 L 180 320" stroke="#ccc" stroke-width="6" stroke-linecap="round"/>
-                        <path d="M 150 240 L 170 235" stroke="var(--x-yellow)" stroke-width="4"/>
-                        <!-- Cabeza (Roja, modcut) -->
-                        <circle cx="110" cy="85" r="25" fill="var(--hero-skin)"/> 
-                        <path d="M 82 85 C 80 40, 140 40, 138 85 L 140 95 C 130 90, 90 90, 80 95 Z" fill="#222" stroke="none"/>
-                        <path d="M 100 80 L 110 85 M 120 80 L 115 85" stroke="#fff" stroke-width="2"/>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 420" width="300" height="420">
+                    <defs>
+                        <linearGradient id="skinGrad" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stop-color="#ff1a1a"/>
+                            <stop offset="100%" stop-color="#800000"/>
+                        </linearGradient>
+                        <linearGradient id="suitGrad" x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0%" stop-color="#262626"/>
+                            <stop offset="50%" stop-color="#0a0a0a"/>
+                            <stop offset="100%" stop-color="#1f1f1f"/>
+                        </linearGradient>
+                        <linearGradient id="bladeGrad" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stop-color="#ffffff"/>
+                            <stop offset="50%" stop-color="#00ffff"/>
+                            <stop offset="100%" stop-color="#0088cc"/>
+                        </linearGradient>
+                    </defs>
+
+                    <g class="hero-realistic">
+                        <!-- Sombra o Estela Corporal Profunda -->
+                        
+                        <!-- PIERNAS (Atléticas y delgadas con sombras de musculatura) -->
+                        <path d="M 105 260 L 85 390 L 125 390 L 135 260 Z" fill="url(#suitGrad)"/>
+                        <path d="M 85 340 L 90 390 L 125 390 L 115 340 Z" fill="var(--x-blue)"/> <!-- Bota azul -->
+                        
+                        <path d="M 145 260 L 165 390 L 205 390 L 180 260 Z" fill="url(#suitGrad)"/>
+                        <path d="M 160 340 L 165 390 L 205 390 L 195 340 Z" fill="var(--x-blue)"/> <!-- Bota azul -->
+
+                        <!-- ESPADA TRASERA (Alineada en la espalda) -->
+                        <path d="M 165 140 L 210 270" stroke="url(#bladeGrad)" stroke-width="7" stroke-linecap="round"/>
+                        <path d="M 155 130 L 175 145" stroke="var(--x-yellow)" stroke-width="5"/> <!-- Guardia -->
+
+                        <!-- TORSO (Diseño esbelto, traje negro con detalles azules tipo X-Men '97) -->
+                        <path d="M 95 125 L 195 125 L 175 260 L 115 260 Z" fill="url(#suitGrad)"/>
+                        <path d="M 115 125 L 135 260 L 125 260 L 105 125 Z" fill="var(--x-blue)"/> <!-- Rayas azules en torso -->
+                        <path d="M 175 125 L 155 260 L 165 260 L 185 125 Z" fill="var(--x-blue)"/>
+                        
+                        <!-- Cinturón táctico -->
+                        <rect x="105" y="250" width="80" height="18" fill="#222" rx="3"/>
+                        <circle cx="145" cy="259" r="10" fill="var(--x-yellow)" stroke="#000" stroke-width="2.5"/>
+                        <path d="M 141 255 L 149 263 M 149 255 L 141 263" stroke="#000" stroke-width="2"/>
+
+                        <!-- BRAZO TRASERO -->
+                        <path d="M 185 130 L 225 200 L 210 250" fill="none" stroke="url(#suitGrad)" stroke-width="16" stroke-linecap="round"/>
+                        <circle cx="210" cy="250" r="11" fill="url(#skinGrad)"/>
+
+                        <!-- CUELLO Y CABEZA (Piel Roja detallada con sombras) -->
+                        <path d="M 130 110 L 160 110 L 165 135 L 125 135 Z" fill="url(#skinGrad)"/>
+                        <circle cx="145" cy="85" r="30" fill="url(#skinGrad)"/>
+                        
+                        <!-- Pelo Modcut Realista (Corte tazón texturizado negro brillante con volumen) -->
+                        <path d="M 112 85 C 108 25, 182 25, 178 85 L 183 98 C 170 92, 120 92, 107 98 Z" fill="#121212" stroke="none"/>
+                        <path d="M 118 70 C 130 55, 160 55, 172 70" stroke="#333" stroke-width="3" fill="none"/> <!-- Brillo de cabello -->
+
+                        <!-- Rostro Expresivo y Ojos -->
+                        <path d="M 132 80 L 142 86 M 158 80 L 148 86" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+                        <path d="M 138 98 Q 145 106 152 98" stroke="#400" stroke-width="2.5" fill="none" stroke-linecap="round"/>
                     </g>
-                    <!-- Brazo Frontal y Espada 2 -->
-                    <g class="hero-arm" style="transform-origin: 80px 120px;">
-                        <path d="M 60 210 L 20 60" stroke="#ccc" stroke-width="8" stroke-linecap="round"/>
-                        <path d="M 45 195 L 75 205" stroke="var(--x-yellow)" stroke-width="4"/> 
-                        <path d="M 80 120 L 45 170 L 60 210" fill="none" stroke="var(--hero-suit)" stroke-width="20" stroke-linecap="round"/>
-                        <circle cx="60" cy="210" r="14" fill="var(--hero-skin)"/>
+
+                    <!-- BRAZO FRONTAL (Dinámico, empuñando la espada principal) -->
+                    <g class="hero-arm-front" style="transform-origin: 105px 135px;">
+                        <!-- Espada frontal reluciente -->
+                        <path d="M 75 230 L 25 50" stroke="url(#bladeGrad)" stroke-width="9" stroke-linecap="round"/>
+                        <path d="M 58 210 L 92 225" stroke="var(--x-yellow)" stroke-width="5"/> <!-- Guardia -->
+                        <!-- Brazo y hombro -->
+                        <path d="M 105 135 L 65 190 L 75 230" fill="none" stroke="url(#suitGrad)" stroke-width="18" stroke-linecap="round"/>
+                        <circle cx="75" cy="230" r="12" fill="url(#skinGrad)"/>
                     </g>
                 </svg>
             </div>
 
-            <!-- VILLANO SVG -->
+            <!-- VILLANO: CENTINELA REALISTA -->
             <div id="p2" class="fighter p2 idle">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 450 500" width="450" height="500">
-                    <g class="boss-hover">
-                        <!-- Cuerpo -->
-                        <path d="M 100 300 L 400 300 L 350 500 L 150 500 Z" fill="var(--s-purple)"/>
-                        <circle cx="100" cy="300" r="60" fill="var(--s-magenta)"/>
-                        <circle cx="400" cy="300" r="60" fill="var(--s-magenta)"/>
-                        <path d="M 150 320 L 350 320 L 300 400 L 200 400 Z" fill="var(--s-magenta)"/>
-                        <circle cx="250" cy="360" r="30" fill="var(--x-yellow)"/>
-                        <!-- Cuello -->
-                        <rect x="200" y="240" width="100" height="60" fill="#333"/>
-                        <line x1="220" y1="240" x2="220" y2="300" stroke="#000" stroke-width="5"/>
-                        <line x1="250" y1="240" x2="250" y2="300" stroke="#000" stroke-width="5"/>
-                        <line x1="280" y1="240" x2="280" y2="300" stroke="#000" stroke-width="5"/>
-                        <!-- Cabeza -->
-                        <path d="M 180 80 L 320 80 L 340 240 L 160 240 Z" fill="var(--s-purple)"/>
-                        <path d="M 180 80 L 160 40 L 200 80 Z" fill="var(--s-magenta)"/>
-                        <path d="M 320 80 L 340 40 L 300 80 Z" fill="var(--s-magenta)"/>
-                        <path d="M 200 130 L 300 130 L 290 220 L 210 220 Z" fill="var(--s-magenta)"/>
-                        <polygon points="210,150 240,155 225,165" fill="var(--x-yellow)"/>
-                        <polygon points="290,150 260,155 275,165" fill="var(--x-yellow)"/>
-                        <rect x="230" y="190" width="40" height="20" fill="#222"/>
-                        <line x1="240" y1="190" x2="240" y2="210" stroke="#fff" stroke-width="2"/>
-                        <line x1="250" y1="190" x2="250" y2="210" stroke="#fff" stroke-width="2"/>
-                        <line x1="260" y1="190" x2="260" y2="210" stroke="#fff" stroke-width="2"/>
+                    <defs>
+                        <linearGradient id="sentinelArmor" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stop-color="#7a00cc"/>
+                            <stop offset="50%" stop-color="#4d0080"/>
+                            <stop offset="100%" stop-color="#2a0044"/>
+                        </linearGradient>
+                        <linearGradient id="sentinelMag" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#ff1493"/>
+                            <stop offset="100%" stop-color="#99004d"/>
+                        </linearGradient>
+                    </defs>
+                    <g class="boss-realistic">
+                        <!-- Cuerpo Armado Masivo -->
+                        <path d="M 90 280 L 360 280 L 330 480 L 120 480 Z" fill="url(#sentinelArmor)"/>
+                        
+                        <!-- Hombros Gigantes Abombados -->
+                        <circle cx="90" cy="280" r="65" fill="url(#sentinelMag)"/>
+                        <circle cx="360" cy="280" r="65" fill="url(#sentinelMag)"/>
+                        <circle cx="90" cy="280" r="45" fill="url(#sentinelArmor)"/>
+                        <circle cx="360" cy="280" r="45" fill="url(#sentinelArmor)"/>
+
+                        <!-- Placa de Pecho Mecánica -->
+                        <path d="M 140 300 L 310 300 L 280 410 L 170 410 Z" fill="url(#sentinelMag)"/>
+                        <circle cx="225" cy="355" r="32" fill="var(--x-yellow)" stroke="#111" stroke-width="4"/>
+                        <circle cx="225" cy="355" r="15" fill="#fff" opacity="0.8"/>
+
+                        <!-- Tubos de Cuello Industriales -->
+                        <rect x="185" y="220" width="80" height="60" fill="#151515" rx="5"/>
+                        <line x1="205" y1="220" x2="205" y2="280" stroke="#000" stroke-width="6"/>
+                        <line x1="225" y1="220" x2="225" y2="280" stroke="#000" stroke-width="6"/>
+                        <line x1="245" y1="220" x2="245" y2="280" stroke="#000" stroke-width="6"/>
+
+                        <!-- Cabeza Robótica Amenazante -->
+                        <path d="M 165 70 L 285 70 L 310 220 L 140 220 Z" fill="url(#sentinelArmor)"/>
+                        <!-- Antenas/Cresta -->
+                        <path d="M 165 70 L 145 20 L 195 70 Z" fill="url(#sentinelMag)"/>
+                        <path d="M 285 70 L 305 20 L 255 70 Z" fill="url(#sentinelMag)"/>
+                        
+                        <!-- Casco Placa Frontal Magenta -->
+                        <path d="M 185 110 L 265 110 L 255 205 L 195 205 Z" fill="url(#sentinelMag)"/>
+                        
+                        <!-- Ojos Brillantes LED -->
+                        <polygon points="195,135 225,142 210,152" fill="var(--x-yellow)" filter="drop-shadow(0 0 8px #ffcc00)"/>
+                        <polygon points="255,135 225,142 240,152" fill="var(--x-yellow)" filter="drop-shadow(0 0 8px #ffcc00)"/>
+                        
+                        <!-- Boca de Parrilla Metálica -->
+                        <rect x="205" y="175" width="40" height="18" fill="#111" rx="2"/>
+                        <line x1="215" y1="175" x2="215" y2="193" stroke="#fff" stroke-width="3"/>
+                        <line x1="225" y1="175" x2="225" y2="193" stroke="#fff" stroke-width="3"/>
+                        <line x1="235" y1="175" x2="235" y2="193" stroke="#fff" stroke-width="3"/>
                     </g>
                 </svg>
             </div>
         </main>
     </div>
 
-    <!-- CONTROLES -->
+    <!-- PANEL DE CONTROL -->
     <div class="panel">
         <div class="controls">
             <button id="btn-atk" class="btn btn-atk" onclick="action('atk')">TAJO X</button>
@@ -231,105 +308,233 @@
         </div>
     </div>
 
-    <!-- PREGUNTAS -->
+    <!-- MODAL DE PREGUNTAS AMPLIADO -->
     <div class="modal" id="modal">
         <div class="m-box">
-            <h2 class="m-title">SISTEMA CEREBRO</h2>
-            <p class="m-q" id="m-q">Cargando...</p>
-            <div id="m-opts"></div>
+            <h2 class="m-title">SISTEMA CEREBRO: PROTOCOLO DE COMBATE</h2>
+            <p class="m-q" id="m-q">Cargando base de datos...</p>
+            <div class="opts-grid" id="m-opts"></div>
         </div>
     </div>
 
     <script>
-        const qs = [
-            { q: "¿Qué significa el acrónimo RAM?", o: ["Random Access Memory", "Read Access Machine", "Run All Media", "Rapid Action Memory"], a: 0 },
-            { q: "¿Cuál NO es un lenguaje de programación?", o: ["Python", "Java", "Cobra", "HTML"], a: 3 },
+        // --- 40 PREGUNTAS TÉCNICAS Y DE X-MEN ---
+        const bancoDePreguntas = [
+            { q: "¿Qué significa el acrónimo RAM en informática?", o: ["Random Access Memory", "Read Access Machine", "Run All Media", "Rapid Action Memory"], a: 0 },
+            { q: "¿Cuál de estos NO es un lenguaje de programación?", o: ["Python", "Java", "Cobra", "HTML"], a: 3 },
             { q: "¿Cuántos bits conforman un byte?", o: ["4", "8", "16", "32"], a: 1 },
-            { q: "¿Qué metal recubre el esqueleto de Wolverine?", o: ["Vibranium", "Adamantium", "Titanio", "Acero Valyrio"], a: 1 }
+            { q: "¿Qué metal recubre el esqueleto indestructible de Wolverine?", o: ["Vibranium", "Adamantium", "Titanio", "Acero Valyrio"], a: 1 },
+            { q: "¿Qué significa el acrónimo CPU?", o: ["Central Process Utility", "Computer Personal Unit", "Central Processing Unit", "Control Panel Unit"], a: 2 },
+            { q: "¿Cuál es el principal archienemigo histórico y líder ideológico de la Hermandad de Mutantes?", o: ["Dr. Doom", "Magneto", "Thanos", "Loki"], a: 1 },
+            { q: "¿Qué dispositivo se considera periférico puramente de 'entrada'?", o: ["Monitor", "Impresora", "Teclado", "Altavoces"], a: 2 },
+            { q: "¿Qué componente de hardware se conoce coloquialmente como el 'cerebro' del ordenador?", o: ["El Disco Duro", "La Memoria RAM", "El Microprocesador (CPU)", "La Tarjeta Madre"], a: 2 },
+            { q: "¿Qué clasificación de nivel de poder mutante ostenta el Profesor Charles Xavier?", o: ["Clase Beta", "Clase Omega", "Clase Alfa", "Clase Gamma"], a: 2 },
+            { q: "¿Cuál es la función fundamental de un Sistema Operativo?", o: ["Proteger contra troyanos", "Gestionar y administrar el hardware y software", "Diseñar páginas web dinámicas", "Ampliar físicamente la memoria RAM"], a: 1 },
+            { q: "¿Qué etiqueta estándar de HTML se emplea para incrustar una imagen?", o: ["<image>", "<img>", "<pic>", "<src>"], a: 1 },
+            { q: "¿Cuál de las siguientes mutantes posee la habilidad innata de controlar el clima atmosférico?", o: ["Jean Grey", "Storm (Tormenta)", "Rogue (Titania)", "Mystique"], a: 1 },
+            { q: "¿Qué significa la sigla SSD en sistemas modernos de almacenamiento?", o: ["Solid State Drive", "Super Speed Disk", "System Storage Device", "Secure Save Drive"], a: 0 },
+            { q: "¿Qué lenguaje de hojas de estilo se utiliza estrictamente para dar diseño y formato visual a la web?", o: ["JavaScript", "HTML", "CSS", "PHP"], a: 2 },
+            { q: "¿Cómo se define conceptualmente un 'Bucle' (Loop) en la programación?", o: ["Un fallo de sintaxis crítico", "Una secuencia de código que se repite condicionalmente", "Un contenedor de variables globales", "Un protocolo de red cifrado"], a: 1 },
+            { q: "¿Cómo se denomina la emblemática instalación holográfica de entrenamiento de los X-Men?", o: ["Sala de Peligro (Danger Room)", "Habitación del Tiempo", "Cerebro", "El Domo de Simulación"], a: 0 },
+            { q: "¿Qué puerto de red estándar utiliza por defecto el protocolo web HTTP?", o: ["443", "21", "80", "8080"], a: 2 },
+            { q: "En el diseño y gestión de bases de datos relacionales, ¿Qué significa SQL?", o: ["Structured Query Language", "Simple Question List", "System Quality Level", "Standard Query Logic"], a: 0 },
+            { q: "¿Cuál es el atajo de teclado universal estándar para 'Copiar' contenido en sistemas Windows?", o: ["Ctrl + X", "Ctrl + C", "Ctrl + V", "Ctrl + Z"], a: 1 },
+            { q: "Si una variable informática es de tipo de datos 'Boolean', ¿Qué valores posibles puede almacenar?", o: ["Cualquier número entero", "Cualquier cadena de texto", "Exclusivamente Verdadero o Falso", "Valores decimales de precisión"], a: 2 },
+            { q: "¿Qué protocolo de seguridad se encarga de cifrar las conexiones web actuales (HTTPS)?", o: ["SSL / TLS", "FTP", "SMTP", "SSH"], a: 0 },
+            { q: "¿Cómo se llama el mutante de piel azul capaz de adoptar la forma física de cualquier persona?", o: ["Beast", "Nightcrawler", "Mystique", "Colossus"], a: 2 },
+            { q: "¿Qué estructura de datos funciona bajo el principio LIFO (Last In, First Out)?", o: ["Cola (Queue)", "Pila (Stack)", "Árbol Binario", "Tabla Hash"], a: 1 },
+            { q: "¿Cuál es el verdadero nombre de nacimiento del mutante conocido como Cíclope (Cyclops)?", o: ["Logan Howlett", "Scott Summers", "Charles Xavier", "Hank McCoy"], a: 1 },
+            { q: "¿Qué comando de terminal en sistemas UNIX/Linux se utiliza para listar archivos de un directorio?", o: ["dir", "ls", "show", "cat"], a: 1 },
+            { q: "¿Qué mutante posee el poder psiónico de transformarse en Fénix?", o: ["Jean Grey", "Rogue", "Emma Frost", "Jubilee"], a: 0 },
+            { q: "¿Qué significa GPU en la arquitectura de un equipo informático?", o: ["Graphical Processing Unit", "General Power Utility", "Global Processor Utility", "Graphic Peripheral Unit"], a: 0 },
+            { q: "¿Qué lenguaje se ejecuta directamente en el navegador del cliente para crear interactividad web?", o: ["Python", "C++", "JavaScript", "SQL"], a: 2 },
+            { q: "¿Cómo se llama el mutante de origen ruso que puede convertir su piel en acero orgánico?", o: ["Nightcrawler", "Colossus", "Iceman", "Beast"], a: 1 },
+            { q: "¿Qué representa el número 10 en sistema decimal convertido a sistema binario?", o: ["1010", "1100", "1001", "1111"], a: 0 },
+            { q: "¿Qué entidad científica creó originalmente a los Centinelas para cazar mutantes?", o: ["Dr. Bolivar Trask", "Mr. Sinister", "Stryker", "Forge"], a: 0 },
+            { q: "¿Qué significa el acrónimo API en desarrollo de software?", o: ["Application Programming Interface", "Advanced Program Integration", "Automated Process Index", "Application Protocol Instruction"], a: 0 },
+            { q: "¿Qué mutante posee la capacidad de teletransportarse dejando una estela de azufre y humo?", o: ["Nightcrawler", "Blink", "Magik", "Bishop"], a: 0 },
+            { q: "¿Cuál es el propósito principal de utilizar Git en programación?", o: ["Diseñar interfaces gráficas", "Control de versiones de código fuente", "Compilar programas ejecutables", "Optimizar memoria RAM"], a: 1 },
+            { q: "¿Qué mutante telepática de piel de diamante rivaliza con Jean Grey en los X-Men?", o: ["Emma Frost", "Psylocke", "Shadowcat", "Rogue"], a: 0 },
+            { q: "¿Qué significa DNS en la infraestructura de internet?", o: ["Domain Name System", "Digital Network Security", "Data Node Source", "Dynamic Name Server"], a: 0 },
+            { q: "¿Qué mutante tiene la capacidad de atravesar paredes y materia sólida (intangibilidad)?", o: ["Shadowcat (Kitty Pryde)", "Nightcrawler", "Rogue", "Blink"], a: 0 },
+            { q: "¿Qué tipo de estructura de datos almacena elementos en pares de 'Clave - Valor'?", o: ["Arreglo (Array)", "Diccionario / Mapa (Hash Map)", "Pila (Stack)", "Cola (Queue)"], a: 1 },
+            { q: "¿Cómo se llama el gigantesco Centinela supremo maestro de los cazadores de mutantes?", o: ["Master Mold (Molde Maestro)", "Nimrod", "Bastion", "Omega Sentinel"], a: 0 },
+            { q: "¿Cuál es el puerto de red predeterminado que utiliza el protocolo seguro SSH?", o: ["80", "22", "443", "3306"], a: 1 }
         ];
 
         const levels = [
             { n: "CENTINELA MK-I", hp: 300, dmg: [20, 35] },
-            { n: "MASTER MOLD", hp: 500, dmg: [35, 50] }
+            { n: "MASTER MOLD", hp: 500, dmg: [35, 50] },
+            { n: "OMEGA SENTINEL", hp: 700, dmg: [45, 65] },
+            { n: "NIMROD", hp: 1000, dmg: [60, 90] }
         ];
 
-        let p = { hp: 300, def: false, combo: 0 };
-        let lvl = 0; let boss = null; let turn = true; let cQ = null;
+        const MAX_HP = 300;
+        let p = { hp: MAX_HP, def: false, combo: 0 };
+        let lvl = 0; let boss = null; let turn = true; let askedQuestions = []; let currentQuestion = null;
 
         function updateUI() {
-            document.getElementById('p-hp').style.width = `${Math.max(0, p.hp/300)*100}%`;
+            document.getElementById('p-hp').style.width = `${Math.max(0, p.hp/MAX_HP)*100}%`;
             document.getElementById('e-hp').style.width = `${Math.max(0, boss.hp/boss.mhp)*100}%`;
             document.getElementById('combo-txt').innerText = p.combo > 1 ? `COMBO x${p.combo}` : `NIVEL ${lvl + 1}`;
         }
 
-        function setBtns(a) { document.querySelectorAll('.btn').forEach(b => b.disabled = !a); }
+        function setBtns(active) { document.querySelectorAll('.btn').forEach(b => b.disabled = !active); }
 
-        function cText(txt, tId) {
-            const el = document.getElementById(tId); const r = el.getBoundingClientRect();
-            const t = document.createElement('div'); t.className = 'comic-text'; t.innerText = txt;
-            t.style.left = `${r.left + r.width/2 - 50}px`; t.style.top = `${r.top + r.height/2 - 50}px`;
-            document.body.appendChild(t); setTimeout(() => t.remove(), 600);
+        function cameraFx(type) {
+            const c = document.getElementById('cam');
+            c.classList.add(type);
+            setTimeout(() => c.classList.remove(type), type === 'shake' ? 400 : 800);
         }
 
-        function initLvl() {
-            if(lvl >= levels.length) { alert("¡COMPLETADO!"); location.reload(); return; }
+        function createComicText(text, targetId) {
+            const el = document.getElementById(targetId);
+            const rect = el.getBoundingClientRect();
+            const txt = document.createElement('div');
+            txt.className = 'comic-text';
+            txt.innerText = text;
+            txt.style.left = `${rect.left + rect.width/2 - 60}px`;
+            txt.style.top = `${rect.top + rect.height/2 - 60}px`;
+            document.body.appendChild(txt);
+            setTimeout(() => txt.remove(), 600);
+        }
+
+        function initLevel() {
+            if(lvl >= levels.length) {
+                alert("¡SALA DE PELIGRO COMPLETADA CON ÉXITO ABSOLUTO!");
+                location.reload(); return;
+            }
             boss = JSON.parse(JSON.stringify(levels[lvl])); boss.mhp = boss.hp;
             document.getElementById('e-name').innerText = boss.n;
-            p.hp = 300; p.combo = 0; turn = true; updateUI(); setBtns(true);
+            p.hp = MAX_HP; p.combo = 0; turn = true;
+            updateUI(); setBtns(true);
         }
 
-        function action(t) {
-            if(!turn) return; turn = false; setBtns(false);
-            if(t === 'def') { p.def = true; p.combo = 0; updateUI(); setTimeout(bTurn, 500); } 
-            else {
-                p.def = false; const p1 = document.getElementById('p1'); p1.classList.add('atk-slash');
+        function action(type) {
+            if(!turn) return;
+            turn = false; setBtns(false);
+            
+            if(type === 'def') {
+                p.def = true; p.combo = 0; updateUI();
+                setTimeout(bossTurn, 500);
+            } 
+            else if (type === 'atk') {
+                p.def = false;
+                const p1 = document.getElementById('p1');
+                p1.classList.add('atk-slash');
+                
                 setTimeout(() => {
-                    document.getElementById('cam').classList.add('shake'); setTimeout(() => document.getElementById('cam').classList.remove('shake'), 400);
-                    cText("¡SLASH!", 'p2'); boss.hp -= 25 + (p.combo * 5); p.combo++;
-                    document.getElementById('p2').classList.add('hit'); updateUI();
-                    setTimeout(() => { p1.classList.remove('atk-slash'); document.getElementById('p2').classList.remove('hit'); setTimeout(chk, 400); }, 400);
-                }, 100);
+                    cameraFx('shake');
+                    createComicText("¡SLASH!", 'p2');
+                    
+                    let dmg = 25 + (p.combo * 6);
+                    boss.hp -= dmg; p.combo++;
+                    
+                    document.getElementById('p2').classList.add('hit');
+                    updateUI();
+
+                    setTimeout(() => {
+                        p1.classList.remove('atk-slash');
+                        document.getElementById('p2').classList.remove('hit');
+                        setTimeout(checkState, 400);
+                    }, 400);
+                }, 120);
             }
         }
 
-        function bTurn() {
-            document.getElementById('cam').classList.add('shake'); setTimeout(() => document.getElementById('cam').classList.remove('shake'), 400);
-            cText("¡KRAK!", 'p1');
+        function bossTurn() {
+            cameraFx('shake');
+            createComicText("¡KRAK!", 'p1');
+            
             let d = Math.floor(Math.random() * (boss.dmg[1] - boss.dmg[0])) + boss.dmg[0];
-            if(p.def) d = Math.floor(d * 0.2); p.hp -= d;
-            document.getElementById('p1').classList.add('hit'); updateUI();
-            setTimeout(() => { document.getElementById('p1').classList.remove('hit'); setTimeout(() => { turn = true; chk(); }, 400); }, 300);
+            if(p.def) d = Math.floor(d * 0.2); 
+            
+            p.hp -= d;
+            document.getElementById('p1').classList.add('hit');
+            updateUI();
+
+            setTimeout(() => {
+                document.getElementById('p1').classList.remove('hit');
+                setTimeout(() => { turn = true; checkState(); }, 400);
+            }, 300);
         }
 
-        function chk() {
-            if(boss.hp <= 0) setTimeout(() => { lvl++; initLvl(); }, 1000);
-            else if (p.hp <= 0) { alert("SISTEMA CRÍTICO."); location.reload(); }
-            else if(!turn) setTimeout(bTurn, 500); else setBtns(true);
+        function checkState() {
+            if(boss.hp <= 0) {
+                setTimeout(() => { lvl++; initLevel(); }, 1000);
+            } else if (p.hp <= 0) {
+                alert("SISTEMA CRÍTICO. HAS SIDO DERROTADO.");
+                location.reload();
+            } else {
+                if(!turn) setTimeout(bossTurn, 500);
+                else setBtns(true);
+            }
         }
 
         function openTrivia() {
-            if(!turn) return; cQ = qs[Math.floor(Math.random() * qs.length)];
-            document.getElementById('m-q').innerText = cQ.q;
+            if(!turn) return;
+            
+            let pDisp = bancoDePreguntas.filter(pq => !askedQuestions.includes(pq.q));
+            if(pDisp.length === 0) {
+                askedQuestions = []; pDisp = bancoDePreguntas;
+            }
+
+            const rIdx = Math.floor(Math.random() * pDisp.length);
+            currentQuestion = pDisp[rIdx];
+            askedQuestions.push(currentQuestion.q);
+
+            document.getElementById('m-q').innerText = currentQuestion.q;
             const b = document.getElementById('m-opts'); b.innerHTML = '';
-            cQ.o.forEach((op, i) => {
-                const btn = document.createElement('button'); btn.className = 'opt'; btn.innerText = op;
-                btn.onclick = () => solve(i); b.appendChild(btn);
+            
+            currentQuestion.o.forEach((op, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'opt'; btn.innerText = op;
+                btn.onclick = () => solveTrivia(i);
+                b.appendChild(btn);
             });
+            
             document.getElementById('modal').classList.add('active');
         }
 
-        function solve(s) {
-            document.getElementById('modal').classList.remove('active'); turn = false; setBtns(false); p.def = false;
-            if(s === cQ.a) {
+        function solveTrivia(sel) {
+            document.getElementById('modal').classList.remove('active');
+            turn = false; setBtns(false); p.def = false;
+
+            if(sel === currentQuestion.a) {
+                cameraFx('zoom-in');
+                document.body.style.filter = "saturate(3) contrast(1.4)";
+                
                 setTimeout(() => {
-                    document.getElementById('p1').classList.add('atk-slash'); cText("¡MEGA TAJO!", 'p2');
-                    boss.hp -= 150; p.combo += 3; document.getElementById('p2').classList.add('hit'); updateUI();
-                    setTimeout(() => { document.getElementById('p1').classList.remove('atk-slash'); document.getElementById('p2').classList.remove('hit'); setTimeout(chk, 600); }, 500);
+                    document.getElementById('p1').classList.add('atk-slash');
+                    cameraFx('shake');
+                    createComicText("¡MEGA TAJO!", 'p2');
+                    
+                    boss.hp -= 160; p.combo += 3;
+                    document.getElementById('p2').classList.add('hit');
+                    updateUI();
+                    
+                    setTimeout(() => {
+                        document.body.style.filter = "none";
+                        document.getElementById('p1').classList.remove('atk-slash');
+                        document.getElementById('p2').classList.remove('hit');
+                        setTimeout(checkState, 600);
+                    }, 500);
                 }, 400);
-            } else { p.hp -= 40; p.combo = 0; cText("¡ERROR!", 'p1'); updateUI(); setTimeout(bTurn, 500); }
+            } else {
+                p.hp -= 40; p.combo = 0;
+                cameraFx('shake'); 
+                createComicText("¡ERROR!", 'p1');
+                document.getElementById('p1').classList.add('hit');
+                updateUI();
+                
+                setTimeout(() => {
+                    document.getElementById('p1').classList.remove('hit');
+                    setTimeout(bossTurn, 500);
+                }, 500);
+            }
         }
 
-        initLvl();
+        initLevel();
     </script>
 </body>
 </html>
